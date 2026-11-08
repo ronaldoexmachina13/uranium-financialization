@@ -106,3 +106,9 @@ These three files are not downloaded by a script: figures were read from the doc
 | 2026-11-08 | data/raw/sprott/sput_tsx_monthly.csv | Same prospectus, "Market Price of Trust Units" (TMX data) | Monthly TSX high, low and average daily volume for U.U (USD) and U.UN (CAD), Jan 2025 to 20 Jan 2026 | Yahoo daily volumes for U-U.TO and U-UN.TO reproduce the monthly averages within 0.03% for every month of 2025 |
 
 Not extracted: 2021-2022 cash and flows, earlier prospectuses' prior-sales tables, Sprott monthly reports.
+
+## Yellow Cake UxC spot volumes (typed by hand from Yellow Cake updates, 8 Nov 2026)
+- `data/raw/yellowcake/uxc_spot_volume_reported.csv`: 100 rows from 31 of 32 quarterly updates (Dec 2023 and Dec 2018 quote none). Every figure with period, update, UxC wording and footnote; revised figures are kept as separate rows. Q2 2025 (27.6 million lb) conflicts with later updates and is flagged INCONSISTENT; the quarterly series excludes it.
+
+## EIA annual series (read from eia.gov tables, 8 Nov 2026)
+- `data/raw/eia/`: Table 3 (US uranium production 2011-2025), Tables 22 and 23 (US inventories at year-end 2021-2025), Table 11 (unfilled requirements), Table 10 (contracted deliveries), Table 12 (maximum requirements). Withheld cells (W) are left as W in the raw files and blank in the workbook. IAEA PRIS, NEA/IAEA and WNA series are not retrieved.

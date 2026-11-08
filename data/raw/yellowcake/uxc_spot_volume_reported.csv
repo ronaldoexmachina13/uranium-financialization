@@ -1,0 +1,101 @@
+announcement_date,document_quarter_end,period_label,period_type,period_start,period_end,volume_mlb,material,provider_in_sentence,source_footnote,flag
+2018-10-03,2018-09-30,Jan-Jun 2018 monthly average,monthly_average,2018-01-01,2018-06-30,6.0,U3O8e,,,approx (about)
+2018-10-03,2018-09-30,Q3 2018 monthly average,monthly_average,2018-07-01,2018-09-30,12.0,U3O8e,,,approx (about)
+2019-04-26,2019-03-31,Q1 2019,quarter,2019-01-01,2019-03-31,18.4,U3O8,UxC,,
+2019-04-26,2019-03-31,Q1 2018 (comparator),quarter,2018-01-01,2018-03-31,13.8,U3O8,UxC,,comparator quoted in later document
+2019-07-22,2019-06-30,H1 2019,half,2019-01-01,2019-06-30,30,U3O8,UxC LLC,,rounded to whole million lb
+2019-07-22,2019-06-30,H1 2018 (comparator),half,2018-01-01,2018-06-30,35,U3O8,UxC LLC,,comparator; rounded
+2019-10-29,2019-09-30,Jan-Sep 2019,nine_months,2019-01-01,2019-09-30,42.5,U3O8,UxC LLC,"Ux Weekly 30 Sep 2019, 2 Sep 2019, 5 Aug 2019",approx (approximated)
+2019-10-29,2019-09-30,Q3 2018 (comparator),quarter,2018-07-01,2018-09-30,34.9,U3O8,,,comparator quoted in later document
+2020-02-03,2019-12-31,Q3 2019 (comparator),quarter,2019-07-01,2019-09-30,14,U3O8,UxC,,rounded to whole million lb
+2020-02-03,2019-12-31,Q4 2019,quarter,2019-10-01,2019-12-31,17.6,U3O8,,,estimate (estimated)
+2020-02-03,2019-12-31,CY2019,year,2019-01-01,2019-12-31,64.2,U3O8,UxC,,approx (approximated)
+2020-04-20,2020-03-31,Mar 2020,month,2020-03-01,2020-03-31,9.0,U3O8,,,record number of transactions (76)
+2020-07-29,2020-06-30,May 2020,month,2020-05-01,2020-05-31,5.1,U3O8,,,
+2020-07-29,2020-06-30,Jun 2020,month,2020-06-01,2020-06-30,8.0,U3O8,,,
+2020-07-29,2020-06-30,Q2 2020,quarter,2020-04-01,2020-06-30,40,U3O8,,,"approx (approached 40, record level)"
+2020-10-21,2020-09-30,Apr-Jun 2020 monthly average,monthly_average,2020-04-01,2020-06-30,12.7,U3O8,,,
+2020-10-21,2020-09-30,Q3 2020 monthly average,monthly_average,2020-07-01,2020-09-30,6.3,U3O8,,,
+2020-10-21,2020-09-30,Sep 2020,month,2020-09-01,2020-09-30,5.0,U3O8,UxC,,
+2020-10-21,2020-09-30,Mar-Apr 2020,two_month,2020-03-01,2020-04-30,36,U3O8,,,rounded; exceptional months
+2021-01-25,2020-12-31,Q4 2020,quarter,2020-10-01,2020-12-31,14.7,U3O8,UxC,,
+2021-01-25,2020-12-31,Q4 2019 (comparator),quarter,2019-10-01,2019-12-31,21.0,U3O8,UxC,,differs from 17.6 reported in the Feb 2020 update
+2021-01-25,2020-12-31,CY2020,year,2020-01-01,2020-12-31,92.2,U3O8,,,"record level; 92.3 in Apr 2021 update, 94.5 in Apr 2022 update"
+2021-04-20,2021-03-31,CY2020,year,2020-01-01,2020-12-31,92.3,U3O8,,footnote 8 (text not read),
+2021-04-20,2021-03-31,Jan-Feb 2021,two_month,2021-01-01,2021-02-28,10,U3O8,,footnote 9 (text not read),approx (slightly more than 10)
+2021-04-20,2021-03-31,Mar 2021,month,2021-03-01,2021-03-31,10.9,U3O8,,,
+2021-08-02,2021-06-30,Apr 2021,month,2021-04-01,2021-04-30,2.4,U3O8,,footnote 7 (text not read),
+2021-08-02,2021-06-30,May 2021,month,2021-05-01,2021-05-31,6.6,U3O8,,footnote 7 (text not read),
+2021-08-02,2021-06-30,Jun 2021,month,2021-06-01,2021-06-30,6.4,U3O8,,,
+2021-08-02,2021-06-30,Q2 2021,quarter,2021-04-01,2021-06-30,15.4,U3O8,,footnote 8 (text not read),
+2021-11-08,2021-09-30,Jul 2021,month,2021-07-01,2021-07-31,5.6,U3O8,,,
+2021-11-08,2021-09-30,Aug 2021,month,2021-08-01,2021-08-31,13.0,U3O8,,footnote 9 (text not read),
+2021-11-08,2021-09-30,Sep 2021,month,2021-09-01,2021-09-30,18.0,U3O8,,,
+2022-01-31,2021-12-31,Oct 2021,month,2021-10-01,2021-10-31,11.7,U3O8,,,
+2022-01-31,2021-12-31,Nov 2021,month,2021-11-01,2021-11-30,8.5,U3O8,,,revised to 7.5 in the Apr 2022 update
+2022-01-31,2021-12-31,Dec 2021,month,2021-12-01,2021-12-31,2.7,U3O8,,,
+2022-01-31,2021-12-31,CY2021,year,2021-01-01,2021-12-31,99.4,U3O8,UxC,footnote 7 (text not read),"new record; 101.8 in Apr 2022 update, 102.4 in Apr 2023 update"
+2022-04-27,2022-03-31,Nov 2021,month,2021-11-01,2021-11-30,7.5,U3O8,,,revised from 8.5
+2022-04-27,2022-03-31,Dec 2021,month,2021-12-01,2021-12-31,2.7,U3O8,,,
+2022-04-27,2022-03-31,Jan 2022,month,2022-01-01,2022-01-31,6.4,U3O8,,,
+2022-04-27,2022-03-31,Feb 2022,month,2022-02-01,2022-02-28,6.2,U3O8,,,
+2022-04-27,2022-03-31,Mar 2022,month,2022-03-01,2022-03-31,10.4,U3O8,,,
+2022-04-27,2022-03-31,CY2021,year,2021-01-01,2021-12-31,101.8,U3O8,UxC,"UxC annual spot market review, 24 Jan 2022",revised from 99.4
+2022-04-27,2022-03-31,CY2020 (comparator),year,2020-01-01,2020-12-31,94.5,U3O8,UxC,"UxC annual spot market review, 24 Jan 2022",restated from 92.2/92.3
+2022-07-28,2022-06-30,Q1 2022,quarter,2022-01-01,2022-03-31,23,U3O8,UxC,,rounded to whole million lb
+2022-07-28,2022-06-30,Q2 2022,quarter,2022-04-01,2022-06-30,10.5,U3O8,UxC,,approx (stated as a range of 10-11)
+2022-07-28,2022-06-30,May 2022,month,2022-05-01,2022-05-31,2.3,U3O8,,,
+2022-07-28,2022-06-30,Jan-Jun 2022,half,2022-01-01,2022-06-30,36,U3O8,,,approx (year-to-date total of 36)
+2022-10-31,2022-09-30,Jun 2022,month,2022-06-01,2022-06-30,3.3,U3O8,,,
+2022-10-31,2022-09-30,Jul 2022,month,2022-07-01,2022-07-31,2.5,U3O8,,,
+2022-10-31,2022-09-30,Aug 2022,month,2022-08-01,2022-08-31,0.9,U3O8,,,8 deals
+2023-02-02,2022-12-31,Oct 2022,month,2022-10-01,2022-10-31,5.6,U3O8,,,
+2023-02-02,2022-12-31,Nov 2022,month,2022-11-01,2022-11-30,4.2,U3O8,,,
+2023-02-02,2022-12-31,Dec 2022,month,2022-12-01,2022-12-31,3.2,U3O8,,,
+2023-04-26,2023-03-31,Q1 2023,quarter,2023-01-01,2023-03-31,12.6,U3O8,UxC,,approx (approximated)
+2023-04-26,2023-03-31,Q4 2022,quarter,2022-10-01,2022-12-31,13.0,U3O8,UxC,,approx (slightly above 13.0); sum of months in the Feb 2023 update is 13.0
+2023-04-26,2023-03-31,CY2022,year,2022-01-01,2022-12-31,60.8,U3O8,,,61.4 in Jan 2026 update
+2023-04-26,2023-03-31,CY2021 (comparator),year,2021-01-01,2021-12-31,102.4,U3O8,,,
+2023-07-31,2023-06-30,Q2 2023,quarter,2023-04-01,2023-06-30,14.4,U3O8,UxC,,
+2023-07-31,2023-06-30,Q1 2023 (comparator),quarter,2023-01-01,2023-03-31,12.6,U3O8,UxC,,
+2023-07-31,2023-06-30,Jan-Jun 2023,half,2023-01-01,2023-06-30,27.0,U3O8,,,
+2023-10-31,2023-09-30,Q3 2023,quarter,2023-07-01,2023-09-30,13.0,U3O8,,,
+2023-10-31,2023-09-30,Q2 2023 (comparator),quarter,2023-04-01,2023-06-30,14.4,U3O8,,,
+2023-10-31,2023-09-30,Q1 2023 (comparator),quarter,2023-01-01,2023-03-31,12.6,U3O8,,,
+2024-04-29,2024-03-31,Feb 2024,month,2024-02-01,2024-02-29,2.4,,,,
+2024-04-29,2024-03-31,Mar 2024,month,2024-03-01,2024-03-31,3.8,,,,
+2024-04-29,2024-03-31,Q1 2024,quarter,2024-01-01,2024-03-31,9.5,,,,revised to 9.6 in the Jul 2024 update
+2024-04-29,2024-03-31,CY2023,year,2023-01-01,2023-12-31,56.3,,UxC,,56.7 in Jan 2025 update; 56.6 in Apr 2025 and Jan 2026 updates
+2024-07-30,2024-06-30,Q2 2024,quarter,2024-04-01,2024-06-30,12.5,U3O8e,,footnote 4 (text not read),revised to 12.3 in the Oct 2024 update
+2024-07-30,2024-06-30,Q1 2024 (comparator),quarter,2024-01-01,2024-03-31,9.6,U3O8e,,footnote 4 (text not read),revised from 9.5
+2024-10-21,2024-09-30,Q3 2024,quarter,2024-07-01,2024-09-30,12.0,,,"Ux Weekly, Ux Price Indicators, 30 Sep 2024",
+2024-10-21,2024-09-30,Q2 2024 (comparator),quarter,2024-04-01,2024-06-30,12.3,,,"Ux Weekly, Ux Price Indicators, 30 Sep 2024",revised from 12.5
+2024-10-21,2024-09-30,Jan-Sep 2024,nine_months,2024-01-01,2024-09-30,34.2,,,"Ux Weekly, Ux Price Indicators, 30 Sep 2024",
+2025-01-28,2024-12-31,Q4 2024,quarter,2024-10-01,2024-12-31,11.1,,,Ux Weekly; Ux Price Indicators; 6 Jan 2025,
+2025-01-28,2024-12-31,CY2024,year,2024-01-01,2024-12-31,45.6,,,Ux Weekly; Ux Price Indicators; 6 Jan 2025,revised to 46.8 in the Apr 2025 update (UxC 2024 review)
+2025-01-28,2024-12-31,CY2023 (comparator),year,2023-01-01,2023-12-31,56.7,,,Ux Weekly; Ux Price Indicators; 6 Jan 2025,
+2025-01-28,2024-12-31,May 2024,month,2024-05-01,2024-05-31,7.8,,,Ux Weekly; Ux Price Indicators; 6 Jan 2025,highest month of 2024
+2025-01-28,2024-12-31,Oct 2024,month,2024-10-01,2024-10-31,1.7,,,Ux Weekly; Ux Price Indicators; 6 Jan 2025,lowest month of 2024
+2025-04-28,2025-03-31,Q1 2025,quarter,2025-01-01,2025-03-31,11.1,,,Ux Weekly; Ux Price Indicators; 31 Mar 2025,
+2025-04-28,2025-03-31,Q1 2024 (comparator),quarter,2024-01-01,2024-03-31,9.5,,,Ux Weekly; Ux Price Indicators; 1 Apr 2024,
+2025-04-28,2025-03-31,CY2024,year,2024-01-01,2024-12-31,46.8,,UxC,Ux Weekly; 2024 Uranium Spot Market Review; 3 Feb 2025,revised from 45.6
+2025-04-28,2025-03-31,CY2023 (comparator),year,2023-01-01,2023-12-31,56.6,,UxC,Ux Weekly; 2024 Uranium Spot Market Review; 3 Feb 2025,
+2025-07-30,2025-06-30,Q2 2025 (as labelled),quarter,2025-04-01,2025-06-30,27.6,,,Ux Weekly; The Market; 7 Jul 2025,"INCONSISTENT: stated for the quarter, but the Q3 and Q4 2025 updates imply about 17-19 for Q2 and 27.6 is close to the first-half total; do not use as a quarterly figure without checking Ux Weekly"
+2025-10-28,2025-09-30,Sep 2025,month,2025-09-01,2025-09-30,7.5,U3O8e,UxC,Ux Weekly; Ux Price indicators; 6 Oct 2025,
+2025-10-28,2025-09-30,Q3 2025,quarter,2025-07-01,2025-09-30,12.7,U3O8e,UxC,Ux Weekly; Ux Price indicators; 6 Oct 2025,
+2025-10-28,2025-09-30,Jan-Sep 2025,nine_months,2025-01-01,2025-09-30,41.7,U3O8,UxC,Ux Weekly; Ux Price indicators; 6 Oct 2025,
+2026-01-30,2025-12-31,Q4 2025,quarter,2025-10-01,2025-12-31,12.3,,UxC,"UxC LLC, Ux Weekly, Issue 05, The Market, 5 Jan 2026",
+2026-01-30,2025-12-31,CY2025,year,2025-01-01,2025-12-31,55.3,,UxC,"UxC LLC, Ux Weekly, Issue 05, The Market, 5 Jan 2026",55.9 in the Apr 2026 update (UxC 2025 review)
+2026-01-30,2025-12-31,CY2021 (comparator),year,2021-01-01,2021-12-31,102,,,,rounded; 'record level'
+2026-01-30,2025-12-31,CY2022 (comparator),year,2022-01-01,2022-12-31,61.4,,,,60.8 in the Apr 2023 update
+2026-01-30,2025-12-31,CY2023 (comparator),year,2023-01-01,2023-12-31,56.6,,,,
+2026-01-30,2025-12-31,CY2024 (comparator),year,2024-01-01,2024-12-31,46.8,,,,
+2026-04-27,2026-03-31,Feb 2026,month,2026-02-01,2026-02-28,5.7,,,,
+2026-04-27,2026-03-31,Jan-Feb 2026,two_month,2026-01-01,2026-02-28,14.7,,,,approx (approximately)
+2026-04-27,2026-03-31,Mar 2026,month,2026-03-01,2026-03-31,3.5,,,,
+2026-04-27,2026-03-31,Q1 2026,quarter,2026-01-01,2026-03-31,18.1,,UxC,,revised to 18.9 in the Jul 2026 update
+2026-04-27,2026-03-31,CY2025,year,2025-01-01,2025-12-31,55.9,,UxC,Ux Weekly; 2025 Uranium Spot Market Review; 2 Feb 2026,revised from 55.3
+2026-04-27,2026-03-31,CY2024 (comparator),year,2024-01-01,2024-12-31,46.8,,,Ux Weekly; 2025 Uranium Spot Market Review; 2 Feb 2026,
+2026-07-27,2026-06-30,Jan-Jun 2026,half,2026-01-01,2026-06-30,30.5,,UxC,Ux Weekly; First Half 2026 Spot U3O8 Review; 13 Jul 2026,
+2026-07-27,2026-06-30,Q1 2026,quarter,2026-01-01,2026-03-31,18.9,,UxC,Ux Weekly; First Half 2026 Spot U3O8 Review; 13 Jul 2026,revised from 18.1
+2026-07-27,2026-06-30,Q2 2026,quarter,2026-04-01,2026-06-30,11.6,,UxC,Ux Weekly; First Half 2026 Spot U3O8 Review; 13 Jul 2026,
