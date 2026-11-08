@@ -779,11 +779,11 @@ def main():
     order_st = ["In workbook", "Partly in workbook", "Script written, not run", "Not retrieved", "Paid or unavailable", DERIVED]
     status_counts = [(k, cnt[k]) for k in order_st if k in cnt]
     wb_layout.write_variables_sheet(wb, by, extras)
-    sheets.insert(0, ("Guide", "Variables", "The 119 variables of the handoff table, in its order, with what this workbook holds for each.", "-", "V001 to V119", 119 + len(extras), 11))
+    sheets.insert(0, ("Guide", "Variables", "Start here: every variable of the handoff table with its role in the thesis, why it matters and where it is in this workbook.", "-", "V001 to V119", 119 + len(extras), 13))
     wb_layout.write_table_sheet(wb, "Gaps", "Gaps and limits of the data", "What is missing, weak or open, by area.", ["Area", "Gap or limitation", "Effect", "Status / action"],
                                 [[clean(c) for c in g] for g in GAPS], [18, 90, 50, 60], wrap=(2, 3, 4), tab="guide")
     sheets.insert(1, ("Guide", "Gaps", "Missing, weak or open items, by area.", "-", "-", len(GAPS), 4))
-    wb_layout.write_contents(wb, sheets, status_counts, "8 November 2026")
+    wb_layout.write_contents(wb, sheets, status_counts, "8 November 2026", by, extras)
 
     names = ["Contents", "Variables", "Gaps", "Monthly", "Quarterly", "Annual", "Weekly", "Daily", "SPUT purchases", "SPUT issuance", "SPUT statements", "UxC volumes", "Yellow Cake reports", "UPC monthly NAV", "Physical sources", "Prices OHLCV", "World Bank monthly"]
     wb._sheets = [wb[n] for n in names if n in wb.sheetnames]

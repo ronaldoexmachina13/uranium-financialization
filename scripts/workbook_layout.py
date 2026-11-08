@@ -10,7 +10,12 @@ from openpyxl.comments import Comment
 from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 from openpyxl.utils import get_column_letter
 
+from coverage_map import ROWS as _COV
 from handoff_table import CHAT, SECTIONS
+import roles
+
+_STEP = {r[0]: r[10] for r in _COV}
+_PURPOSE = {r[0]: r[11] for r in _COV}
 
 FOREST, GOLD, IVORY, SAGE, CHAR, GREY = "173F35", "B49A58", "F7F6F2", "E3E9E2", "252B2A", "6B726F"
 NAME = "Arial"
@@ -103,6 +108,30 @@ def short(header):
     return header.split(" [")[0].strip()
 
 
+EXTRA_ROLE = "Additional series (not in the handoff table)"
+
+
+def role_label(id_):
+    """Short role name of a handoff record (A. Uranium price, B2. SPUT premium/discount, ...)."""
+    st = _STEP.get(id_)
+    return roles.ROLES[st][0] if st in roles.ROLES else EXTRA_ROLE
+
+
+def role_why(id_):
+    st = _STEP.get(id_)
+    return roles.ROLES[st][1] if st in roles.ROLES else ""
+
+
+def why_col(id_, header):
+    """One line saying why this column matters."""
+    if id_:
+        return roles.D_PURPOSE.get(id_) or _PURPOSE.get(id_) or role_why(id_)
+    for key, txt in roles.EXTRA_WHY:
+        if key.lower() in header.lower():
+            return txt
+    return roles.EXTRA_DEFAULT
+
+
 def _fmt_key(k):
     if isinstance(k, int):
         return str(k)
@@ -118,6 +147,10 @@ def _title(ws, title, subtitle, link=True):
         ws["A3"] = "← Contents"
         ws["A3"].hyperlink = "#'Contents'!A1"
         ws["A3"].font = font(9, underline="single", color=FOREST)
+    why = roles.SHEET_WHY.get(ws.title)
+    if why:
+        ws["B3"] = "Why it matters: " + why
+        ws["B3"].font = font(10, bold=True, color=FOREST)
     ws.sheet_view.showGridLines = False
 
 
@@ -127,57 +160,58 @@ def write_data_sheet(wb, name, title, subtitle, keys, cols, keyhdr, keyfmt, keyv
     ws.sheet_properties.tabColor = TAB[tab]
     cols = [c for _, c in sorted(enumerate(cols), key=lambda t: (sec_no(vid(t[1]["header"], pink)), vid(t[1]["header"], pink) or "~", t[0]))]
     _title(ws, title, subtitle)
-    labels = {4: "Section", 5: "Variable", 6: "Series", 7: "Source", 8: "Type · coverage", 9: keyhdr}
+    labels = {4: "Role in the thesis", 5: "Variable", 6: "Why it matters", 7: "Series", 8: "Source", 9: "Type · coverage", 10: keyhdr}
     for r, lab in labels.items():
         c = ws.cell(r, 1, lab)
-        c.font = font(9 if r < 9 else 10, bold=True, color=CHAR if r == 9 else GREY)
+        c.font = font(9 if r < 10 else 10, bold=True, color=CHAR if r == 10 else GREY)
         c.alignment = Alignment(vertical="center", wrap_text=True)
-        c.fill = fill(IVORY if r != 9 else "FFFFFF")
+        c.fill = fill(IVORY if r != 10 else "FFFFFF")
     start, prev = 2, None
+    keyset = set(keys)
     for j, c in enumerate(cols, 2):
         id_ = vid(c["header"], pink)
-        sl = sec_label(id_, extra_label)
+        sl = role_label(id_) if id_ else extra_label
         if sl != prev:
             if prev is not None:
                 _band(ws, start, j - 1, prev)
             start, prev = j, sl
         var = f"{id_} · {CHAT[id_][0]} — {CHAT[id_][1]}" if id_ else "Not in the handoff table"
-        vals = c["values"]
+        vals = {k: v for k, v in c["values"].items() if k in keyset}
         cov = f"{TYPE_TEXT.get(c['kind'], c['kind']).split(':')[0]} · {_fmt_key(min(vals))} to {_fmt_key(max(vals))} · {len(vals)} obs" if vals else "no observations"
-        row = {5: var, 6: short(c["header"]), 7: c["source"], 8: cov, 9: c["unit"]}
+        row = {5: var, 6: why_col(id_, c["header"]), 7: short(c["header"]), 8: c["source"], 9: cov, 10: c["unit"]}
         for r, v in row.items():
             cell = ws.cell(r, j, v)
-            cell.alignment = Alignment(wrap_text=True, vertical="top" if r < 9 else "center", horizontal="center" if r == 9 else "left")
-            cell.font = font(10 if r in (5, 6) else 9, bold=(r in (5, 6)), color=CHAR if r in (5, 6, 9) else GREY)
+            cell.alignment = Alignment(wrap_text=True, vertical="top" if r < 10 else "center", horizontal="center" if r == 10 else "left")
+            cell.font = font(10 if r in (5, 7) else 9, bold=(r in (5, 7)), italic=(r == 6), color=CHAR if r in (5, 7, 10) else (FOREST if r == 6 else GREY))
             cell.fill = fill(IVORY)
-        ws.cell(8, j).fill = fill(TYPE_FILL.get(c["kind"], SAGE))
-        ws.cell(9, j).fill = fill("FFFFFF")
-        ws.cell(9, j).border = Border(bottom=Side(style="medium", color=FOREST))
+        ws.cell(9, j).fill = fill(TYPE_FILL.get(c["kind"], SAGE))
+        ws.cell(10, j).fill = fill("FFFFFF")
+        ws.cell(10, j).border = Border(bottom=Side(style="medium", color=FOREST))
         note = " ".join(x for x in [c.get("note", ""), f"File: {c['raw']}" if c.get("raw") and c["raw"] != "see note" else ""] if x)
         if note:
-            ws.cell(6, j).comment = Comment(note, "Dataset", width=380, height=140)
+            ws.cell(7, j).comment = Comment(note, "Dataset", width=380, height=140)
         ws.column_dimensions[get_column_letter(j)].width = width
     if prev is not None:
         _band(ws, start, len(cols) + 1, prev)
-    ws.cell(9, 1).border = Border(bottom=Side(style="medium", color=FOREST))
+    ws.cell(10, 1).border = Border(bottom=Side(style="medium", color=FOREST))
     for key in keys:
         ws.append([keyval(key)] + [c["values"].get(key) for c in cols])
     from copy import copy
     f10 = font()
-    tmpl = ws.cell(10, 1)
+    tmpl = ws.cell(11, 1)
     tmpl.number_format, tmpl.font = keyfmt, font(bold=True, color=CHAR)
     styles = [copy(tmpl._style)]
     for j, c in enumerate(cols, 2):
-        t = ws.cell(10, j)
+        t = ws.cell(11, j)
         t.font, t.number_format = f10, c["fmt"]
         styles.append(copy(t._style))
-    for r in range(10, ws.max_row + 1):
+    for r in range(11, ws.max_row + 1):
         for j, st in enumerate(styles, 1):
             ws.cell(r, j)._style = copy(st)
     ws.column_dimensions["A"].width = 16
-    for r, h in {1: 24, 4: 20, 5: 62, 6: 48, 7: 30, 8: 28, 9: 20}.items():
+    for r, h in {1: 24, 4: 20, 5: 62, 6: 78, 7: 48, 8: 30, 9: 28, 10: 20}.items():
         ws.row_dimensions[r].height = h
-    ws.freeze_panes = "B10"
+    ws.freeze_panes = "B11"
     return ws
 
 
@@ -231,54 +265,57 @@ def write_variables_sheet(wb, rows_by_id, extras):
     """rows_by_id: id -> (workbook status, where, note). extras: list of (id, variable, variant, status, where, note)."""
     ws = wb.create_sheet("Variables")
     ws.sheet_properties.tabColor = TAB["guide"]
-    _title(ws, "Variables", "The 119 variables of the handoff table, in its order and wording, with what this workbook holds for each. Left block: the handoff. Right block: this workbook.")
-    heads = ["ID", "Variable", "Variant", "Status (handoff)", "Source", "Remaining issue", "Where / how to retrieve", "Python", "In this workbook", "Where in the workbook", "Note"]
-    widths = [8, 22, 34, 14, 28, 44, 36, 24, 18, 52, 60]
+    _title(ws, "Variables", "One row per variable of the handoff table, in its order, with its role in the thesis and what this workbook holds. The grey block on the right keeps the handoff's own columns for reference.")
+    heads = ["ID", "Variable", "Variant", "Role in the thesis", "Why it matters", "In this workbook", "Where in the workbook", "Note",
+             "Source (handoff)", "Status (handoff)", "Remaining issue (handoff)", "Where / how to retrieve (handoff)", "Python (handoff)"]
+    widths = [8, 22, 32, 22, 56, 18, 48, 56, 28, 12, 40, 32, 22]
     r = 5
     for j, h in enumerate(heads, 1):
         c = ws.cell(r, j, h)
-        c.font, c.fill = font(10, bold=True, color="FFFFFF"), fill(FOREST if j <= 8 else GOLD)
+        c.font, c.fill = font(10, bold=True, color="FFFFFF"), fill(FOREST if j <= 5 else (GOLD if j <= 8 else GREY))
         c.alignment = Alignment(wrap_text=True, vertical="center")
     ws.row_dimensions[r].height = 30
     r += 1
+
+    def put(r, vals):
+        for j, v in vals.items():
+            c = ws.cell(r, j, v)
+            c.font = font(9 if j > 3 else 10, bold=(j == 2), color=(FOREST if j == 5 else (GREY if j >= 9 else CHAR)), italic=(j == 5))
+            c.alignment = Alignment(wrap_text=True, vertical="top")
+            c.border = BOTTOM
+        wst = vals[6]
+        ws.cell(r, 6).fill = fill(STATUS_FILL.get(wst, "FFFFFF"))
+        ws.cell(r, 6).font = font(9, bold=True)
+
     for n, title, note, a, b in SECTIONS:
         ws.cell(r, 1, f"{n}. {title}").font = font(11, bold=True, color=FOREST)
-        ws.cell(r, 4, note).font = font(9, italic=True, color=GREY)
         for j in range(1, len(heads) + 1):
             ws.cell(r, j).fill = fill(SAGE)
         r += 1
         for id_ in sorted(i for i in CHAT if a <= i <= b):
             var, variant, st, src, issue, where, py = CHAT[id_]
             wst, wwhere, wnote = rows_by_id[id_]
-            vals = [id_, var, variant, st, src, issue, where, py, wst, wwhere, wnote]
-            for j, v in enumerate(vals, 1):
-                c = ws.cell(r, j, v)
-                c.font = font(9 if j > 3 else 10, bold=(j == 2))
-                c.alignment = Alignment(wrap_text=True, vertical="top")
-                c.border = BOTTOM
-            ws.cell(r, 9).fill = fill(STATUS_FILL.get(wst, "FFFFFF"))
-            ws.cell(r, 9).font = font(9, bold=True)
+            put(r, {1: id_, 2: var, 3: variant, 4: role_label(id_), 5: why_col(id_, ""), 6: wst, 7: wwhere, 8: wnote, 9: src, 10: st, 11: issue, 12: where, 13: py})
             r += 1
     ws.cell(r, 1, "Additional items from the variables document (not in the handoff table)").font = font(11, bold=True, color=FOREST)
     for j in range(1, len(heads) + 1):
         ws.cell(r, j).fill = fill(SAGE)
     r += 1
     for id_, var, variant, wst, wwhere, wnote in extras:
-        for j, v in {1: id_, 2: var, 3: variant, 9: wst, 10: wwhere, 11: wnote}.items():
-            c = ws.cell(r, j, v)
-            c.font = font(9 if j > 3 else 10, bold=(j == 2))
-            c.alignment = Alignment(wrap_text=True, vertical="top")
-            c.border = BOTTOM
-        ws.cell(r, 9).fill = fill(STATUS_FILL.get(wst, "FFFFFF"))
+        put(r, {1: id_, 2: var, 3: variant, 4: roles.ROLES["H. Extra items from the variables doc"][0], 5: why_col(id_, ""), 6: wst, 7: wwhere, 8: wnote})
         r += 1
     for j, w in enumerate(widths, 1):
         ws.column_dimensions[get_column_letter(j)].width = w
+    for j in range(9, 14):  # handoff columns: reference only, grouped and collapsed
+        ws.column_dimensions[get_column_letter(j)].outlineLevel = 1
+        ws.column_dimensions[get_column_letter(j)].hidden = True
     ws.freeze_panes = "D6"
     ws.row_dimensions[1].height = 24
+    ws.auto_filter.ref = f"A5:{get_column_letter(len(heads))}{r - 1}"
     return ws
 
 
-def write_contents(wb, sheets, status_counts, built):
+def write_contents(wb, sheets, status_counts, built, by=None, extras=None):
     """sheets: list of (group, name, description, frequency, covers, rows, columns)."""
     ws = wb.create_sheet("Contents")
     ws.sheet_properties.tabColor = FOREST
@@ -287,9 +324,43 @@ def write_contents(wb, sheets, status_counts, built):
     ws["A1"].font = font(18, bold=True, color=FOREST)
     ws["A2"] = f"Master's thesis, ISCAP. Built {built}. Values are as published by each source; nothing is interpolated, filled forward or averaged to match another frequency."
     ws["A2"].font = font(9, italic=True, color=GREY)
-    ws["A3"] = "This workbook holds data only."
+    ws["A3"] = ("Purpose: the data needed to study how uranium prices relate to the financial vehicles that hold physical uranium (chiefly Sprott Physical Uranium Trust), "
+                "compared with other commodities and with macro-financial conditions. This workbook holds data only: no analysis and no hypothesis.")
     ws["A3"].font = font(10, bold=True, color=CHAR)
+    ws.merge_cells("A3:F3")
+    ws["A3"].alignment = Alignment(wrap_text=True, vertical="top")
+    ws.row_dimensions[3].height = 30
     r = 5
+    if by:
+        c = ws.cell(r, 1, "What the data is for: the roles")
+        c.font = font(11, bold=True, color="FFFFFF")
+        for j in range(1, 7):
+            ws.cell(r, j).fill = fill(FOREST)
+        r += 1
+        for j, h in enumerate(["Role", "Why it matters", "Variables", "In this workbook"], 1):
+            c = ws.cell(r, j, h)
+            c.font, c.fill = font(9, bold=True, color=CHAR), fill(SAGE)
+        r += 1
+        stat = {}
+        for id_, (wst, _w, _n) in by.items():
+            stat.setdefault(_STEP.get(id_), []).append(wst)
+        for _id, _v, _vr, wst, _w, _n in (extras or []):
+            stat.setdefault(_STEP.get(_id), []).append(wst)
+        for step, (short_name, why) in roles.ROLES.items():
+            ids = sorted(i for i, st in _STEP.items() if st == step)
+            sts = stat.get(step, [])
+            n_in, n_part = sts.count("In workbook"), sts.count("Partly in workbook")
+            n_drv = sum(1 for x in sts if x.startswith("Derived"))
+            n_out = len(sts) - n_in - n_part - n_drv
+            txt = f"{n_in} in · {n_part} partly · {n_out} missing" + (f" · {n_drv} derived later" if n_drv else "")
+            for j, v in enumerate([short_name, why, f"{ids[0]} to {ids[-1]}" if ids else "", txt], 1):
+                cc = ws.cell(r, j, v)
+                cc.font = font(10 if j == 1 else 9, bold=(j == 1), color=FOREST if j == 1 else CHAR)
+                cc.alignment = Alignment(wrap_text=True, vertical="top")
+                cc.border = BOTTOM
+            ws.row_dimensions[r].height = 30
+            r += 1
+        r += 1
     heads = ["Sheet", "What it holds", "Frequency", "Covers", "Rows", "Columns"]
     group = None
     for g, name, desc, freq, covers, nrow, ncol in sheets:
@@ -323,7 +394,7 @@ def write_contents(wb, sheets, status_counts, built):
     r += 1
     rules = [
         "Each data sheet has one column per series and one row per period. Blank cell = no observation. A series is in the sheet of its own publication frequency.",
-        "The header block names, for every column: its section and the variable and variant from the handoff table (ID V001 to V119), the exact series, the source, its type and coverage, and the unit.",
+        "The header block names, for every column: its role in the thesis, the variable and variant from the handoff table (ID V001 to V119), why it matters, the exact series, the source, its type and coverage, and the unit.",
         "Month-end = the last available observation in the month. Period averages appear only where no daily source exists, and are labelled as averages.",
         "Columns that do not correspond to a record of the handoff table sit last, under Additional series.",
         "Hover over a series name for its note and raw file. The raw files are in data/raw and are never edited.",
@@ -354,7 +425,7 @@ def write_contents(wb, sheets, status_counts, built):
         ws.cell(r, 2, n).font = font(9)
         ws.cell(r, 2).alignment = Alignment(horizontal="left")
         r += 1
-    for j, w in enumerate([22, 78, 14, 26, 10, 10], 1):
+    for j, w in enumerate([26, 78, 14, 40, 10, 10], 1):
         ws.column_dimensions[get_column_letter(j)].width = w
     ws.row_dimensions[1].height = 30
     return ws
