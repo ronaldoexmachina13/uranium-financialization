@@ -21,3 +21,13 @@ One line per download: date, series, source, frequency and price timing (period 
 | 2026-11-08 | DEXCAUS: CAD per USD exchange rate | FRED | daily, 9609 rows | data/raw/fred/DEXCAUS.csv |
 | 2026-11-08 | SP500: S&P 500 index (FRED keeps about 10 years only) | FRED | daily close, 2609 rows | data/raw/fred/SP500.csv |
 | 2026-11-08 | World Bank Pink Sheet, monthly prices (gold, silver, coal, copper, oil, gas, etc.) | World Bank | monthly, period average, 573 KB | data/raw/worldbank/CMO-Historical-Data-Monthly.xlsx |
+
+## Source rule (8 Nov 2026)
+
+One source per series, never mixed. Uranium and the macro series come from FRED. Gold, silver, platinum, copper, Australian coal, US natural gas, Brent and WTI come from the World Bank Pink Sheet.
+
+Why: Pink Sheet and FRED differ for Australian coal (211 of 417 months differ by more than 5%) and US natural gas (44 months, largest in cold winters). Cause not checked. The Pink Sheet is used because it goes back to 1970 and the Source Map points to it. Provisional.
+
+Timing: uranium is an IMF monthly period average, so daily series are averaged over each month.
+
+Processed: data/processed/monthly_panel.xlsx, built by scripts/build_monthly.py (417 months, Jan 1992 to Sep 2026, 19 series).
