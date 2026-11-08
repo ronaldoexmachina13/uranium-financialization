@@ -1,0 +1,9 @@
+month,contract,price_usd_lb,evidence
+2021-10,UXV21,47.40,"Ux Weekly 25 Oct 2021 benchmark: https://www.uxc.com/docs/p/uxw/UxW35-45.pdf"
+2021-11,UXX21,46.00,"Yellow Cake quarterly update 31 Jan 2022, p.3: https://www.yellowcakeplc.com/wp-content/uploads/2022/01/Yellow-Cake-Quarterly-Operating-Update-31-January-2022.pdf"
+2021-12,UXZ21,42.10,"Cameco filing, 27 Dec 2021 benchmark: https://www.sec.gov/Archives/edgar/data/1009001/000119312522097057/d262168dex995.htm"
+2023-04,UXJ23,52.10,"24 Apr 2023 price record (dailymetalprice.com) and Yellow Cake June 2023 presentation p.4 (May price less 2.50)"
+2023-05,UXK23,54.60,"Yellow Cake June 2023 presentation p.4, citing 29 May Ux Weekly"
+2023-06,UXM23,56.20,"Cameco filing, 26 Jun 2023 benchmark: https://www.sec.gov/Archives/edgar/data/1009001/000119312523201159/d570853dex992.htm"
+2023-07,UXN23,56.25,"Yellow Cake August 2023 investor presentation p.4, citing 31 Jul Ux Weekly"
+2023-08,UXQ23,58.50,"Yellow Cake September 2023 investor presentation p.4, citing 28 Aug Ux Weekly"

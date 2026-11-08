@@ -5,11 +5,11 @@ Needs openpyxl.
 
 Rules (also recorded in DATA_LOG.md):
 - One source per series; sources are never mixed inside a column.
-- Main uranium price: UxC month-end spot (Cameco). The IMF series is kept as a cross-check only (it drifts
+- Main uranium price: Cameco month-end spot (industry average of UxC and TradeTech month-end prices). The IMF series is kept as a cross-check only (it drifts
   about 20% below the market from 2021).
 - Timing: the main price is a month-end price, so daily series use the LAST available value of each month.
   The Pink Sheet commodities are only published as monthly averages and are used as published.
-- The panel covers Jan 2007 to the last month with a UxC spot price.
+- The panel covers Jan 2007 to the last month with a Cameco spot price.
 """
 import csv
 import datetime as dt
@@ -94,14 +94,14 @@ def main():
     data, meta = {}, {}  # column -> {(y, m): value}; column -> (series, source, unit, monthly value)
 
     cam = read_csv(RAW / "cameco" / "uranium_price_monthly.csv")
-    data["Uranium spot (UxC)"] = {ym(r["date"]): float(r["spot_usd_lb"]) for r in cam}
-    meta["Uranium spot (UxC)"] = ("month-end spot", "Cameco (UxC)", "USD per lb", "month-end price as published - MAIN PRICE")
-    data["Uranium long-term (UxC)"] = {ym(r["date"]): float(r["longterm_usd_lb"]) for r in cam}
-    meta["Uranium long-term (UxC)"] = ("month-end long-term", "Cameco (UxC)", "USD per lb", "month-end price as published")
+    data["Uranium spot (Cameco)"] = {ym(r["date"]): float(r["spot_usd_lb"]) for r in cam}
+    meta["Uranium spot (Cameco)"] = ("month-end spot", "Cameco", "USD per lb", "month-end price as published - MAIN PRICE")
+    data["Uranium long-term (Cameco)"] = {ym(r["date"]): float(r["longterm_usd_lb"]) for r in cam}
+    meta["Uranium long-term (Cameco)"] = ("month-end long-term", "Cameco", "USD per lb", "month-end price as published")
 
     imf = read_csv(RAW / "fred" / "PURANUSDM.csv")
     data["Uranium (IMF, cross-check)"] = {ym(r["observation_date"]): float(r["PURANUSDM"]) for r in imf if r["PURANUSDM"] not in ("", ".")}
-    meta["Uranium (IMF, cross-check)"] = ("PURANUSDM", "FRED (IMF)", "USD per lb", "monthly average as published; about 20% below UxC from 2021")
+    meta["Uranium (IMF, cross-check)"] = ("PURANUSDM", "FRED (IMF)", "USD per lb", "monthly average as published; about 20% below Cameco from 2021")
 
     stq = read_csv(RAW / "stooq" / "ux_futures_monthly.csv")
     data["Uranium futures close (Stooq)"] = {ym(r["date"]): float(r["close"]) for r in stq}
@@ -109,6 +109,10 @@ def main():
     inv = read_csv(RAW / "investing" / "ux_futures_monthly.csv")
     data["Uranium futures close (Investing, gap fill)"] = {ym(r["date"]): float(r["close"]) for r in inv}
     meta["Uranium futures close (Investing, gap fill)"] = ("UXXc2 page", "Investing.com", "USD per lb", "monthly close; not merged with Stooq; Jan 2022 to Feb 2023 only")
+
+    rec = read_csv(RAW / "uxc" / "ux_final_settlement_reconstructed.csv")
+    data["Uranium futures final settlement (reconstructed from UxC benchmark)"] = {ym(r["month"] + "-01"): float(r["price_usd_lb"]) for r in rec}
+    meta["Uranium futures final settlement (reconstructed from UxC benchmark)"] = ("UX final settlement", "UxC benchmark via Cameco and Yellow Cake documents", "USD per lb", "reconstructed, 8 months Stooq lacks; see data/raw/uxc; not verified against CME bulletins")
 
     sd = read_csv(RAW / "sprott" / "sput_daily.csv")
     for col, key, unit in [("SPUT price", "price_usd", "USD"), ("SPUT NAV per unit", "nav_usd", "USD"), ("SPUT premium/discount", "premium_discount_pct", "percent")]:
@@ -134,7 +138,7 @@ def main():
         data[col] = month_end(read_csv(RAW / "yahoo" / f"{tick}.csv"), "date", "adj_close")
         meta[col] = (tick, "Yahoo Finance", cur, "adjusted close, last trading day of the month; listing currency by ticker")
 
-    last = max(data["Uranium spot (UxC)"])
+    last = max(data["Uranium spot (Cameco)"])
     months = [(y, m) for y in range(START[0], last[0] + 1) for m in range(1, 13) if START <= (y, m) <= last]
     cols = list(data)
 
@@ -171,13 +175,13 @@ def main():
     src.append([])
     notes = [
         "One source per series; sources are not mixed inside a column (see DATA_LOG.md).",
-        "Main uranium price is the UxC month-end spot (Cameco). Daily series use the last value of each month to match it.",
+        "Main uranium price is the Cameco month-end spot (industry average of UxC and TradeTech month-end prices). Daily series use the last value of each month to match it.",
         "Pink Sheet commodities are monthly averages (no month-end values are published) and are used as published.",
-        "The IMF uranium series is kept only as a cross-check; it runs about 20% below UxC from 2021 (cause not confirmed).",
-        "Stooq futures are missing Oct 2021 to Mar 2022 and Apr to Aug 2023; Investing fills Jan to Mar 2022 in its own column.",
+        "The IMF uranium series is kept only as a cross-check; it runs about 20% below Cameco from 2021 (cause not confirmed).",
+        "Stooq futures are missing Oct 2021 to Mar 2022 and Apr to Aug 2023; Investing fills Jan to Mar 2022 and a reconstructed UxC-benchmark column fills Oct to Dec 2021 and Apr to Aug 2023, each in its own column.",
         "Blank cells mean the source has no value for that month. SPUT starts in Jul 2021; equities start at their listing dates.",
         "Equity listing currencies are assigned by ticker; check before comparing across tickers.",
-        f"The panel ends at {last[0]}-{last[1]:02d}, the last month with a UxC spot price.",
+        f"The panel ends at {last[0]}-{last[1]:02d}, the last month with a Cameco spot price.",
         "Built by scripts/build_monthly.py from the files in data/raw/.",
     ]
     for n in notes:
