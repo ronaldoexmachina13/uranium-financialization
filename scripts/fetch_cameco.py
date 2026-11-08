@@ -2,7 +2,7 @@
 
 Run from the repo root:  python scripts/fetch_cameco.py
 Cameco publishes the month-end spot and long-term price as an industry average of the UxC and TradeTech
-month-end prices. The table is in the page HTML. Only 2007-01 onwards is kept (the thesis window).
+month-end prices. The table is in the page HTML. The whole history on the page is kept (from 1988).
 Uses only the standard library. If you get a certificate error on Windows:  pip install truststore
 """
 import csv
@@ -22,7 +22,7 @@ ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "data" / "raw" / "cameco" / "uranium_price_monthly.csv"
 LOG = ROOT / "DATA_LOG.md"
 URL = "https://www.cameco.com/invest/markets/uranium-price"
-START = "2007/01"
+START = "1988/01"  # the page starts in 1988; the workbook starts at the first month in the file
 
 
 def main():

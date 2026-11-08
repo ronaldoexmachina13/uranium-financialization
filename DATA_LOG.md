@@ -28,9 +28,9 @@ One source per series, never mixed. Main uranium price: Cameco month-end spot (C
 
 Why: Pink Sheet and FRED differ for Australian coal (211 of 417 months differ by more than 5%) and US natural gas (44 months, largest in cold winters). Cause not checked. The Pink Sheet is used because it goes back to 1970 and the Source Map points to it. Provisional.
 
-Timing: the main price is a month-end price, so daily series use the last available value of each month. Pink Sheet commodities are published only as monthly averages and are used as published. Futures: Stooq and Investing closes stay in separate columns.
+Timing: the main price is a month-end price, so daily series use the last available value of each month. The Pink Sheet commodities are monthly averages and are kept only as a cross-check (Monthly_Pink); month-end gold, silver, copper, platinum, oil and gas come from daily sources (FRED/EIA oil; Yahoo via scripts/fetch_markets.py). Futures: Stooq and Investing closes stay in separate columns.
 
-Processed: data/processed/monthly_panel.xlsx, built by scripts/build_monthly.py (238 months, Jan 2007 to Oct 2026, 52 series: uranium prices, futures, SPUT, 17 equities, macro, commodities).
+Processed: data/processed/thesis_dataset.xlsx, built by scripts/build_dataset.py. One sheet per native frequency (Daily, Weekly, Monthly, Quarterly, Events_SPUT, Daily_OHLCV, Monthly_Pink) plus README, Catalogue, Analysis_Map and Gaps. Monthly uses month-end values for every series that has a daily source; period averages are used only where no daily source exists (coal, IMF cross-checks) and in Monthly_Pink. Replaces monthly_panel.xlsx.
 | 2026-11-08 | SPUT price, NAV and premium/discount (USD, U.U) | Sprott fund page | daily, 1332 rows, 2021-07-19 to 2026-11-06 | data/raw/sprott/sput_daily.csv |
 | 2026-11-08 | SPUT pounds of U3O8 held | Sprott fund page | weekly, 271 rows, 2021-07-16 to 2026-11-06 | data/raw/sprott/sput_holdings.csv |
 | 2026-11-08 | SPUT pounds acquired and cumulative | Sprott fund page | purchase days, 259 rows, 2021-07-19 to 2026-07-30 | data/raw/sprott/sput_acquired.csv |
