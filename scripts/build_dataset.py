@@ -386,8 +386,13 @@ def load():
     equities = {}
     for t, cur, grp in EQUITIES:
         equities[t] = read_csv(RAW / "yahoo" / f"{t}.csv")
-        D.append(col(f"{t} adj. close [{cur}]", {day(r["date"]): num(r["adj_close"]) for r in equities[t]}, "native", "Yahoo Finance", t, "daily", "daily close (adjusted for splits and dividends)", cur,
-                     EQ_NOTE.get(t, ""), "H3 context" if grp in ("ETF", "physical fund") else "context", f"data/raw/yahoo/{t}.csv", NUM4))
+        # Yahoo repeats the previous price on days with no trading (volume 0): those are not observations, so they stay blank here and are kept in Prices OHLCV
+        nz = sum(1 for r in equities[t] if (num(r["volume"]) or 0) == 0)
+        note = EQ_NOTE.get(t, "")
+        if nz:
+            note = (note + "; " if note else "") + f"{nz} days with zero volume (Yahoo repeats the previous price) are left blank"
+        D.append(col(f"{t} adj. close [{cur}]", {day(r["date"]): num(r["adj_close"]) for r in equities[t] if (num(r["volume"]) or 0) > 0}, "native", "Yahoo Finance", t, "daily", "daily close (adjusted for splits and dividends)", cur,
+                     note, "H3 context" if grp in ("ETF", "physical fund") else "context", f"data/raw/yahoo/{t}.csv", NUM4))
 
     # weekly and events
     W = S["weekly"]
@@ -554,7 +559,7 @@ OVERRIDE = {  # id -> (status, where, note); the workbook holds the inputs of de
     "V039": ("Partly in workbook", "Yellow Cake reports: of which other", ""),
     "V041": ("Partly in workbook", "Yellow Cake reports: Cash; Cash and other net current assets", "Cash is stated separately only in some reports."),
     "V044": ("Partly in workbook", "Yellow Cake reports: Shares bought back; Buyback cost", "Only the periods with a buyback programme; early-2020 counts are cumulative and left blank."),
-    "V093": ("Partly in workbook", "Physical sources: WNA 2015-2024 and Red Book 2020-2023 production by country", "Tonnes U; read through page text; one WNA world total looks inconsistent at source (flagged in the note)."),
+    "V093": ("Partly in workbook", "Physical sources: WNA 2015-2024 and Red Book 2020-2023 production by country", "Tonnes U. WNA values re-read against the WNA page on 8 Nov 2026 (70 values, no differences); Red Book country rows sum to its totals; world totals agree within 1%. The 2021 WNA tU3O8 total (46,374) is printed so at source: use tonnes U. Country figures differ between WNA and Red Book for China, India, Ukraine and the USA in 2020."),
     "V097": ("Partly in workbook", "Physical sources: IAEA TECDOC-2030 inventories at end 2021 (two regions); Euratom EU utility stocks 2010 and 2012", "No continuous global series exists; as-of dates, owners and material forms differ."),
     "V076": ("Partly in workbook", "Daily: TED spread (to Jan 2022), commercial paper 90-day AA, T-bill 3-month, SOFR; Monthly: month-end versions", "Raw rates only: no spread is computed and no single replacement for TED is chosen."),
     "V082": ("Partly in workbook", "Monthly: industrial production OECD total and G7 (to 2024-03), OECD growth", "OECD level series end 2024-03 on FRED; US industrial production is V081."),
@@ -758,7 +763,7 @@ def main():
         for r in rows_by[t]:
             rows.append([day(r["date"]), t, desc, g, cur] + [num(r[k]) for k in ("open", "high", "low", "close", "adj_close", "volume")])
     ws_ = wb_layout.write_table_sheet(wb, "Prices OHLCV", "Daily prices and volume, all Yahoo Finance tickers (V011-V014, V033-V034, V059, V119)",
-                                      "Long table: one row per ticker and day, with open, high, low, close, adjusted close and volume. The Daily sheet holds the adjusted close only.",
+                                      "Long table: one row per ticker and day, with open, high, low, close, adjusted close and volume, exactly as Yahoo returns them. Rows with volume 0 are days without trading (Yahoo repeats the previous price); the Daily sheet leaves those days blank and holds the adjusted close only.",
                                       ["Date", "Ticker", "Description", "Group", "Currency", "Open", "High", "Low", "Close", "Adj. close", "Volume"], rows,
                                       [12, 10, 40, 18, 10, 12, 12, 12, 12, 12, 14], fmts=["yyyy-mm-dd", None, None, None, None, NUM4, NUM4, NUM4, NUM4, NUM4, INT], tab="dump", plain=True)
     sheets.append(("Source files kept whole", "Prices OHLCV", "Open, high, low, close, adjusted close and volume for every ticker retrieved.", "Daily", f"{min(r[0] for r in rows):%Y-%m-%d} to {max(r[0] for r in rows):%Y-%m-%d}", len(rows), 11))
