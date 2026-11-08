@@ -3,12 +3,20 @@
 Run from the repo root:  python scripts/fetch_worldbank.py
 The file's web address changes every month, so the script reads the current link from the
 World Bank commodity page. If that fails, it falls back to the Nov 2026 link.
+If you get a certificate error on Windows, run once:  pip install truststore
+(it makes Python use the Windows certificate store).
 Covers gold, silver, platinum, coal, copper, oil, natural gas and other commodities (monthly, period average).
 """
 import datetime as dt
 import re
 import urllib.request
 from pathlib import Path
+
+try:
+    import truststore
+    truststore.inject_into_ssl()
+except ImportError:
+    pass
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "data" / "raw" / "worldbank"
