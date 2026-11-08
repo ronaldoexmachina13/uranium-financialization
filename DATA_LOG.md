@@ -151,3 +151,7 @@ Not extracted: 2021-2022 cash and flows, earlier prospectuses' prior-sales table
 - The Yahoo U-UN.TO series was Uranium Participation Corp (UPC) up to 16 Jul 2021 and SPUT from 26 Jul 2021 (price jumps from about CAD 5 to CAD 11 with no return).
 - Daily and Monthly now hold two columns: "UPC adj. close" (2006-05-09 to 2021-07-16, 3,813 observations, mapped to D44) and "U-UN.TO adj. close" (SPUT only, from 2021-07-26, V011). UPC level checked against UPC's own NAV per share (CAD 4.87 at 31 May 2021).
 - Prices OHLCV keeps the raw Yahoo series unchanged. Gaps row marked Done.
+
+## 2026-11-08 · SEDAR+ attempt for dated SPUT issuances
+- sprott.com hosts only the 22 Jan 2026 shelf prospectus and the 26 Jan 2026 supplement (both already in the workbook, 12 May 2025 to 19 Jan 2026). The 2022 annual information form gives only a total (73,894,300 units sold through the ATM in 2022).
+- sedarplus.ca returned 403 Forbidden to the browser pane; not worked around. Earlier shelf prospectuses (e.g. 7 Sep 2023) need a manual download.
