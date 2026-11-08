@@ -580,6 +580,8 @@ OVERRIDE = {  # id -> (status, where, note); the workbook holds the inputs of de
     "V090": ("In workbook", "Monthly and Daily: geopolitical risk, threats and acts", "Same note as V089."),
     "D21": ("In workbook", "Monthly: Google Trends 'uranium ETF'", "Relative interest, peak = 100; carries measurement error."),
     "D44": ("Partly in workbook", "UPC monthly NAV, Dec 2010 to May 2021; Daily and Monthly: UPC adj. close, 2006 to Jul 2021", "2009 to Nov 2010 and June 2021 not retrieved; shares outstanding not printed in the releases."),
+    "V103": ("In workbook", "Annual: world nuclear electricity produced, IAEA PRIS, 1970-2025", "World total only; country detail sits in the PRIS Data Browser (read on screen, no export). Values match RDS-2 for the six years checked."),
+    "V104": ("In workbook", "Annual: world nuclear operated capacity, IAEA PRIS, 1970-2025", "World total only. PRIS operated capacity differs from the year-end net capacity printed in RDS-2."),
     "V092": ("Partly in workbook", "Annual: US uranium concentrate production, 2011-2025", "US only. Global and country production (V093) not retrieved."),
     "V095": ("Partly in workbook", "Annual: US reactor owners inventory (total and by material), year-end 2021-2025; Physical sources: 2011-2015 (UMAR 2015), 2020 and 2024 preliminary (UMAR 2024), 2016-2019 as rounded totals (Table S3a)", "US only. 2016-2019 exist only as totals rounded to 0.1 million lb (EIA does not give the detailed tables for those years). The 2024 preliminary value (126.4 million lb) was revised to 115.1 in the 2025 edition."),
     "V096": ("Partly in workbook", "Annual: US supplier inventory (uranium concentrate; UF6 withheld), year-end 2021-2025; Physical sources: 2011-2015, 2020 and 2024 preliminary, 2016-2019 as rounded totals", "Natural and enriched UF6 held by suppliers are withheld by EIA."),
@@ -665,6 +667,15 @@ def main():
          dates, D, "Date", "yyyy-mm-dd", lambda k: k, "Market, rate, risk and fund series at their daily frequency.", "Daily", width=16)
 
     ann = annual_eia()
+    pf = RAW / "iaea_pris" / "iaea_pris_world_annual_1970_2025.csv"
+    if pf.exists():
+        pr = read_csv(pf)
+        pris_note = ("PRIS Analytics Data Browser, Operational > Electricity production, all countries; read from the on-screen table on 8 Nov 2026 (the page has no export). "
+                     "Generation matches the IAEA RDS-2 (2024 edition) world totals for 1995, 2000, 2005, 2010, 2015 and 2020; later years differ from that report where PRIS has revised them (2022: 2,444.9 against 2,486.8 TWh)")
+        ann.append(col("World nuclear electricity produced, IAEA PRIS [MWh]", {int(r["year"]): num(r["electricity_produced_mwh"]) for r in pr}, "native", "IAEA PRIS", "PRIS electricity produced", "annual",
+                       "calendar year, as published", "MWh", pris_note, "", "data/raw/iaea_pris/iaea_pris_world_annual_1970_2025.csv", INT))
+        ann.append(col("World nuclear operated capacity, IAEA PRIS [MW(e)]", {int(r["year"]): num(r["operated_capacity_mwe"]) for r in pr}, "native", "IAEA PRIS", "PRIS operated capacity", "annual",
+                       "calendar year, as published", "MW(e)", "Net capacity of the reactors PRIS counts as operated in the year; it differs from the year-end net capacity in RDS-2 (e.g. 2015: 364,367 against 360,504 MW(e)). " + pris_note, "", "data/raw/iaea_pris/iaea_pris_world_annual_1970_2025.csv", INT))
     if ann:
         ayears = list(range(min(min(c["values"]) for c in ann), max(max(c["values"]) for c in ann) + 1))
         freq("Annual", "Annual series", "One row per year. Realised values come first; 2026-2035 columns are the reactor owners' own forward-looking figures from the EIA survey, as of the date in the column name.",

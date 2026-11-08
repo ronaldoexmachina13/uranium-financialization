@@ -155,3 +155,8 @@ Not extracted: 2021-2022 cash and flows, earlier prospectuses' prior-sales table
 ## 2026-11-08 · SEDAR+ attempt for dated SPUT issuances
 - sprott.com hosts only the 22 Jan 2026 shelf prospectus and the 26 Jan 2026 supplement (both already in the workbook, 12 May 2025 to 19 Jan 2026). The 2022 annual information form gives only a total (73,894,300 units sold through the ATM in 2022).
 - sedarplus.ca returned 403 Forbidden to the browser pane; not worked around. Earlier shelf prospectuses (e.g. 7 Sep 2023) need a manual download.
+
+## 2026-11-08 · IAEA PRIS world annual series (V103, V104)
+- Source: PRIS Analytics Data Browser (pris-stats.iaea.org), Operational > Electricity production, table view, all countries, years 1970 to 2025. The page has no export, so the 56 rows were read from the on-screen table (each row seen in at least two overlapping views; one misread, 1989 capacity, was caught and corrected on a clean re-read: 314,043 MW(e)).
+- Checks: generation equals the RDS-2 (2024 edition) world totals for 1995, 2000, 2005, 2010, 2015 and 2020 to two decimals (TWh); implied load factor 38% in 1970 rising to 79% in 2025, no outliers after 1970. Capacity is PRIS "operated capacity", not RDS-2 year-end net capacity (2015: 364,367 against 360,504 MW(e)). 2022 and 2023 generation differ from RDS-2 (revisions).
+- File: data/raw/iaea_pris/iaea_pris_world_annual_1970_2025.csv; workbook: Annual sheet, two columns (V103, V104). V105 (capacity factor) and V106 (starts and closures) not retrieved: they sit in the "Performance indicators" and "Reactor status at year-end" browsers.
