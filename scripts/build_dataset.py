@@ -411,10 +411,10 @@ def constructed(M, months):
 
 def coverage_rows():
     rows = []
-    for (i, cat, var, variant, smst, src, st, where, note, req) in COVERAGE:
+    for (i, cat, var, variant, smst, src, st, where, note, req, step, purpose, issue, route) in COVERAGE:
         if req:
             st = ("Constructed" if st == "Constructed" else "In workbook") if (RAW / req).exists() else "Script written, not run"
-        rows.append([i, cat, var, variant, smst, src, st, where, note])
+        rows.append([i, step, cat, var, variant, purpose, smst, src, st, where, note, issue, route])
     return rows
 
 
@@ -557,8 +557,9 @@ def main():
     for r in range(2, wse.max_row + 1):
         wse.cell(r, 1).number_format = "yyyy-mm-dd"
     cov = coverage_rows()
-    write_text_sheet(wb, "Variable_Coverage", ["ID", "Category", "Variable", "Variant", "Source-map status", "Source", "Workbook status", "Where in the workbook", "Note"], cov,
-                     [8, 24, 26, 36, 14, 30, 24, 52, 70])
+    write_text_sheet(wb, "Variable_Coverage", ["ID", "Logic step (ChatGPT handoff)", "Category", "Variable", "Variant", "Purpose (source map)", "Source-map status", "Source", "Workbook status",
+                                               "Where in the workbook", "Note", "Remaining issue (source map)", "Retrieval route (source map)"], cov,
+                     [8, 34, 24, 24, 34, 54, 14, 28, 24, 50, 60, 50, 40])
     write_text_sheet(wb, "Catalogue", ["Sheet", "Column", "Type", "Native frequency", "Timing", "Source", "Series ID", "Unit", "First", "Last", "Observations", "Missing periods inside range",
                                        "Proposed role (not agreed)", "Note / caveat", "Raw file"], cat, [14, 52, 13, 14, 26, 36, 22, 16, 11, 11, 12, 12, 20, 70, 44])
     write_text_sheet(wb, "Analysis_Map", ["Hypothesis", "Question", "Sheets", "Variables available", "Observations", "Candidate methods", "Feasibility and limits"], amap, [24, 36, 30, 60, 40, 50, 70])
@@ -602,7 +603,7 @@ def main():
     order = ["README", "Variable_Coverage", "Catalogue", "Analysis_Map", "Gaps", "Monthly", "Constructed", "Quarterly", "Weekly", "Daily", "Events_SPUT", "Events", "Daily_OHLCV", "Monthly_Pink"]
     wb._sheets = [wb[n] for n in order]
     from collections import Counter
-    print(dict(Counter(r[6] for r in cov if r[0].startswith("V"))))
+    print(dict(Counter(r[8] for r in cov if r[0].startswith("V"))))
     OUT.parent.mkdir(parents=True, exist_ok=True)
     wb.save(OUT)
     print(f"Saved {OUT}")

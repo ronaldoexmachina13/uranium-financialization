@@ -57,3 +57,40 @@ Processed: data/processed/thesis_dataset.xlsx, built by scripts/build_dataset.py
 | 2026-11-08 | Uranium month-end spot and long-term price (Cameco industry average of UxC and TradeTech month-end prices) | cameco.com/invest/markets/uranium-price, table read from the page in the user's Chrome | monthly, 238 rows, 2007-01 to 2026-10; complete, no gaps; one exact duplicate row (2019-06) in the source removed; cross-check: Stooq futures close minus this spot averages 0.34 over 223 shared months | data/raw/cameco/uranium_price_monthly.csv |
 | 2026-11-08 | Yellow Cake plc: NAV per share (GBP), uranium held, quarter-end spot | Quarterly Operating Update announcements (Yellow Cake regulatory news), read from the pages in the user's Chrome | QUARTERLY, 33 rows, 2018-09 to 2026-09, complete. lb_basis: stated = in the announcement; derived = holdings value divided by quarter-end spot (agrees with stated holdings and known deliveries). No monthly NAV is published: title searches for NAV, net asset value, monthly and valuation in the announcements return nothing | data/raw/yellowcake/nav_quarterly.csv |
 | 2026-11-08 | UF6 conversion prices, spot and long-term, North America and Europe (Cameco industry average of TradeTech and UxC, USD per kgU as UF6) | Cameco quarterly management reports (SEC 6-K exhibits and cameco.com), table 'Industry prices at quarter end', read with the web fetch tool | QUARTERLY, 61 rows, no gaps from 2014-03 to 2026-09; earlier only scattered quarters (2010-03, 2010-06, 2011-03 to 2011-09, 2012-03 to 2012-09, 2013-03, 2013-06); nothing before 2010. Uranium prices in the same tables agree with data/raw/cameco/uranium_price_monthly.csv except Dec 2017 (23.75 here, 22.32 there). Enrichment (SWU) prices are not in these tables; UxC sells month-end conversion and SWU prices to subscribers only | data/raw/cameco/conversion_prices_quarterly.csv |
+| 2026-11-08 | GC=F: Gold futures, COMEX front month, USD per troy oz | Yahoo Finance | daily, USD, 6572 rows, 2000-08-29 to 2026-11-06 | data/raw/markets/GC=F.csv |
+| 2026-11-08 | SI=F: Silver futures, COMEX front month, USD per troy oz | Yahoo Finance | daily, USD, 6573 rows, 2000-08-29 to 2026-11-06 | data/raw/markets/SI=F.csv |
+| 2026-11-08 | HG=F: Copper futures, COMEX front month, USD per lb | Yahoo Finance | daily, USD, 6576 rows, 2000-08-29 to 2026-11-06 | data/raw/markets/HG=F.csv |
+| 2026-11-08 | PL=F: Platinum futures, NYMEX front month, USD per troy oz | Yahoo Finance | daily, USD, 6599 rows, 1997-10-29 to 2026-11-06 | data/raw/markets/PL=F.csv |
+| 2026-11-08 | CL=F: WTI crude futures, NYMEX front month, USD per barrel | Yahoo Finance | daily, USD, 6580 rows, 2000-08-22 to 2026-11-06 | data/raw/markets/CL=F.csv |
+| 2026-11-08 | BZ=F: Brent crude futures, ICE front month, USD per barrel | Yahoo Finance | daily, USD, 4798 rows, 2007-07-29 to 2026-11-06 | data/raw/markets/BZ=F.csv |
+| 2026-11-08 | NG=F: Natural gas futures (Henry Hub), NYMEX front month, USD per MMBtu | Yahoo Finance | daily, USD, 6577 rows, 2000-08-29 to 2026-11-06 | data/raw/markets/NG=F.csv |
+| 2026-11-08 | ^GSPC: S&P 500 index (full history) | Yahoo Finance | daily, USD, 14335 rows, 1970-01-02 to 2026-11-06 | data/raw/markets/^GSPC.csv |
+| 2026-11-08 | PURANUSDM: Global price of uranium, USD per lb (IMF) | FRED | monthly, period average, 417 rows | data/raw/fred/PURANUSDM.csv |
+| 2026-11-08 | PCOALAUUSDM: Coal, Australia, USD per tonne (IMF) | FRED | monthly, period average, 417 rows | data/raw/fred/PCOALAUUSDM.csv |
+| 2026-11-08 | PCOPPUSDM: Copper, USD per tonne (IMF) | FRED | monthly, period average, 417 rows | data/raw/fred/PCOPPUSDM.csv |
+| 2026-11-08 | PNGASUSUSDM: Natural gas, Henry Hub, USD per MMBtu (IMF) | FRED | monthly, period average, 417 rows | data/raw/fred/PNGASUSUSDM.csv |
+| 2026-11-08 | DCOILWTICO: WTI crude oil, USD per barrel (EIA) | FRED | daily, 9611 rows | data/raw/fred/DCOILWTICO.csv |
+| 2026-11-08 | DCOILBRENTEU: Brent crude oil, USD per barrel (EIA) | FRED | daily, 9611 rows | data/raw/fred/DCOILBRENTEU.csv |
+| 2026-11-08 | VIXCLS: CBOE VIX | FRED | daily close, 9613 rows | data/raw/fred/VIXCLS.csv |
+| 2026-11-08 | DTWEXBGS: Broad US dollar index, nominal | FRED | daily, 5435 rows | data/raw/fred/DTWEXBGS.csv |
+| 2026-11-08 | DFF: Effective federal funds rate | FRED | daily, 13458 rows | data/raw/fred/DFF.csv |
+| 2026-11-08 | DGS10: 10-year Treasury yield | FRED | daily, 9613 rows | data/raw/fred/DGS10.csv |
+| 2026-11-08 | DFII10: 10-year real Treasury yield (TIPS) | FRED | daily, 6221 rows | data/raw/fred/DFII10.csv |
+| 2026-11-08 | T10Y3M: 10-year minus 3-month Treasury spread | FRED | daily, 9614 rows | data/raw/fred/T10Y3M.csv |
+| 2026-11-08 | BAA10Y: Moody's Baa corporate yield minus 10-year Treasury | FRED | daily, 9613 rows | data/raw/fred/BAA10Y.csv |
+| 2026-11-08 | T10YIE: 10-year breakeven inflation | FRED | daily, 6222 rows | data/raw/fred/T10YIE.csv |
+| 2026-11-08 | DEXCAUS: CAD per USD exchange rate | FRED | daily, 9609 rows | data/raw/fred/DEXCAUS.csv |
+| 2026-11-08 | SP500: S&P 500 index (FRED keeps about 10 years only) | FRED | daily close, 2609 rows | data/raw/fred/SP500.csv |
+| 2026-11-08 | DGS3MO: 3-month Treasury yield | FRED | daily, 9613 rows | data/raw/fred/DGS3MO.csv |
+| 2026-11-08 | FEDFUNDS: Effective federal funds rate, monthly | FRED | monthly, 442 rows | data/raw/fred/FEDFUNDS.csv |
+| 2026-11-08 | CPIAUCSL: Consumer price index, all urban consumers, seasonally adjusted | FRED | monthly, 441 rows | data/raw/fred/CPIAUCSL.csv |
+| 2026-11-08 | BAA: Moody's Baa corporate bond yield | FRED | monthly, 442 rows | data/raw/fred/BAA.csv |
+| 2026-11-08 | AAA: Moody's Aaa corporate bond yield | FRED | monthly, 442 rows | data/raw/fred/AAA.csv |
+| 2026-11-08 | BAMLC0A0CM: ICE BofA US corporate option-adjusted spread (FRED now serves only about 3 years of this series) | FRED | daily, 794 rows | data/raw/fred/BAMLC0A0CM.csv |
+| 2026-11-08 | RTWEXBGS: Broad US dollar index, real | FRED | monthly, 250 rows | data/raw/fred/RTWEXBGS.csv |
+| 2026-11-08 | DEXUSUK: USD per GBP exchange rate | FRED | daily, 9609 rows | data/raw/fred/DEXUSUK.csv |
+| 2026-11-08 | INDPRO: US industrial production index | FRED | monthly, 441 rows | data/raw/fred/INDPRO.csv |
+| 2026-11-08 | USEPUINDXD: Economic Policy Uncertainty index, US, daily | FRED | daily, 13458 rows | data/raw/fred/USEPUINDXD.csv |
+| 2026-11-08 | USEPUINDXM: Economic Policy Uncertainty index, US, monthly | FRED | monthly, 442 rows | data/raw/fred/USEPUINDXM.csv |
+| 2026-11-08 | GEPUCURRENT: Global Economic Policy Uncertainty index, current-price GDP weights | FRED | monthly, 355 rows | data/raw/fred/GEPUCURRENT.csv |
+| 2026-11-08 | DHHNGSP: Henry Hub natural gas spot price, USD per MMBtu (EIA) | FRED | daily, 7781 rows | data/raw/fred/DHHNGSP.csv |
