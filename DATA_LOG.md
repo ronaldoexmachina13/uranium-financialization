@@ -24,13 +24,13 @@ One line per download: date, series, source, frequency and price timing (period 
 
 ## Source rule (8 Nov 2026)
 
-One source per series, never mixed. Uranium and the macro series come from FRED. Gold, silver, platinum, copper, Australian coal, US natural gas, Brent and WTI come from the World Bank Pink Sheet.
+One source per series, never mixed. Main uranium price: UxC month-end spot (Cameco). The IMF series (FRED) is a cross-check only: it matches UxC through 2020 but runs about 20% below from 2021 (cause not confirmed). Macro series come from FRED. Gold, silver, platinum, copper, Australian coal, US natural gas, Brent and WTI come from the World Bank Pink Sheet.
 
 Why: Pink Sheet and FRED differ for Australian coal (211 of 417 months differ by more than 5%) and US natural gas (44 months, largest in cold winters). Cause not checked. The Pink Sheet is used because it goes back to 1970 and the Source Map points to it. Provisional.
 
-Timing: uranium is an IMF monthly period average, so daily series are averaged over each month.
+Timing: the main price is a month-end price, so daily series use the last available value of each month. Pink Sheet commodities are published only as monthly averages and are used as published. Futures: Stooq and Investing closes stay in separate columns.
 
-Processed: data/processed/monthly_panel.xlsx, built by scripts/build_monthly.py (417 months, Jan 1992 to Sep 2026, 19 series).
+Processed: data/processed/monthly_panel.xlsx, built by scripts/build_monthly.py (238 months, Jan 2007 to Oct 2026, 45 series: uranium prices, futures, SPUT, 17 equities, macro, commodities).
 | 2026-11-08 | SPUT price, NAV and premium/discount (USD, U.U) | Sprott fund page | daily, 1332 rows, 2021-07-19 to 2026-11-06 | data/raw/sprott/sput_daily.csv |
 | 2026-11-08 | SPUT pounds of U3O8 held | Sprott fund page | weekly, 271 rows, 2021-07-16 to 2026-11-06 | data/raw/sprott/sput_holdings.csv |
 | 2026-11-08 | SPUT pounds acquired and cumulative | Sprott fund page | purchase days, 259 rows, 2021-07-19 to 2026-07-30 | data/raw/sprott/sput_acquired.csv |

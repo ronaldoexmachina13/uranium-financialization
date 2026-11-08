@@ -1,13 +1,15 @@
-"""Build data/processed/monthly_panel.xlsx from the raw FRED and World Bank files.
+"""Build data/processed/monthly_panel.xlsx from the raw files in data/raw/.
 
-Run from the repo root after fetch_fred.py and fetch_worldbank.py:  python scripts/build_monthly.py
+Run from the repo root after the fetch scripts:  python scripts/build_monthly.py
 Needs openpyxl.
 
 Rules (also recorded in DATA_LOG.md):
-- One source per series. Uranium and the macro series come from FRED; gold, silver, platinum, copper,
-  coal, natural gas and oil come from the World Bank Pink Sheet.
-- Timing: the uranium price is a monthly period average, so daily FRED series are averaged over the
-  days of each month. The panel covers Jan 1992 to the last month with a uranium price.
+- One source per series; sources are never mixed inside a column.
+- Main uranium price: UxC month-end spot (Cameco). The IMF series is kept as a cross-check only (it drifts
+  about 20% below the market from 2021).
+- Timing: the main price is a month-end price, so daily series use the LAST available value of each month.
+  The Pink Sheet commodities are only published as monthly averages and are used as published.
+- The panel covers Jan 2007 to the last month with a UxC spot price.
 """
 import csv
 import datetime as dt
@@ -22,48 +24,60 @@ from openpyxl.worksheet._reader import WorksheetReader
 WorksheetReader.bind_tables = lambda self: None  # the World Bank file has table links openpyxl cannot read
 
 ROOT = Path(__file__).resolve().parents[1]
-FRED = ROOT / "data" / "raw" / "fred"
-PINK = ROOT / "data" / "raw" / "worldbank" / "CMO-Historical-Data-Monthly.xlsx"
+RAW = ROOT / "data" / "raw"
 OUT = ROOT / "data" / "processed" / "monthly_panel.xlsx"
+START = (2007, 1)
 
-# (column name, source series, source, unit, how monthly value is made)
-FRED_COLS = [
-    ("Uranium", "PURANUSDM", "FRED (IMF)", "USD per lb", "monthly period average (as published)"),
-    ("VIX", "VIXCLS", "FRED", "index points", "average of daily closes"),
-    ("Dollar index (broad)", "DTWEXBGS", "FRED", "index", "average of daily values"),
-    ("Fed funds rate", "DFF", "FRED", "percent", "average of daily values"),
-    ("US 10y yield", "DGS10", "FRED", "percent", "average of daily values"),
-    ("US 10y real yield", "DFII10", "FRED", "percent", "average of daily values"),
-    ("Term spread 10y-3m", "T10Y3M", "FRED", "percentage points", "average of daily values"),
-    ("Baa-10y spread", "BAA10Y", "FRED", "percentage points", "average of daily values"),
-    ("Breakeven inflation 10y", "T10YIE", "FRED", "percent", "average of daily values"),
-    ("USD/CAD", "DEXCAUS", "FRED", "CAD per USD", "average of daily values"),
-    ("S&P 500", "SP500", "FRED", "index", "average of daily closes (FRED has only about 10 years)"),
+FRED_DAILY = [  # (column, FRED id, unit)
+    ("VIX", "VIXCLS", "index points"),
+    ("Dollar index (broad)", "DTWEXBGS", "index"),
+    ("Fed funds rate", "DFF", "percent"),
+    ("US 10y yield", "DGS10", "percent"),
+    ("US 10y real yield", "DFII10", "percent"),
+    ("Term spread 10y-3m", "T10Y3M", "percentage points"),
+    ("Baa-10y spread", "BAA10Y", "percentage points"),
+    ("Breakeven inflation 10y", "T10YIE", "percent"),
+    ("USD/CAD", "DEXCAUS", "CAD per USD"),
+    ("S&P 500", "SP500", "index"),
 ]
-PINK_COLS = [
-    ("Gold", "Gold", "World Bank Pink Sheet", "USD per troy oz"),
-    ("Silver", "Silver", "World Bank Pink Sheet", "USD per troy oz"),
-    ("Platinum", "Platinum", "World Bank Pink Sheet", "USD per troy oz"),
-    ("Copper", "Copper", "World Bank Pink Sheet", "USD per tonne"),
-    ("Coal, Australian", "Coal, Australian", "World Bank Pink Sheet", "USD per tonne"),
-    ("Natural gas, US", "Natural gas, US", "World Bank Pink Sheet", "USD per MMBtu"),
-    ("Brent crude", "Crude oil, Brent", "World Bank Pink Sheet", "USD per barrel"),
-    ("WTI crude", "Crude oil, WTI", "World Bank Pink Sheet", "USD per barrel"),
+PINK = [  # (column, Pink Sheet name, unit)
+    ("Gold", "Gold", "USD per troy oz"),
+    ("Silver", "Silver", "USD per troy oz"),
+    ("Platinum", "Platinum", "USD per troy oz"),
+    ("Copper", "Copper", "USD per tonne"),
+    ("Coal, Australian", "Coal, Australian", "USD per tonne"),
+    ("Natural gas, US", "Natural gas, US", "USD per MMBtu"),
+    ("Brent crude", "Crude oil, Brent", "USD per barrel"),
+    ("WTI crude", "Crude oil, WTI", "USD per barrel"),
+]
+EQUITIES = [  # (ticker, listing currency assigned by ticker)
+    ("URA", "USD"), ("URNM", "USD"), ("NLR", "USD"), ("CCJ", "USD"), ("KAP.IL", "USD"), ("U-U.TO", "USD"),
+    ("U-UN.TO", "CAD"), ("YCA.L", "GBp"), ("UEC", "USD"), ("DNN", "USD"), ("NXE", "USD"), ("PDN.AX", "AUD"),
+    ("BOE.AX", "AUD"), ("DYL.AX", "AUD"), ("SLX.AX", "AUD"), ("BWXT", "USD"), ("1164.HK", "HKD"),
 ]
 
 
-def read_fred(sid):
-    """Return {(year, month): [values]} from a raw FRED csv."""
-    out = defaultdict(list)
-    with open(FRED / f"{sid}.csv", newline="", encoding="utf-8") as f:
-        for row in list(csv.reader(f))[1:]:
-            if len(row) > 1 and row[1] not in ("", "."):
-                out[(int(row[0][:4]), int(row[0][5:7]))].append(float(row[1]))
+def ym(s):
+    return int(s[:4]), int(s[5:7])
+
+
+def read_csv(path):
+    with open(path, newline="", encoding="utf-8") as f:
+        return list(csv.DictReader(f))
+
+
+def month_end(rows, datecol, valcol):
+    """Last non-empty value of each month from dated rows."""
+    out = {}
+    for r in sorted(rows, key=lambda r: r[datecol]):
+        v = r[valcol]
+        if v not in ("", "."):
+            out[ym(r[datecol])] = float(v)
     return out
 
 
 def read_pink():
-    ws = openpyxl.load_workbook(PINK, data_only=True)["Monthly Prices"]
+    ws = openpyxl.load_workbook(RAW / "worldbank" / "CMO-Historical-Data-Monthly.xlsx", data_only=True)["Monthly Prices"]
     names = {ws.cell(5, c).value.strip(): c for c in range(2, ws.max_column + 1) if ws.cell(5, c).value}
     series = {}
     for name, col in names.items():
@@ -77,23 +91,59 @@ def read_pink():
 
 
 def main():
-    data = {}  # column name -> {(y, m): value}
-    for name, sid, *_ in FRED_COLS:
-        data[name] = {k: sum(v) / len(v) for k, v in read_fred(sid).items()}
-    pink = read_pink()
-    for name, pname, *_ in PINK_COLS:
-        data[name] = pink[pname]
+    data, meta = {}, {}  # column -> {(y, m): value}; column -> (series, source, unit, monthly value)
 
-    last = max(data["Uranium"])
-    months = [(y, m) for y in range(1992, last[0] + 1) for m in range(1, 13) if (y, m) <= last]
-    cols = [c[0] for c in FRED_COLS[:1]] + [c[0] for c in PINK_COLS] + [c[0] for c in FRED_COLS[1:]]
+    cam = read_csv(RAW / "cameco" / "uranium_price_monthly.csv")
+    data["Uranium spot (UxC)"] = {ym(r["date"]): float(r["spot_usd_lb"]) for r in cam}
+    meta["Uranium spot (UxC)"] = ("month-end spot", "Cameco (UxC)", "USD per lb", "month-end price as published - MAIN PRICE")
+    data["Uranium long-term (UxC)"] = {ym(r["date"]): float(r["longterm_usd_lb"]) for r in cam}
+    meta["Uranium long-term (UxC)"] = ("month-end long-term", "Cameco (UxC)", "USD per lb", "month-end price as published")
+
+    imf = read_csv(RAW / "fred" / "PURANUSDM.csv")
+    data["Uranium (IMF, cross-check)"] = {ym(r["observation_date"]): float(r["PURANUSDM"]) for r in imf if r["PURANUSDM"] not in ("", ".")}
+    meta["Uranium (IMF, cross-check)"] = ("PURANUSDM", "FRED (IMF)", "USD per lb", "monthly average as published; about 20% below UxC from 2021")
+
+    stq = read_csv(RAW / "stooq" / "ux_futures_monthly.csv")
+    data["Uranium futures close (Stooq)"] = {ym(r["date"]): float(r["close"]) for r in stq}
+    meta["Uranium futures close (Stooq)"] = ("UX.F", "Stooq", "USD per lb", "monthly bar close; 11 months missing at source")
+    inv = read_csv(RAW / "investing" / "ux_futures_monthly.csv")
+    data["Uranium futures close (Investing, gap fill)"] = {ym(r["date"]): float(r["close"]) for r in inv}
+    meta["Uranium futures close (Investing, gap fill)"] = ("UXXc2 page", "Investing.com", "USD per lb", "monthly close; not merged with Stooq; Jan 2022 to Feb 2023 only")
+
+    sd = read_csv(RAW / "sprott" / "sput_daily.csv")
+    for col, key, unit in [("SPUT price", "price_usd", "USD"), ("SPUT NAV per unit", "nav_usd", "USD"), ("SPUT premium/discount", "premium_discount_pct", "percent")]:
+        data[col] = month_end(sd, "date", key)
+        meta[col] = ("sput_daily", "Sprott", unit, "last trading day of the month")
+    data["SPUT holdings"] = month_end(read_csv(RAW / "sprott" / "sput_holdings.csv"), "date", "pounds_u3o8_millions")
+    meta["SPUT holdings"] = ("sput_holdings", "Sprott", "million lb U3O8", "last weekly value of the month")
+    acq = defaultdict(float)
+    for r in read_csv(RAW / "sprott" / "sput_acquired.csv"):
+        acq[ym(r["date"])] += float(r["pounds_acquired"])
+    data["SPUT pounds bought in month"] = {k: acq.get(k, 0.0) for k in data["SPUT price"]}
+    meta["SPUT pounds bought in month"] = ("sput_acquired", "Sprott", "lb U3O8", "sum of purchases in the month (0 = none)")
+
+    for sid_col, sid, unit in FRED_DAILY:
+        data[sid_col] = month_end(read_csv(RAW / "fred" / f"{sid}.csv"), "observation_date", sid)
+        meta[sid_col] = (sid, "FRED", unit, "last available daily value of the month")
+    pink = read_pink()
+    for col, pname, unit in PINK:
+        data[col] = pink[pname]
+        meta[col] = (pname, "World Bank Pink Sheet", unit, "monthly average as published")
+    for tick, cur in EQUITIES:
+        col = f"{tick} (adj. close)"
+        data[col] = month_end(read_csv(RAW / "yahoo" / f"{tick}.csv"), "date", "adj_close")
+        meta[col] = (tick, "Yahoo Finance", cur, "adjusted close, last trading day of the month; listing currency by ticker")
+
+    last = max(data["Uranium spot (UxC)"])
+    months = [(y, m) for y in range(START[0], last[0] + 1) for m in range(1, 13) if START <= (y, m) <= last]
+    cols = list(data)
 
     wb = openpyxl.Workbook()
     ws = wb.active
     ws.title = "Monthly"
     font, bold = Font(name="Arial", size=10), Font(name="Arial", size=10, bold=True)
     head_fill = PatternFill("solid", fgColor="D9E2D5")
-    ws.append(["Month"] + [f"{c}" for c in cols])
+    ws.append(["Month"] + cols)
     for y, m in months:
         ws.append([dt.date(y, m, 1)] + [data[c].get((y, m)) for c in cols])
     for row in ws.iter_rows():
@@ -109,23 +159,25 @@ def main():
     ws.column_dimensions["A"].width = 10
     for c in range(2, len(cols) + 2):
         ws.column_dimensions[get_column_letter(c)].width = 14
-    ws.row_dimensions[1].height = 42
+    ws.row_dimensions[1].height = 54
     ws.freeze_panes = "B2"
 
     src = wb.create_sheet("Sources")
-    src.append(["Column", "Source series", "Source", "Unit", "Monthly value", "First month", "Last month", "Months filled"])
-    meta = {c[0]: (c[1], c[2], c[3], c[4]) for c in FRED_COLS}
-    meta.update({c[0]: (c[1], c[2], c[3], "monthly period average (as published)") for c in PINK_COLS})
+    src.append(["Column", "Source series", "Source", "Unit", "Monthly value", "First month", "Last month", "Months with a value"])
     for c in cols:
         have = sorted(k for k in months if k in data[c])
         s, so, u, t = meta[c]
-        src.append([c, s, so, u, t, f"{have[0][0]}-{have[0][1]:02d}", f"{have[-1][0]}-{have[-1][1]:02d}", len(have)])
+        src.append([c, s, so, u, t, f"{have[0][0]}-{have[0][1]:02d}" if have else "", f"{have[-1][0]}-{have[-1][1]:02d}" if have else "", len(have)])
     src.append([])
     notes = [
-        "One source per series; sources are not mixed (see DATA_LOG.md).",
-        "Uranium is the IMF monthly period average. Daily series are averaged over each month's days to match it.",
-        "The Pink Sheet has no uranium series. Blank cells mean the source has no value for that month.",
-        f"The panel ends at {last[0]}-{last[1]:02d}, the last month with a uranium price.",
+        "One source per series; sources are not mixed inside a column (see DATA_LOG.md).",
+        "Main uranium price is the UxC month-end spot (Cameco). Daily series use the last value of each month to match it.",
+        "Pink Sheet commodities are monthly averages (no month-end values are published) and are used as published.",
+        "The IMF uranium series is kept only as a cross-check; it runs about 20% below UxC from 2021 (cause not confirmed).",
+        "Stooq futures are missing Oct 2021 to Mar 2022 and Apr to Aug 2023; Investing fills Jan to Mar 2022 in its own column.",
+        "Blank cells mean the source has no value for that month. SPUT starts in Jul 2021; equities start at their listing dates.",
+        "Equity listing currencies are assigned by ticker; check before comparing across tickers.",
+        f"The panel ends at {last[0]}-{last[1]:02d}, the last month with a UxC spot price.",
         "Built by scripts/build_monthly.py from the files in data/raw/.",
     ]
     for n in notes:
@@ -135,7 +187,7 @@ def main():
             cell.font = font
     for cell in src[1]:
         cell.font, cell.fill = bold, head_fill
-    for col, w in zip("ABCDEFGH", (26, 20, 24, 18, 44, 12, 12, 14)):
+    for col, w in zip("ABCDEFGH", (40, 20, 24, 18, 58, 12, 12, 16)):
         src.column_dimensions[col].width = w
     src.freeze_panes = "A2"
 
