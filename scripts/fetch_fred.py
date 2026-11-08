@@ -30,6 +30,20 @@ SERIES = {
     "T10YIE": ("10-year breakeven inflation", "daily"),
     "DEXCAUS": ("CAD per USD exchange rate", "daily"),
     "SP500": ("S&P 500 index (FRED keeps about 10 years only)", "daily close"),
+    # added 8 Nov 2026 from the Source Map and variables list
+    "DGS3MO": ("3-month Treasury yield", "daily"),
+    "FEDFUNDS": ("Effective federal funds rate, monthly", "monthly"),
+    "CPIAUCSL": ("Consumer price index, all urban consumers, seasonally adjusted", "monthly"),
+    "BAA": ("Moody's Baa corporate bond yield", "monthly"),
+    "AAA": ("Moody's Aaa corporate bond yield", "monthly"),
+    "BAMLC0A0CM": ("ICE BofA US corporate option-adjusted spread (FRED now serves only about 3 years of this series)", "daily"),
+    "RTWEXBGS": ("Broad US dollar index, real", "monthly"),
+    "DEXUSUK": ("USD per GBP exchange rate", "daily"),
+    "INDPRO": ("US industrial production index", "monthly"),
+    "USEPUINDXD": ("Economic Policy Uncertainty index, US, daily", "daily"),
+    "USEPUINDXM": ("Economic Policy Uncertainty index, US, monthly", "monthly"),
+    "GEPUCURRENT": ("Global Economic Policy Uncertainty index, current-price GDP weights", "monthly"),
+    "DHHNGSP": ("Henry Hub natural gas spot price, USD per MMBtu (EIA)", "daily"),
 }
 
 
@@ -39,10 +53,14 @@ def main():
     lines = []
     for sid, (desc, timing) in SERIES.items():
         req = urllib.request.Request(URL.format(id=sid), headers={"User-Agent": "uranium-thesis-fetch/1.0"})
-        with urllib.request.urlopen(req, timeout=60) as r:
-            text = r.read().decode("utf-8")
-        if not text.startswith("observation_date"):
-            raise RuntimeError(f"{sid}: unexpected response")
+        try:
+            with urllib.request.urlopen(req, timeout=60) as r:
+                text = r.read().decode("utf-8")
+            if not text.startswith("observation_date"):
+                raise RuntimeError("unexpected response")
+        except Exception as e:  # keep going so one bad id does not stop the rest
+            print(f"{sid}: FAILED ({e})")
+            continue
         (OUT / f"{sid}.csv").write_text(text, encoding="utf-8")
         n = len(text.strip().splitlines()) - 1
         lines.append(f"| {today} | {sid}: {desc} | FRED | {timing}, {n} rows | data/raw/fred/{sid}.csv |\n")

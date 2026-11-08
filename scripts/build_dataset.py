@@ -23,6 +23,7 @@ from openpyxl.worksheet._reader import WorksheetReader
 
 import fetch_equities as fe
 import fetch_markets as fm
+from coverage_map import ROWS as COVERAGE
 
 WorksheetReader.bind_tables = lambda self: None  # the World Bank file has table links openpyxl cannot read
 
@@ -31,7 +32,7 @@ RAW = ROOT / "data" / "raw"
 OUT = ROOT / "data" / "processed" / "thesis_dataset.xlsx"
 
 NUM, NUM4, INT, PCT = "#,##0.00", "#,##0.00##", "#,##0", "0.00"
-FILL = {"native": "D9E2D5", "derived": "DDEBF7", "average": "EDEDED", "gap-fill": "FFF2CC", "reconstructed": "FCE4D6"}
+FILL = {"constructed": "E4DFEC", "native": "D9E2D5", "derived": "DDEBF7", "average": "EDEDED", "gap-fill": "FFF2CC", "reconstructed": "FCE4D6"}
 FONT, BOLD = Font(name="Arial", size=10), Font(name="Arial", size=10, bold=True)
 
 FRED_DAILY = [  # (header, FRED id, unit, role)
@@ -40,6 +41,16 @@ FRED_DAILY = [  # (header, FRED id, unit, role)
     ("US 10y real yield (TIPS)", "DFII10", "percent", "H4"), ("Term spread 10y-3m", "T10Y3M", "percentage points", "H4"),
     ("Baa-10y credit spread", "BAA10Y", "percentage points", "H4"), ("Breakeven inflation 10y", "T10YIE", "percent", "H4"),
     ("USD/CAD", "DEXCAUS", "CAD per USD", "H4 / control"), ("S&P 500 (FRED, 10 years only)", "SP500", "index", "H4 / control"),
+]
+FRED_DAILY_EXTRA = [  # fetched by fetch_fred.py (added 8 Nov 2026); used only if the file exists
+    ("3-month Treasury yield", "DGS3MO", "percent", "H4"), ("Henry Hub natural gas, spot", "DHHNGSP", "USD per MMBtu", "H1, H2"),
+    ("GBP/USD", "DEXUSUK", "USD per GBP", "control"), ("Corporate option-adjusted spread (ICE BofA)", "BAMLC0A0CM", "percent", "H4"),
+]
+FRED_MONTHLY_EXTRA = [  # (header, id, unit, role): monthly values as published
+    ("Fed funds rate, monthly", "FEDFUNDS", "percent", "H4"), ("Consumer price index (CPI-U, seasonally adjusted)", "CPIAUCSL", "index 1982-84=100", "control"),
+    ("Baa corporate yield", "BAA", "percent", "H4"), ("Aaa corporate yield", "AAA", "percent", "H4"),
+    ("Broad dollar index, real", "RTWEXBGS", "index", "H4"), ("US industrial production", "INDPRO", "index 2017=100", "H4 / control"),
+    ("Economic policy uncertainty, US", "USEPUINDXM", "index", "H4"), ("Economic policy uncertainty, global", "GEPUCURRENT", "index", "H4"),
 ]
 OIL = [("WTI crude, spot", "DCOILWTICO", "H1, H2"), ("Brent crude, spot", "DCOILBRENTEU", "H1, H2")]
 FRED_MONTHLY = [  # monthly averages from the IMF, via FRED
@@ -135,6 +146,12 @@ def load():
         d = {ym(day(r["observation_date"])): num(r[sid]) for r in read_csv(RAW / "fred" / f"{sid}.csv")}
         M.append(col(f"{hdr}, monthly avg [{unit}]", d, "average", "FRED (IMF)", sid, "monthly", "period average", unit, note, "cross-check", f"data/raw/fred/{sid}.csv", NUM))
 
+    for hdr, sid, unit, role in FRED_MONTHLY_EXTRA:
+        p = RAW / "fred" / f"{sid}.csv"
+        if p.exists():
+            d = {ym(day(r["observation_date"])): num(r[sid]) for r in read_csv(p)}
+            M.append(col(f"{hdr} [{unit}]", d, "native", "FRED", sid, "monthly", "monthly value as published", unit, "", role, f"data/raw/fred/{sid}.csv", NUM))
+
     stq = read_csv(RAW / "stooq" / "ux_futures_monthly.csv")
     stq_note = "monthly bar; 11 months missing at source (2021-10 to 2022-03, 2023-04 to 2023-08); Nov 2026 is a partial month (not in this sheet)"
     for k, hdr, f in [("open", "open", NUM), ("high", "high", NUM), ("low", "low", NUM), ("close", "close", NUM)]:
@@ -157,13 +174,16 @@ def load():
     # daily series
     D = S["daily"]
     oil_me = []
-    for hdr, sid, unit, role in FRED_DAILY:
+    for hdr, sid, unit, role in FRED_DAILY + [x for x in FRED_DAILY_EXTRA if (RAW / "fred" / f"{x[1]}.csv").exists()]:
         d = daily_series(RAW / "fred" / f"{sid}.csv", "observation_date", sid)
         D.append(col(f"{hdr} [{unit}]", d, "native", "FRED", sid, "daily", "daily close" if sid != "DFF" else "daily rate", unit,
                      "FRED keeps about 10 years of the S&P 500; the full history is in the ^GSPC column" if sid == "SP500" else "", role, f"data/raw/fred/{sid}.csv", NUM))
     for hdr, sid, role in OIL:
         D.append(col(f"{hdr} [USD/barrel]", daily_series(RAW / "fred" / f"{sid}.csv", "observation_date", sid), "native", "FRED (EIA)", sid, "daily", "daily spot price", "USD per barrel",
                      "", role, f"data/raw/fred/{sid}.csv", NUM))
+    if (RAW / "fred" / "USEPUINDXD.csv").exists():
+        D.append(col("Economic policy uncertainty, US, daily [index]", daily_series(RAW / "fred" / "USEPUINDXD.csv", "observation_date", "USEPUINDXD"), "native", "FRED", "USEPUINDXD", "daily",
+                     "daily index", "index", "", "H4", "data/raw/fred/USEPUINDXD.csv", NUM))
     sd = read_csv(RAW / "sprott" / "sput_daily.csv")
     for k, hdr, unit, f in [("price_usd", "SPUT price", "USD", NUM), ("nav_usd", "SPUT NAV per unit", "USD", NUM), ("premium_discount_pct", "SPUT premium/discount", "percent", NUM)]:
         D.append(col(f"{hdr} [{unit}]", {day(r["date"]): num(r[k]) for r in sd}, "native", "Sprott fund page", k, "daily", "daily close", unit, "starts Jul 2021", "H3", "data/raw/sprott/sput_daily.csv", f))
@@ -198,7 +218,7 @@ def load():
         if base in order:
             M.append(drv(c, f"{base}, month-end [{c['unit']}]"))
     for c in D:
-        if c["sid"] in [x[1] for x in FRED_DAILY] + ["^GSPC"] and not c["header"].startswith("S&P 500 (FRED"):
+        if c["sid"] in [x[1] for x in FRED_DAILY + FRED_DAILY_EXTRA] + ["^GSPC"] and not c["header"].startswith("S&P 500 (FRED"):
             M.append(drv(c, c["header"].split(" [")[0].replace(" close", "") + f", month-end [{c['unit']}]"))
         if c["header"].startswith("S&P 500 (FRED"):
             M.append(drv(c, f"S&P 500 (FRED), month-end [index]"))
@@ -233,6 +253,15 @@ def load():
                    ("Conversion long-term, North America", "conv_lt_na_usd_kgu"), ("Conversion long-term, Europe", "conv_lt_eu_usd_kgu")]:
         Q.append(col(f"{hdr} [USD/kgU]", {day(r["quarter_end"]): num(r[k]) for r in conv}, "native", csrc, k, "quarterly", "quarter-end", "USD per kgU as UF6",
                      "complete from 2014-03; only scattered quarters 2010-2013; nothing before 2010; no SWU prices", "context", craw, NUM))
+    yca = sorted((day(r["date"]), num(r["close"])) for r in equities["YCA.L"] if num(r["close"]))
+    prem = {}
+    for r in yc:
+        qd, nav = day(r["quarter_end"]), num(r["nav_per_share_gbp"])
+        px = [c for d_, c in yca if d_ <= qd]
+        if nav and px and (qd - max(d_ for d_, _ in yca if d_ <= qd)).days <= 7:
+            prem[qd] = round((px[-1] / 100.0 / nav - 1) * 100, 2)
+    Q.append(col("Yellow Cake premium/discount to NAV, quarter-end [percent]", prem, "derived", "YCA.L close (pence) divided by 100, against the announced NAV", "close / nav_per_share_gbp", "quarterly",
+                 "last close on or before the quarter end (within 7 days)", "percent", "price in GBP vs NAV in GBP; negative = discount", "H3", yraw + " and data/raw/yahoo/YCA.L.csv", NUM))
     for k, hdr in [("spot_usd_lb", "Uranium spot"), ("longterm_usd_lb", "Uranium long-term")]:
         d = {day(r["date"]): num(r[k]) for r in cam if day(r["date"]).month in (3, 6, 9, 12)}
         Q.append(col(f"{hdr}, quarter-end (Cameco) [USD/lb]", d, "derived", "Cameco", k, "quarterly", "month-end value of Mar, Jun, Sep, Dec", "USD per lb", "from the Monthly sheet source", "context", cam_raw, NUM))
@@ -242,7 +271,8 @@ def load():
 
 
 def pink():
-    ws = openpyxl.load_workbook(RAW / "worldbank" / "CMO-Historical-Data-Monthly.xlsx", data_only=True)["Monthly Prices"]
+    wb_idx = openpyxl.load_workbook(RAW / "worldbank" / "CMO-Historical-Data-Monthly.xlsx", data_only=True)
+    ws = wb_idx["Monthly Prices"]
     cols = []
     for c in range(2, ws.max_column + 1):
         name, unit = ws.cell(5, c).value, ws.cell(6, c).value
@@ -256,6 +286,19 @@ def pink():
                 d[(int(p[:4]), int(p[5:7]))] = float(v)
         cols.append(col(f"{name} [{unit}]", d, "average", "World Bank Pink Sheet", name, "monthly", "period average", unit, "monthly average as published; no month-end values exist",
                         "H1 cross-check" if name in ("Gold", "Silver", "Copper", "Platinum", "Crude oil, Brent", "Crude oil, WTI") else "", "data/raw/worldbank/CMO-Historical-Data-Monthly.xlsx", NUM))
+    wi = wb_idx["Monthly Indices"]
+    for c in range(2, wi.max_column + 1):
+        parts = [str(wi.cell(r, c).value).strip() for r in range(6, 10) if wi.cell(r, c).value and str(wi.cell(r, c).value).strip()]
+        if not parts:
+            continue
+        name = parts[-1].replace("**", "").strip()
+        d = {}
+        for r in range(10, wi.max_row + 1):
+            p, v = wi.cell(r, 1).value, wi.cell(r, c).value
+            if p and isinstance(v, (int, float)):
+                d[(int(p[:4]), int(p[5:7]))] = float(v)
+        cols.append(col(f"{name} (WB index) [2010=100]", d, "average", "World Bank Pink Sheet (Monthly Indices)", name, "monthly", "monthly index of period averages", "index 2010=100",
+                        "index built from monthly averages", "H1 context", "data/raw/worldbank/CMO-Historical-Data-Monthly.xlsx", NUM))
     return cols
 
 
@@ -320,6 +363,61 @@ def stats(c, freq):
     return f(ks[0]), f(ks[-1]), len(ks), miss
 
 
+def constructed(M, months):
+    """Variables built from columns already in the Monthly sheet. Nothing here is a new observation."""
+    import math
+    import statistics
+    byh = lambda start: next((c for c in M if c["header"].startswith(start)), None)
+    idx = lambda k: k[0] * 12 + k[1]
+    prev = lambda k, n=1: ((idx(k) - n - 1) // 12, (idx(k) - n - 1) % 12 + 1)
+    spot, lt = byh("Uranium spot, month-end")["values"], byh("Uranium long-term, month-end")["values"]
+    out = []
+
+    def add(header, d, unit, note, role=""):
+        out.append(col(header, d, "constructed", "Constructed in build_dataset.py", "", "monthly", "month-end", unit, note, role, "see note", NUM4))
+
+    add("Spot minus long-term [USD/lb]", {k: spot[k] - lt[k] for k in spot if k in lt}, "USD per lb", "Uranium spot, month-end minus Uranium long-term, month-end", "context")
+    ret = {k: math.log(spot[k] / spot[prev(k)]) for k in spot if prev(k) in spot}
+    add("Uranium spot log return [log points]", ret, "log points", "ln(P_t / P_t-1) of the Cameco month-end spot", "H1-H4")
+    ks, m12, s12 = sorted(ret), {}, {}
+    for i, k in enumerate(ks):
+        w = ks[max(0, i - 11):i + 1]
+        if len(w) == 12 and idx(k) - idx(w[0]) == 11:
+            r = [ret[x] for x in w]
+            m12[k], s12[k] = statistics.mean(r), statistics.stdev(r)
+    add("Uranium spot return, 12-month average [log points]", m12, "log points", "mean of the last 12 monthly log returns (momentum, as in Fan et al.)", "H1-H4 control")
+    add("Uranium spot return, 12-month std. dev. [log points]", s12, "log points", "sample standard deviation of the last 12 monthly log returns", "H1-H4 control")
+    stq = byh("UX futures close (Stooq)")["values"]
+    add("UX futures basis, Stooq close minus Cameco spot [USD/lb]", {k: stq[k] - spot[k] for k in stq if k in spot}, "USD per lb",
+        "spot-proxy basis; the Stooq contract roll is undocumented and spot is an assessment", "H2")
+    add("UX futures basis [% of spot]", {k: (stq[k] / spot[k] - 1) * 100 for k in stq if k in spot}, "percent", "(Stooq close / Cameco spot - 1) x 100", "H2")
+    prem = byh("SPUT premium/discount, month-end")["values"]
+    add("SPUT in discount (1 = month-end premium below zero)", {k: 1 if v < 0 else 0 for k, v in prem.items()}, "0/1", "state variable from SPUT premium/discount, month-end; zero is the only cut-off used", "H3")
+    cpi = byh("Consumer price index")
+    if cpi:
+        c = cpi["values"]
+        add("CPI inflation, month on month [percent]", {k: (c[k] / c[prev(k)] - 1) * 100 for k in c if prev(k) in c}, "percent", "from the CPI-U column", "control")
+        add("CPI inflation, year on year [percent]", {k: (c[k] / c[prev(k, 12)] - 1) * 100 for k in c if prev(k, 12) in c}, "percent", "from the CPI-U column", "control")
+        last = max(k for k in c if k in spot)
+        add("Uranium spot, real [USD/lb in last-month dollars]", {k: spot[k] * c[last] / c[k] for k in spot if k in c}, "USD per lb", f"spot deflated by CPI-U to {last[0]}-{last[1]:02d} dollars", "context")
+    baa, aaa = byh("Baa corporate yield"), byh("Aaa corporate yield")
+    if baa and aaa:
+        add("Baa minus Aaa spread [percentage points]", {k: baa["values"][k] - aaa["values"][k] for k in baa["values"] if k in aaa["values"]}, "percentage points", "Baa yield minus Aaa yield, monthly", "H4")
+    add("Dummy: SPUT launched (1 from Jul 2021)", {k: 1 if k >= (2021, 7) else 0 for k in months}, "0/1", "SPUT launch 19 Jul 2021 (month of launch = 1)", "H3 regime")
+    add("Dummy: Kazakh unrest (1 in Jan 2022)", {k: 1 if k == (2022, 1) else 0 for k in months}, "0/1", "event month from the variables doc", "event")
+    add("Dummy: Russia-Ukraine war (1 from Feb 2022)", {k: 1 if k >= (2022, 2) else 0 for k in months}, "0/1", "invasion 24 Feb 2022 (month of invasion = 1)", "event")
+    return out
+
+
+def coverage_rows():
+    rows = []
+    for (i, cat, var, variant, smst, src, st, where, note, req) in COVERAGE:
+        if req:
+            st = ("Constructed" if st == "Constructed" else "In workbook") if (RAW / req).exists() else "Script written, not run"
+        rows.append([i, cat, var, variant, smst, src, st, where, note])
+    return rows
+
+
 def main():
     S = load()
     pk = pink()
@@ -356,9 +454,10 @@ def main():
     n_yc = len(next(c for c in Q if c["header"].startswith("Yellow Cake NAV"))["values"])
     n_sput_q = sum(1 for k in quarters if k in next(c for c in Q if c["header"].startswith("Yellow Cake NAV"))["values"])
 
+    CN = constructed(M, months)
     # Catalogue
     cat = []
-    for sheet, cols_, freq in [("Monthly", M, "monthly"), ("Quarterly", Q, "quarterly"), ("Weekly", W, "weekly"), ("Daily", D, "daily"), ("Monthly_Pink", pk, "monthly")]:
+    for sheet, cols_, freq in [("Monthly", M, "monthly"), ("Constructed", CN, "monthly"), ("Quarterly", Q, "quarterly"), ("Weekly", W, "weekly"), ("Daily", D, "daily"), ("Monthly_Pink", pk, "monthly")]:
         for c in cols_:
             first, last, n, miss = stats(c, freq)
             cat.append([sheet, c["header"], c["kind"], c["freq"], c["timing"], c["source"], c["sid"], c["unit"], first, last, n, miss, c["role"], c["note"], c["raw"]])
@@ -394,7 +493,7 @@ def main():
         ["Spot price", "IMF uranium runs about 20% below Cameco from 2021", "Cross-check disagrees", "Cause not found; IMF series kept as cross-check only"],
         ["Commodities", "Coal has no daily source; the Australian coal column is a monthly average", "Timing differs from the month-end columns", "Open"],
         ["Commodities", "Gold, silver, copper, platinum and gas month-end come from Yahoo continuous futures (and spot for gold and silver); rolls are not adjusted", "Small jumps at contract rolls", "Check against the Pink Sheet averages in Monthly_Pink"],
-        ["Funds", "SPUT starts Jul 2021; pre-2021 Uranium Participation Corporation holdings not collected", "No participation measure before 2021", "Open"],
+        ["Funds", "SPUT starts Jul 2021; pre-2021 Uranium Participation Corporation holdings not collected. Monthly UPC releases exist for 2009 to 2020, but UPC held U3O8 and UF6 and reported NAV in CAD", "No participation measure before 2021", "Open: retrieval is a long manual job (about 150 releases)"],
         ["Funds", "Yellow Cake NAV and holdings are quarterly only (from Sep 2018); some holdings are derived or carried (see lb basis)", "33 quarterly observations", "No monthly NAV is published"],
         ["Funds", "ETF assets under management and shares outstanding not collected", "ETF flows cannot be built; only price and volume", "Open"],
         ["Conversion / SWU", "Conversion complete from 2014-03 only; scattered quarters 2010-2013; nothing before 2010", "Short quarterly series", "UxC month-end prices are subscriber-only"],
@@ -406,6 +505,7 @@ def main():
 
     # sheets in order
     write_table(wb, "Monthly", months, M, "Month", "yyyy-mm", lambda k: dt.date(k[0], k[1], 1), width=15, hdr_height=78)
+    write_table(wb, "Constructed", months, CN, "Month", "yyyy-mm", lambda k: dt.date(k[0], k[1], 1), width=15, hdr_height=78)
     write_table(wb, "Quarterly", quarters, Q, "Quarter end", "yyyy-mm-dd", lambda k: k, width=16, hdr_height=66)
     write_table(wb, "Weekly", wkeys, W, "Date (Friday)", "yyyy-mm-dd", lambda k: k, width=16, hdr_height=40)
     write_table(wb, "Daily", dates, D, "Date", "yyyy-mm-dd", lambda k: k, width=14, hdr_height=66)
@@ -448,6 +548,17 @@ def main():
     ws.auto_filter.ref = ws.dimensions
     write_table(wb, "Monthly_Pink", pink_months, pk, "Month", "yyyy-mm", lambda k: dt.date(k[0], k[1], 1), width=13, hdr_height=66)
 
+    ev = [[dt.date(2005, 1, 1), "Start of the post-2005 speculation period (Fan et al. dummy); before the sample, so a constant 1 here", "Variables doc item 13"],
+          [dt.date(2005, 3, 15), "Uranium Participation Corporation incorporated (the fund SPUT replaced)", "Variables doc item 44"],
+          [dt.date(2021, 7, 19), "SPUT launch: first purchases recorded on the Sprott page; Sprott took over UPC in July 2021", "Variables doc items 13 and 44; Sprott page"],
+          [dt.date(2022, 1, 1), "Kazakh unrest (January 2022; month only)", "Variables doc item 27 (UxC 2022)"],
+          [dt.date(2022, 2, 24), "Russian invasion of Ukraine", "Variables doc items 13 and 27 (UxC 2022; Todorova 2025a)"]]
+    wse = write_text_sheet(wb, "Events", ["Date", "Event", "Source"], ev, [14, 100, 60])
+    for r in range(2, wse.max_row + 1):
+        wse.cell(r, 1).number_format = "yyyy-mm-dd"
+    cov = coverage_rows()
+    write_text_sheet(wb, "Variable_Coverage", ["ID", "Category", "Variable", "Variant", "Source-map status", "Source", "Workbook status", "Where in the workbook", "Note"], cov,
+                     [8, 24, 26, 36, 14, 30, 24, 52, 70])
     write_text_sheet(wb, "Catalogue", ["Sheet", "Column", "Type", "Native frequency", "Timing", "Source", "Series ID", "Unit", "First", "Last", "Observations", "Missing periods inside range",
                                        "Proposed role (not agreed)", "Note / caveat", "Raw file"], cat, [14, 52, 13, 14, 26, 36, 22, 16, 11, 11, 12, 12, 20, 70, 44])
     write_text_sheet(wb, "Analysis_Map", ["Hypothesis", "Question", "Sheets", "Variables available", "Observations", "Candidate methods", "Feasibility and limits"], amap, [24, 36, 30, 60, 40, 50, 70])
@@ -461,6 +572,8 @@ def main():
         ["Daily: market and macro series, SPUT daily, month rows are not aggregated. Weekly: SPUT holdings. Monthly: uranium prices, futures and month-end versions of daily series."],
         ["Quarterly: Yellow Cake NAV and holdings, conversion prices. Events_SPUT: SPUT purchase days. Daily_OHLCV: full open/high/low/close/adjusted close/volume for every Yahoo ticker (long table)."],
         ["Monthly_Pink: the World Bank Pink Sheet as published (monthly AVERAGES, 1960 onwards), kept as a cross-check. There is no Annual sheet: no annual series has been retrieved yet."],
+        ["Constructed: variables built from Monthly columns (spot-minus-long-term, log return, 12-month momentum and volatility, futures basis, SPUT discount state, CPI inflation, real spot, Baa-Aaa, dummies). Events: dated events behind the dummies."],
+        ["Variable_Coverage lists the 119 records of the Uranium Data Source Map (the ChatGPT handoff) and 11 extra items from the variables doc, with where each is in this workbook or why it is not."],
         ["Catalogue describes every column (source, unit, timing, coverage, caveat). Analysis_Map says which analyses each hypothesis can support. Gaps lists what is missing or weak."],
         [""],
         ["CONVENTIONS"],
@@ -486,9 +599,10 @@ def main():
             cell.font = BOLD if (cell.value and str(cell.value).isupper()) or cell.row == 1 else FONT
             cell.alignment = Alignment(wrap_text=True, vertical="top")
     ws.column_dimensions["A"].width = 150
-    wb.move_sheet("README", offset=-wb.index(wb["README"]))
-    for name in ("Catalogue", "Analysis_Map", "Gaps"):
-        wb.move_sheet(name, offset=-(wb.index(wb[name]) - {"Catalogue": 1, "Analysis_Map": 2, "Gaps": 3}[name]))
+    order = ["README", "Variable_Coverage", "Catalogue", "Analysis_Map", "Gaps", "Monthly", "Constructed", "Quarterly", "Weekly", "Daily", "Events_SPUT", "Events", "Daily_OHLCV", "Monthly_Pink"]
+    wb._sheets = [wb[n] for n in order]
+    from collections import Counter
+    print(dict(Counter(r[6] for r in cov if r[0].startswith("V"))))
     OUT.parent.mkdir(parents=True, exist_ok=True)
     wb.save(OUT)
     print(f"Saved {OUT}")
