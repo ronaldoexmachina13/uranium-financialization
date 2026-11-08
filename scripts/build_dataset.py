@@ -13,6 +13,7 @@ Rules:
 """
 import calendar
 import csv
+import os
 import re
 import datetime as dt
 from collections import defaultdict
@@ -34,7 +35,7 @@ WorksheetReader.bind_tables = lambda self: None  # the World Bank file has table
 
 ROOT = Path(__file__).resolve().parents[1]
 RAW = ROOT / "data" / "raw"
-OUT = ROOT / "data" / "processed" / "thesis_dataset.xlsx"
+OUT = Path(os.environ["THESIS_OUT"]) if os.environ.get("THESIS_OUT") else ROOT / "data" / "processed" / "thesis_dataset.xlsx"
 
 NUM, NUM4, INT, PCT = "#,##0.00", "#,##0.00##", "#,##0", "0.00"
 FILL = {"constructed": "E4DFEC", "native": "D9E2D5", "derived": "DDEBF7", "average": "EDEDED", "gap-fill": "FFF2CC", "reconstructed": "FCE4D6"}
@@ -567,7 +568,9 @@ OVERRIDE = {  # id -> (status, where, note); the workbook holds the inputs of de
     "V092": ("Partly in workbook", "Annual: US uranium concentrate production, 2011-2025", "US only. Global and country production (V093) not retrieved."),
     "V095": ("Partly in workbook", "Annual: US reactor owners inventory (total and by material), year-end 2021-2025", "US only; five years in the current EIA report; 2025 preliminary."),
     "V096": ("Partly in workbook", "Annual: US supplier inventory (uranium concentrate; UF6 withheld), year-end 2021-2025", "Natural and enriched UF6 held by suppliers are withheld by EIA."),
-    "V098": ("Partly in workbook", "Annual: US reactor requirements, maximum anticipated, 2026-2035", "US only and forward-looking; global requirements (NEA/IAEA) not retrieved."),
+    "V098": ("Partly in workbook", "Annual: US reactor requirements, maximum anticipated, 2026-2035; Physical sources: NEA/IAEA Red Book 2024 world requirements by region (2022 base year, projections to 2050)", "US figures forward-looking (EIA). World figures are Red Book scenarios, not observations; no continuous annual global series."),
+    "V042": ("Partly in workbook", "Quarterly: Yellow Cake NAV per share (with the quarter-end spot price used)", "NAV per share as announced. Total NAV is not tabulated; it follows from NAV per share and shares in issue (V035)."),
+    "D17": ("Partly in workbook", "Monthly: S&P 500 (^GSPC, from 1988) and S&P 500 (FRED, last ten years)", "MSCI World is licensed and not retrieved."),
     "V099": ("Partly in workbook", "Annual: US unfilled requirements, as of end 2024 and end 2025", "Forward-looking; two vintages only."),
     "V100": ("Partly in workbook", "Annual: US contracted deliveries, minimum and maximum, in effect end 2025", "Forward-looking; one vintage; US/foreign split withheld by EIA."),
     "D47": ("Partly in workbook", "SPUT issuance (12 May 2025 to 19 Jan 2026); SPUT statements (period totals)", "Earlier dated issuances would need earlier prospectuses."),
@@ -591,6 +594,9 @@ def coverage_by_id():
             st, where, note = DERIVED, "", (note + " " if note else "") + "Derived variable: not built in this workbook."
         if i in OVERRIDE:
             st, where, note = OVERRIDE[i]
+        if st == "In workbook":  # retrieved since the coverage map was written
+            note = re.sub(r"\bneeds (scripts/fetch_\w+\.py)", r"from \1", note)
+            note = re.sub(r"\bmonth-end needs ", "month-end from ", note)
         rec = (st, clean(where), clean(note))
         if i.startswith("V"):
             by[i] = rec

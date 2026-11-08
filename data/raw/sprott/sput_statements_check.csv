@@ -1,0 +1,41 @@
+period_end,field,csv_value,pdf_value,match,source_document,page_or_statement
+2024-06-30,units_outstanding,266514628,266514628,yes,sput-q2-2024.pdf (Q2 2024 interim report; also Q2 2025 comparatives),Statement of changes in equity p.10; Ratios and Supplemental Data p.5
+2024-06-30,nav_usd_thousand,5615349,5615349,yes,sput-q2-2024.pdf (Q2 2024 interim report; also Q2 2025 comparatives),Statement of financial position p.9 (Total equity)
+2024-06-30,nav_per_unit_usd,,21.07,no,sput-q2-2024.pdf (Q2 2024 interim report),Statement of financial position p.9 (Total equity per Unit); CSV cell is blank
+2024-06-30,cash_usd_thousand,59248,59248,yes,sput-q2-2024.pdf (Q2 2024 interim report; also Q2 2025 comparatives),Statement of financial position p.9; Statement of cash flows p.11
+2024-06-30,uranium_oxide_fv_usd_thousand,,5590484,no,sput-q2-2024.pdf (Q2 2024 interim report),Statement of financial position p.9 (Uranium oxide); CSV cell is blank
+2024-06-30,pounds_u3o8_held,,65511826,no,sput-q2-2024.pdf (Q2 2024 interim report),MD&A Results of Operations p.3; CSV cell is blank
+2024-06-30,units_issued_in_period,10743500,10743500,yes,sput-q2-2024.pdf (Q2 2024 interim report; also Q2 2025 comparatives),Statement of changes in equity p.10 (six months ended 30 Jun 2024)
+2024-06-30,proceeds_from_issuance_usd_thousand,243129,243129,yes,sput-q2-2024.pdf (Q2 2024 interim report; also Q2 2025 comparatives),Statement of cash flows p.11 (six months ended 30 Jun 2024)
+2024-06-30,issue_costs_cashflow_usd_thousand,1003,1003,yes,sput-q2-2024.pdf (Q2 2024 interim report; also Q2 2025 comparatives),Statement of cash flows p.11 (six months ended 30 Jun 2024)
+2024-06-30,purchases_of_uranium_usd_thousand,218382,218382,yes,sput-q2-2024.pdf (Q2 2024 interim report; also Q2 2025 comparatives),Statement of cash flows p.11 (six months ended 30 Jun 2024)
+2025-06-30,units_outstanding,283374890,283374890,yes,sput-q2-2025.pdf (Q2 2025 interim report),Statement of changes in equity p.10; Ratios and Supplemental Data p.5
+2025-06-30,nav_usd_thousand,5435268,5435268,yes,sput-q2-2025.pdf (Q2 2025 interim report),Statement of financial position p.9 (Total equity)
+2025-06-30,nav_per_unit_usd,19.18,19.18,yes,sput-q2-2025.pdf (Q2 2025 interim report),Statement of financial position p.9 (Total equity per Unit)
+2025-06-30,cash_usd_thousand,226908,226908,yes,sput-q2-2025.pdf (Q2 2025 interim report),Statement of financial position p.9; Statement of cash flows p.11
+2025-06-30,uranium_oxide_fv_usd_thousand,5316181,5316181,yes,sput-q2-2025.pdf (Q2 2025 interim report),Statement of financial position p.9 (Uranium oxide)
+2025-06-30,pounds_u3o8_held,67670326,67670326,yes,sput-q2-2025.pdf (Q2 2025 interim report),MD&A Results of Operations p.3
+2025-06-30,units_issued_in_period,13506362,13506362,yes,sput-q2-2025.pdf (Q2 2025 interim report),Statement of changes in equity p.10 (six months ended 30 Jun 2025)
+2025-06-30,proceeds_from_issuance_usd_thousand,232774,232774,yes,sput-q2-2025.pdf (Q2 2025 interim report),Statement of cash flows p.11 (six months ended 30 Jun 2025)
+2025-06-30,issue_costs_cashflow_usd_thousand,2470,2470,yes,sput-q2-2025.pdf (Q2 2025 interim report),Statement of cash flows p.11 (six months ended 30 Jun 2025)
+2025-06-30,purchases_of_uranium_usd_thousand,112376,112376,yes,sput-q2-2025.pdf (Q2 2025 interim report),Statement of cash flows p.11 (six months ended 30 Jun 2025)
+2025-12-31,units_outstanding,311070452,311070452,yes,sput-q4-2025.pdf (Annual report 2025),Statement of changes in equity p.15; Ratios and Supplemental Data p.5
+2025-12-31,nav_usd_thousand,6157817,6157817,yes,sput-q4-2025.pdf (Annual report 2025),Statement of financial position p.14 (Total equity)
+2025-12-31,nav_per_unit_usd,19.80,19.80,yes,sput-q4-2025.pdf (Annual report 2025),Statement of financial position p.14 (Total equity per Unit)
+2025-12-31,cash_usd_thousand,89833,89833,yes,sput-q4-2025.pdf (Annual report 2025),Statement of financial position p.14; Statement of cash flows p.16
+2025-12-31,uranium_oxide_fv_usd_thousand,6098515,6098515,yes,sput-q4-2025.pdf (Annual report 2025),Statement of financial position p.14 (Uranium oxide)
+2025-12-31,pounds_u3o8_held,74789404,74789404,yes,sput-q4-2025.pdf (Annual report 2025),MD&A Results of Operations p.3
+2025-12-31,units_issued_in_period,41201924,41201924,yes,sput-q4-2025.pdf (Annual report 2025),Statement of changes in equity p.15 (twelve months ended 31 Dec 2025)
+2025-12-31,proceeds_from_issuance_usd_thousand,762636,762636,yes,sput-q4-2025.pdf (Annual report 2025),Statement of cash flows p.16 (twelve months ended 31 Dec 2025)
+2025-12-31,issue_costs_cashflow_usd_thousand,5220,5220,yes,sput-q4-2025.pdf (Annual report 2025),Statement of cash flows p.16 (twelve months ended 31 Dec 2025)
+2025-12-31,purchases_of_uranium_usd_thousand,678473,678473,yes,sput-q4-2025.pdf (Annual report 2025),Statement of cash flows p.16 (twelve months ended 31 Dec 2025)
+2026-06-30,units_outstanding,344156215,344156215,yes,sput-q2-2026.pdf (Q2 2026 interim report),Statement of changes in equity p.10; Ratios and Supplemental Data p.5
+2026-06-30,nav_usd_thousand,7044245,7044245,yes,sput-q2-2026.pdf (Q2 2026 interim report),Statement of financial position p.9 (Total equity)
+2026-06-30,nav_per_unit_usd,20.47,20.47,yes,sput-q2-2026.pdf (Q2 2026 interim report),Statement of financial position p.9 (Total equity per Unit)
+2026-06-30,cash_usd_thousand,130589,130589,yes,sput-q2-2026.pdf (Q2 2026 interim report),Statement of financial position p.9; Statement of cash flows p.11
+2026-06-30,uranium_oxide_fv_usd_thousand,6925631,6925631,yes,sput-q2-2026.pdf (Q2 2026 interim report),Statement of financial position p.9 (Uranium oxide)
+2026-06-30,pounds_u3o8_held,81447348,81447348,yes,sput-q2-2026.pdf (Q2 2026 interim report),MD&A Results of Operations p.3
+2026-06-30,units_issued_in_period,33085763,33085763,yes,sput-q2-2026.pdf (Q2 2026 interim report),Statement of changes in equity p.10 (six months ended 30 Jun 2026)
+2026-06-30,proceeds_from_issuance_usd_thousand,702966,702966,yes,sput-q2-2026.pdf (Q2 2026 interim report),Statement of cash flows p.11 (six months ended 30 Jun 2026)
+2026-06-30,issue_costs_cashflow_usd_thousand,4968,4968,yes,sput-q2-2026.pdf (Q2 2026 interim report),Statement of cash flows p.11 (six months ended 30 Jun 2026)
+2026-06-30,purchases_of_uranium_usd_thousand,611160,611160,yes,sput-q2-2026.pdf (Q2 2026 interim report),Statement of cash flows p.11 (six months ended 30 Jun 2026)

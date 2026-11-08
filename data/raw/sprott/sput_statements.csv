@@ -2,9 +2,9 @@ period_end,period_type,units_outstanding,nav_usd_thousand,nav_per_unit_usd,tsx_c
 2021-12-31,annual,163471400,1768715,10.82,11.01,,,,,,,,"SPUT Annual Report 2024 (PDF, selected financial data)",flows and cash for 2021-2022 not extracted
 2022-12-31,annual,237365700,2875719,12.12,11.70,,,,73894300,,,,SPUT Annual Report 2024 (PDF),units issued = difference of year-end units; proceeds not extracted
 2023-12-31,annual,255771128,5772792,22.57,21.30,34129,,,18405428,268307,1927,232463,SPUT Annual Report 2024 (PDF),
-2024-06-30,interim,266514628,5615349,,,59248,,,10743500,243129,1003,218382,"SPUT Q2 2025 interim report (web fetch, comparatives)",re-check against PDF
+2024-06-30,interim,266514628,5615349,21.07,,59248,5590484,65511826,10743500,243129,1003,218382,"SPUT Q2 2024 interim report (PDF, sprott.com)",verified against the PDF 8 Nov 2026; six-month year-to-date flows
 2024-12-31,annual,269868528,4862001,18.02,17.29,21646,4845672,66220326,14097400,310621,1086,276491,SPUT Annual Report 2024 (PDF); fair value of uranium from Q2 2025 interim comparatives,
-2025-06-30,interim,283374890,5435268,19.18,,226908,5316181,67670326,13506362,232774,2470,112376,SPUT Q2 2025 interim report (web fetch),re-check against PDF
-2025-12-31,annual,311070452,6157817,19.80,19.50,89833,6098515,74789404,41201924,762636,5220,678473,SPUT Q4 2025 annual report (web fetch),re-check against PDF
+2025-06-30,interim,283374890,5435268,19.18,,226908,5316181,67670326,13506362,232774,2470,112376,"SPUT Q2 2025 interim report (PDF, sprott.com)",verified against the PDF 8 Nov 2026; six-month year-to-date flows
+2025-12-31,annual,311070452,6157817,19.80,19.50,89833,6098515,74789404,41201924,762636,5220,678473,"SPUT Q4 2025 annual report (PDF, sprott.com)",verified against the PDF 8 Nov 2026; twelve-month flows
 2026-01-20,prospectus,318488764,6598565.868,20.7210,,,,,,,,,"SPUT base shelf prospectus 22 Jan 2026, Capitalization",NAV and units on 20 Jan 2026 only
-2026-06-30,interim,344156215,7044245,20.47,,130589,6925631,81447348,33085763,702966,4968,611160,SPUT Q2 2026 interim report (web fetch),re-check against PDF
+2026-06-30,interim,344156215,7044245,20.47,,130589,6925631,81447348,33085763,702966,4968,611160,"SPUT Q2 2026 interim report (PDF, sprott.com)",verified against the PDF 8 Nov 2026; six-month year-to-date flows

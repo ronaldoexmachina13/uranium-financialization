@@ -130,3 +130,8 @@ Not extracted: 2021-2022 cash and flows, earlier prospectuses' prior-sales table
 | 2026-11-08 | BZ=F: Brent crude futures, ICE front month, USD per barrel | Yahoo Finance | daily, USD, 4798 rows, 2007-07-29 to 2026-11-06 | data/raw/markets/BZ=F.csv |
 | 2026-11-08 | NG=F: Natural gas futures (Henry Hub), NYMEX front month, USD per MMBtu | Yahoo Finance | daily, USD, 6577 rows, 2000-08-29 to 2026-11-06 | data/raw/markets/NG=F.csv |
 | 2026-11-08 | ^GSPC: S&P 500 index (full history) | Yahoo Finance | daily, USD, 14335 rows, 1970-01-02 to 2026-11-06 | data/raw/markets/^GSPC.csv |
+
+## 2026-11-08, SPUT statements checked against the PDFs
+- `data/raw/sprott/sput_statements.csv`: the 2024-06-30, 2025-06-30, 2025-12-31 and 2026-06-30 rows were re-read against the Sprott PDFs (Q2 2024, Q2 2025, Q4 2025 annual and Q2 2026 reports, sprott.com). All 40 fields compared; the 37 already filled all match. Three blank 2024-06-30 cells (NAV per unit 21.07, uranium oxide fair value 5,590,484, pounds held 65,511,826) were filled from the PDF. Field-by-field result: `data/raw/sprott/sput_statements_check.csv`. Flow figures are six-month year-to-date for interim rows and twelve-month for 2025-12-31.
+- Variables sheet notes updated (V042, V098, D17; "needs fetch script" wording replaced for series already retrieved).
+- Common-sample counts (Monthly sheet): uranium spot + URA, CCJ, WTI, gold, S&P 500 = 192 months (2010-11 to 2026-10); spot + SPUT price, volume, NAV, premium, pounds bought and holdings = 63 (2021-08 to 2026-10); spot + 9 macro controls = 285 (2003-01 to 2026-09); SPUT block + macro = 62 (2021-08 to 2026-09, limited by industrial production and the Kilian index, which end in September).
