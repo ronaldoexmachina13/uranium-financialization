@@ -46,7 +46,7 @@ _PREFIX = [
     ("SPUT units issued", "V022"), ("SPUT gross issuance", "V024"), ("SPUT cash", "V026"), ("SPUT pounds bought", "V027"), ("SPUT holdings", "V029"),
     ("SPUT TSX high", "V013"), ("SPUT TSX low", "V013"), ("SPUT TSX average daily volume", "V014"), ("SPUT TSX volume", "V014"),
     ("SPUT purchases as %", "V032"), ("SPUT purchases in quarter", "V027"),
-    ("U-UN.TO", "V011"), ("U-U.TO", "V012"), ("YCA.L", "V033"),
+    ("U-UN.TO", "V011"), ("UPC adj. close", "D44"), ("U-U.TO", "V012"), ("YCA.L", "V033"),
     ("Yellow Cake NAV", "V042"), ("Yellow Cake uranium held", "V040"), ("Yellow Cake lb basis", "V040"), ("Yellow Cake quarter-end spot", "V042"),
     ("Yellow Cake announcement", "V042"), ("Yellow Cake premium", "V043"),
     ("UxC spot volume", "V101"),
@@ -175,7 +175,13 @@ def write_data_sheet(wb, name, title, subtitle, keys, cols, keyhdr, keyfmt, keyv
             if prev is not None:
                 _band(ws, start, j - 1, prev)
             start, prev = j, sl
-        var = f"{id_} · {CHAT[id_][0]} — {CHAT[id_][1]}" if id_ else "Not in the handoff table"
+        if id_ in CHAT:
+            var = f"{id_} · {CHAT[id_][0]} — {CHAT[id_][1]}"
+        elif id_:  # extra items of the variables doc (D-ids) are described in the coverage map
+            r_ = next(r for r in _COV if r[0] == id_)
+            var = f"{id_} · {r_[2]} — {r_[3]}"
+        else:
+            var = "Not in the handoff table"
         vals = {k: v for k, v in c["values"].items() if k in keyset}
         cov = f"{TYPE_TEXT.get(c['kind'], c['kind']).split(':')[0]} · {_fmt_key(min(vals))} to {_fmt_key(max(vals))} · {len(vals)} obs" if vals else "no observations"
         row = {5: var, 6: why_col(id_, c["header"]), 7: short(c["header"]), 8: c["source"], 9: cov, 10: c["unit"]}

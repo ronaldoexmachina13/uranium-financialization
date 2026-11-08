@@ -146,3 +146,8 @@ Not extracted: 2021-2022 cash and flows, earlier prospectuses' prior-sales table
 - `data/raw/yellowcake/yellowcake_total_nav.csv`: total NAV as stated in each of the 48 reports (USD million), NAV per share in GBP, basis (period end or pro forma). Never computed from per-share figures. Odd cases noted in the file.
 - `data/raw/physical/`: `nea_iaea_redbook2018_2022_uranium_production_history.csv` (2014-2021), `nea_iaea_redbook2018_2022_reactor_requirements.csv`, `eia_umar2024_inventories_2020_and_2024p.csv`, `eia_s3a_inventories_2016_2019_rounded.csv` (million lb, rounded: EIA's detailed 2016-2019 editions could not be opened). Red Book 2018 'Total to 2017' column does not sum (+165, India and Romania rows). WNA world requirements pages were read but left out: their year labels and one value that equals a Red Book projection are unresolved. 2013 US reactor-owner inventory corrected to 113,077 (Table 22 and the total agree).
 - Not found: Red Book 2020 and earlier, WNA production 2004-2014.
+
+## 2026-11-08 · U-UN.TO split into two columns
+- The Yahoo U-UN.TO series was Uranium Participation Corp (UPC) up to 16 Jul 2021 and SPUT from 26 Jul 2021 (price jumps from about CAD 5 to CAD 11 with no return).
+- Daily and Monthly now hold two columns: "UPC adj. close" (2006-05-09 to 2021-07-16, 3,813 observations, mapped to D44) and "U-UN.TO adj. close" (SPUT only, from 2021-07-26, V011). UPC level checked against UPC's own NAV per share (CAD 4.87 at 31 May 2021).
+- Prices OHLCV keeps the raw Yahoo series unchanged. Gaps row marked Done.

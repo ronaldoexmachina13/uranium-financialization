@@ -76,7 +76,8 @@ EQUITIES = [("URA", "USD", "ETF"), ("URNM", "USD", "ETF"), ("NLR", "USD", "ETF")
             ("U-U.TO", "USD", "physical fund"), ("U-UN.TO", "CAD", "physical fund"), ("YCA.L", "GBp", "physical fund"), ("UEC", "USD", "developer"),
             ("DNN", "USD", "developer"), ("NXE", "USD", "developer"), ("PDN.AX", "AUD", "producer"), ("BOE.AX", "AUD", "producer"),
             ("DYL.AX", "AUD", "developer"), ("SLX.AX", "AUD", "enrichment tech"), ("BWXT", "USD", "nuclear supply"), ("1164.HK", "HKD", "producer")]
-EQ_NOTE = {"U-UN.TO": "data from 2006 look like the predecessor fund (not confirmed)", "U-U.TO": "USD units of the Sprott trust",
+SPLIT_DATE = dt.date(2021, 7, 26)  # first trading day of SPUT; before it the Yahoo U-UN.TO series is Uranium Participation Corp
+EQ_NOTE = {"U-UN.TO": "SPUT only, from 26 Jul 2021 (the ticker's earlier history is Uranium Participation Corp, see the UPC column)", "U-U.TO": "USD units of the Sprott trust",
            "YCA.L": "prices in pence (GBp)", "KAP.IL": "London GDR in USD"}
 
 
@@ -391,7 +392,14 @@ def load():
         note = EQ_NOTE.get(t, "")
         if nz:
             note = (note + "; " if note else "") + f"{nz} days with zero volume (Yahoo repeats the previous price) are left blank"
-        D.append(col(f"{t} adj. close [{cur}]", {day(r["date"]): num(r["adj_close"]) for r in equities[t] if (num(r["volume"]) or 0) > 0}, "native", "Yahoo Finance", t, "daily", "daily close (adjusted for splits and dividends)", cur,
+        vals = {day(r["date"]): num(r["adj_close"]) for r in equities[t] if (num(r["volume"]) or 0) > 0}
+        if t == "U-UN.TO":
+            upc = {d: v for d, v in vals.items() if d < SPLIT_DATE}
+            vals = {d: v for d, v in vals.items() if d >= SPLIT_DATE}
+            D.append(col(f"UPC adj. close [{cur}]", upc, "native", "Yahoo Finance", "UPC", "daily", "daily close (adjusted for splits and dividends)", cur,
+                         f"Uranium Participation Corp, the fund SPUT replaced: the Yahoo U-UN.TO series up to {max(upc):%d %b %Y} (last trade); level agrees with UPC's reported NAV per share (e.g. CAD 4.87 at May 2021 against a price of about CAD 5); "
+                         "no overlap with SPUT, so do not compute a return across the switch to the next column; days with zero volume are left blank", "H3 context", "data/raw/yahoo/U-UN.TO.csv", NUM4))
+        D.append(col(f"{t} adj. close [{cur}]", vals, "native", "Yahoo Finance", t, "daily", "daily close (adjusted for splits and dividends)", cur,
                      note, "H3 context" if grp in ("ETF", "physical fund") else "context", f"data/raw/yahoo/{t}.csv", NUM4))
 
     # weekly and events
@@ -426,6 +434,8 @@ def load():
                  f"0 = no purchase listed; the purchase list ends {last_acq.isoformat()}", "H3", "data/raw/sprott/sput_acquired.csv", INT))
     sput_fundraising(S, M, equities)
     for t, cur, grp in EQUITIES:
+        if t == "U-UN.TO":
+            M.append(drv(next(c for c in D if c["sid"] == "UPC"), f"UPC adj. close, month-end [{cur}]"))
         c = next(c for c in D if c["sid"] == t)
         M.append(drv(c, f"{t} adj. close, month-end [{cur}]"))
 
@@ -569,7 +579,7 @@ OVERRIDE = {  # id -> (status, where, note); the workbook holds the inputs of de
     "V089": ("In workbook", "Monthly and Daily: geopolitical risk index, overall", "Daily file covers calendar days; weekends are not shown on the Daily sheet."),
     "V090": ("In workbook", "Monthly and Daily: geopolitical risk, threats and acts", "Same note as V089."),
     "D21": ("In workbook", "Monthly: Google Trends 'uranium ETF'", "Relative interest, peak = 100; carries measurement error."),
-    "D44": ("Partly in workbook", "UPC monthly NAV, Dec 2010 to May 2021", "2009 to Nov 2010 and June 2021 not retrieved; shares outstanding not printed in the releases."),
+    "D44": ("Partly in workbook", "UPC monthly NAV, Dec 2010 to May 2021; Daily and Monthly: UPC adj. close, 2006 to Jul 2021", "2009 to Nov 2010 and June 2021 not retrieved; shares outstanding not printed in the releases."),
     "V092": ("Partly in workbook", "Annual: US uranium concentrate production, 2011-2025", "US only. Global and country production (V093) not retrieved."),
     "V095": ("Partly in workbook", "Annual: US reactor owners inventory (total and by material), year-end 2021-2025; Physical sources: 2011-2015 (UMAR 2015), 2020 and 2024 preliminary (UMAR 2024), 2016-2019 as rounded totals (Table S3a)", "US only. 2016-2019 exist only as totals rounded to 0.1 million lb (EIA does not give the detailed tables for those years). The 2024 preliminary value (126.4 million lb) was revised to 115.1 in the 2025 edition."),
     "V096": ("Partly in workbook", "Annual: US supplier inventory (uranium concentrate; UF6 withheld), year-end 2021-2025; Physical sources: 2011-2015, 2020 and 2024 preliminary, 2016-2019 as rounded totals", "Natural and enriched UF6 held by suppliers are withheld by EIA."),
