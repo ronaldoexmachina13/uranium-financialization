@@ -11,6 +11,7 @@ Rules:
   - Month-end means the last available observation in the month. Monthly averages are used only where no daily source exists.
   - Blank cell = no observation (market closed, series not started, source missing). Nothing is interpolated or forward-filled.
 """
+import calendar
 import csv
 import re
 import datetime as dt
@@ -257,6 +258,63 @@ def uxc_volume(S, M, Q):
           f"Q1 2026 ~5.3 -> {qsum(dt.date(2026,1,1), dt.date(2026,3,31)):.2f};", f"Q2 2026 1.35 -> {qsum(dt.date(2026,4,1), dt.date(2026,6,30)):.2f}")
 
 
+
+def macro_cols(S):
+    """Macro, uncertainty and activity series retrieved 8 Nov 2026 (data/raw/macro): V076, V082-V084, V088-V090, D21. Values as published; blanks stay blank."""
+    d = RAW / "macro"
+    if not (d / "macro_index.csv").exists():
+        return
+    M, Q, D = S["monthly"], S["quarterly"], S["daily"]
+    def series(fname):
+        return {day(r["date"]): num(r["value"]) for r in read_csv(d / fname) if num(r["value"]) is not None}
+    def qend(k):
+        m = ((k.month - 1) // 3) * 3 + 3
+        return dt.date(k.year, m, calendar.monthrange(k.year, m)[1])
+    def mon(fname):
+        return {ym(k): v for k, v in series(fname).items()}
+    raw = lambda f: f"data/raw/macro/{f}"
+    # quarterly
+    for f, hdr, unit, sid, note in [("fred_GDPC1.csv", "Real GDP, US", "billion chained 2017 USD, SAAR", "GDPC1", "BEA via FRED; US only"),
+                                    ("fred_A191RL1Q225SBEA.csv", "Real GDP growth, US, annualised", "percent", "A191RL1Q225SBEA", "BEA via FRED, as published (not computed here)")]:
+        Q.append(col(f"{hdr} [{unit}]", {qend(k): v for k, v in series(f).items()}, "native", "FRED (BEA)", sid, "quarterly", "quarter, dated at quarter end", unit, note, "", raw(f), NUM))
+    # monthly
+    for f, hdr, unit, sid, src, note in [
+        ("fred_OECDPRINTO01IXOBSAM.csv", "Industrial production, OECD total", "index", "OECDPRINTO01IXOBSAM", "FRED (OECD)", "FRED series ends 2024-03"),
+        ("fred_G7PRINTO01IXOBSAM.csv", "Industrial production, G7", "index", "G7PRINTO01IXOBSAM", "FRED (OECD)", "FRED series ends 2024-03"),
+        ("fred_OECDPRINTO01GYSAM.csv", "OECD industrial production growth, year on year", "percent", "OECDPRINTO01GYSAM", "FRED (OECD)", "runs to 2026-07 although the level series ends 2024-03: check against the OECD portal before use"),
+        ("epu_monetary_policy.csv", "Categorical EPU, monetary policy", "index", "EPU monetary", "policyuncertainty.com", ""),
+        ("epu_fiscal_policy_taxes_or_spending.csv", "Categorical EPU, fiscal policy (taxes or spending)", "index", "EPU fiscal", "policyuncertainty.com", ""),
+        ("epu_taxes.csv", "Categorical EPU, taxes", "index", "EPU taxes", "policyuncertainty.com", ""),
+        ("epu_government_spending.csv", "Categorical EPU, government spending", "index", "EPU spending", "policyuncertainty.com", ""),
+        ("epu_health_care.csv", "Categorical EPU, health care", "index", "EPU health", "policyuncertainty.com", ""),
+        ("epu_national_security.csv", "Categorical EPU, national security", "index", "EPU security", "policyuncertainty.com", ""),
+        ("epu_entitlement_programs.csv", "Categorical EPU, entitlement programs", "index", "EPU entitlements", "policyuncertainty.com", ""),
+        ("epu_regulation.csv", "Categorical EPU, regulation", "index", "EPU regulation", "policyuncertainty.com", ""),
+        ("epu_financial_regulation.csv", "Categorical EPU, financial regulation", "index", "EPU finreg", "policyuncertainty.com", ""),
+        ("epu_trade_policy.csv", "Categorical EPU, trade policy", "index", "EPU trade", "policyuncertainty.com", ""),
+        ("epu_sovereign_debt_currency_crises.csv", "Categorical EPU, sovereign debt and currency crises", "index", "EPU sovereign", "policyuncertainty.com", ""),
+        ("gpr_GPR_monthly.csv", "Geopolitical risk index, overall (GPR)", "index 1985-2019=100", "GPR", "Caldara and Iacoviello", "recent GPR, 10 newspapers; 1985 onwards"),
+        ("gpr_GPRT_monthly.csv", "Geopolitical risk index, threats (GPRT)", "index 1985-2019=100", "GPRT", "Caldara and Iacoviello", ""),
+        ("gpr_GPRA_monthly.csv", "Geopolitical risk index, acts (GPRA)", "index 1985-2019=100", "GPRA", "Caldara and Iacoviello", ""),
+        ("gpr_GPRH_monthly.csv", "Geopolitical risk index, historical overall (GPRH)", "index", "GPRH", "Caldara and Iacoviello", "from 1900; the file in data/raw/macro holds the full history"),
+        ("dallasfed_IGREA_kilian.csv", "Kilian global real economic activity index", "percent deviation from trend", "IGREA", "Dallas Fed (Kilian)", "last 19 rows were stored with the wrong date in the source file and were set to the first of the month; values untouched"),
+        ("googletrends_uranium_ETF.csv", "Google Trends search interest, 'uranium ETF'", "0-100, peak = 100", "uranium ETF", "Google Trends", "worldwide web search; one request for the whole period so no stitching; Nov 2026 incomplete; early years mostly 0")]:
+        M.append(col(f"{hdr} [{unit}]", mon(f), "native", src, sid, "monthly", "monthly value as published", unit, note, "", raw(f), NUM))
+    # daily (published on weekdays, or on every calendar day for the GPR)
+    for f, hdr, unit, sid, src, note, me in [
+        ("fred_TEDRATE.csv", "TED spread (discontinued)", "percent", "TEDRATE", "FRED", "3-month LIBOR minus 3-month T-bill; discontinued by FRED, ends 2022-01-21", True),
+        ("fred_DCPF3M.csv", "Commercial paper, 90-day AA financial", "percent", "DCPF3M", "FRED (Federal Reserve)", "candidate replacement for the TED spread when paired with the T-bill column; the spread is not computed here", True),
+        ("fred_DCPN3M.csv", "Commercial paper, 90-day AA nonfinancial", "percent", "DCPN3M", "FRED (Federal Reserve)", "alternative to the financial commercial paper column", True),
+        ("fred_DTB3.csv", "T-bill, 3-month, secondary market, discount basis", "percent", "DTB3", "FRED (Federal Reserve)", "discount basis; the 3-month Treasury yield used elsewhere (DGS3MO) is constant-maturity", True),
+        ("fred_SOFR.csv", "SOFR, secured overnight financing rate", "percent", "SOFR", "FRED (NY Fed)", "starts 2018-04-03", True),
+        ("gpr_GPRD_daily.csv", "Geopolitical risk index, daily overall (GPRD)", "index 1985-2019=100", "GPRD", "Caldara and Iacoviello", "calendar days including weekends; weekend values are not shown on this sheet (the date list is trading days only): full file in data/raw/macro", False),
+        ("gpr_GPRD_THREAT_daily.csv", "Geopolitical risk index, daily threats (GPRD_THREAT)", "index 1985-2019=100", "GPRD_THREAT", "Caldara and Iacoviello", "calendar days; weekend values not shown on this sheet", False),
+        ("gpr_GPRD_ACT_daily.csv", "Geopolitical risk index, daily acts (GPRD_ACT)", "index 1985-2019=100", "GPRD_ACT", "Caldara and Iacoviello", "calendar days; weekend values not shown on this sheet", False)]:
+        v = series(f)
+        D.append(col(f"{hdr} [{unit}]", v, "native", src, sid, "daily", "daily value", unit, note, "", raw(f), NUM))
+        if me:
+            M.append(col(f"{hdr}, month-end [{unit}]", month_end(v), "derived", src, sid, "monthly", "last observation of the month (from Daily)", unit, note, "", raw(f), NUM))
+
 # ---------------------------------------------------------------- load
 def load():
     S = {}
@@ -395,6 +453,7 @@ def load():
         d = {day(r["date"]): num(r[k]) for r in cam if day(r["date"]).month in (3, 6, 9, 12)}
         Q.append(col(f"{hdr}, quarter-end (Cameco) [USD/lb]", d, "derived", "Cameco", k, "quarterly", "month-end value of Mar, Jun, Sep, Dec", "USD per lb", "from the Monthly sheet source", "context", cam_raw, NUM))
     uxc_volume(S, M, Q)
+    macro_cols(S)
     S["markets_found"] = list(markets)
     S["equities_raw"], S["markets_raw"] = equities, markets
     return S
@@ -487,6 +546,24 @@ OVERRIDE = {  # id -> (status, where, note); the workbook holds the inputs of de
     "V031": (DERIVED, "Inputs: Monthly, SPUT TSX volume (V014) and SPUT units outstanding (V021)", "Units outstanding are known only at reporting dates and for Feb-Dec 2025."),
     "V032": ("Partly in workbook", "Quarterly: SPUT purchases as % of UxC spot volume; UxC volumes", "Denominator is the UxC spot volume quoted in Yellow Cake updates (quarterly, from 2021 Q3); it is not continuous and may include SPUT itself."),
     "V101": ("Partly in workbook", "Monthly and Quarterly: UxC spot volume, first reported; UxC volumes (every figure and vintage)", "Only where Yellow Cake quotes UxC; revised between updates; no continuous history."),
+    "V035": ("In workbook", "Yellow Cake reports: Shares in issue", "As printed in each report, including treasury shares."),
+    "V036": ("Partly in workbook", "Yellow Cake reports: New shares issued; Gross capital raised", "Filled where a report states one placing; multiple placings are described in the note, not summed."),
+    "V037": ("Partly in workbook", "Yellow Cake reports: Uranium purchased in period", "Only where the report states the quarter's purchases; elected but undelivered purchases left blank."),
+    "V038": ("Partly in workbook", "Yellow Cake reports: of which from Kazatomprom", ""),
+    "V039": ("Partly in workbook", "Yellow Cake reports: of which other", ""),
+    "V041": ("Partly in workbook", "Yellow Cake reports: Cash; Cash and other net current assets", "Cash is stated separately only in some reports."),
+    "V044": ("Partly in workbook", "Yellow Cake reports: Shares bought back; Buyback cost", "Only the periods with a buyback programme; early-2020 counts are cumulative and left blank."),
+    "V093": ("Partly in workbook", "Physical sources: WNA 2015-2024 and Red Book 2020-2023 production by country", "Tonnes U; read through page text; one WNA world total looks inconsistent at source (flagged in the note)."),
+    "V097": ("Partly in workbook", "Physical sources: IAEA TECDOC-2030 inventories at end 2021 (two regions); Euratom EU utility stocks 2010 and 2012", "No continuous global series exists; as-of dates, owners and material forms differ."),
+    "V076": ("Partly in workbook", "Daily: TED spread (to Jan 2022), commercial paper 90-day AA, T-bill 3-month, SOFR; Monthly: month-end versions", "Raw rates only: no spread is computed and no single replacement for TED is chosen."),
+    "V082": ("Partly in workbook", "Monthly: industrial production OECD total and G7 (to 2024-03), OECD growth", "OECD level series end 2024-03 on FRED; US industrial production is V081."),
+    "V083": ("In workbook", "Quarterly: real GDP, US, level and annualised growth", "US only; OECD and other national GDP not retrieved."),
+    "V084": ("In workbook", "Monthly: Kilian global real economic activity index", "From the Dallas Fed file."),
+    "V088": ("In workbook", "Monthly: categorical EPU, 11 categories", "No energy category in the categorical file."),
+    "V089": ("In workbook", "Monthly and Daily: geopolitical risk index, overall", "Daily file covers calendar days; weekends are not shown on the Daily sheet."),
+    "V090": ("In workbook", "Monthly and Daily: geopolitical risk, threats and acts", "Same note as V089."),
+    "D21": ("In workbook", "Monthly: Google Trends 'uranium ETF'", "Relative interest, peak = 100; carries measurement error."),
+    "D44": ("Partly in workbook", "UPC monthly NAV, Dec 2010 to May 2021", "2009 to Nov 2010 and June 2021 not retrieved; shares outstanding not printed in the releases."),
     "V092": ("Partly in workbook", "Annual: US uranium concentrate production, 2011-2025", "US only. Global and country production (V093) not retrieved."),
     "V095": ("Partly in workbook", "Annual: US reactor owners inventory (total and by material), year-end 2021-2025", "US only; five years in the current EIA report; 2025 preliminary."),
     "V096": ("Partly in workbook", "Annual: US supplier inventory (uranium concentrate; UF6 withheld), year-end 2021-2025", "Natural and enriched UF6 held by suppliers are withheld by EIA."),
@@ -538,7 +615,7 @@ def main():
     months = list(months_between(min(spot), max(spot)))
     dates = set()
     for c in D:
-        if c["sid"] != "DFF":
+        if c["sid"] not in ("DFF", "GPRD", "GPRD_THREAT", "GPRD_ACT"):
             dates |= set(c["values"])
     dates = sorted(dates)
     qkeys_all = [k for c in Q for k in c["values"] if c["freq"] == "quarterly"]
@@ -617,6 +694,55 @@ def main():
               rows, [14, 16, 26, 14, 12, 12, 12, 10, 14, 44, 60], "Every UxC spot-volume figure quoted in the Yellow Cake updates.", "Irregular",
               f"{rows[0][4]:%Y-%m-%d} to {max(r[5] for r in rows):%Y-%m-%d}", fmts=["yyyy-mm-dd", "yyyy-mm-dd", None, None, "yyyy-mm-dd", "yyyy-mm-dd", NUM, None, None, None, None], wrap=(10, 11))
 
+
+    # ---- Yellow Cake reports and physical-market sources (added 8 Nov 2026)
+    yc = RAW / "yellowcake" / "yellowcake_report_series_verified.csv"
+    if yc.exists():
+        r_ = read_csv(yc)
+        heads_ = ["Announcement date", "Period end", "Shares in issue", "New shares issued in period", "Gross capital raised [USD million]", "Uranium purchased in period [lb]",
+                  "of which from Kazatomprom [lb]", "of which other [lb]", "Cash [USD million]", "Cash and other net current assets [USD million]", "Shares bought back in period",
+                  "Buyback cost [USD million]", "Source", "Note", "Read from the PDF"]
+        keys_ = ["announcement_date", "period_end", "shares_outstanding", "new_shares_issued_in_period", "gross_capital_raised_usd_m", "uranium_purchased_in_period_lb_total",
+                 "purchased_from_kazatomprom_lb", "purchased_other_lb", "cash_usd_m", "net_current_assets_usd_m", "shares_bought_back_in_period", "buyback_cost_usd_m", "source_url", "note", "verified_from_pdf"]
+        def cell(k, v):
+            if v in ("", None):
+                return None
+            if k in ("announcement_date", "period_end"):
+                return day(v)
+            if k in ("source_url", "note", "verified_from_pdf"):
+                return v
+            return num(v)
+        rows_ = sorted([[cell(k, x[k]) for k in keys_] for x in r_], key=lambda z: (z[0] is None, z[0]), reverse=True)
+        table("Yellow Cake reports", "Yellow Cake plc: facts from its reports", "V035-V041 and V044. One row per quarterly update, interim report and annual result, read from the company PDFs. Blank = not stated in that report. Period figures are never summed across lots.",
+              heads_, rows_, [14, 12, 16, 16, 16, 16, 16, 14, 12, 18, 14, 14, 40, 70, 10], "Shares, capital raised, purchases, cash and buybacks from every Yellow Cake report.", "Quarterly / half-year / annual",
+              f"{min(z[1] for z in rows_ if z[1]):%Y-%m-%d} to {max(z[1] for z in rows_ if z[1]):%Y-%m-%d}",
+              fmts=["yyyy-mm-dd", "yyyy-mm-dd", INT, INT, NUM, INT, INT, INT, NUM, NUM, INT, NUM, None, None, None], wrap=(14,))
+
+    up = RAW / "upc" / "upc_monthly_nav.csv"
+    if up.exists():
+        r_ = read_csv(up)
+        rows_ = [[day(x["release_date"]), day(x["as_of_date"]), num(x["nav_cad_thousand"]), num(x["nav_per_share_cad"]), num(x["shares_outstanding"]), num(x["u3o8_lb"]), x["uf6_kgu_or_lb_and_unit"],
+                  num(x["uranium_price_used_usd"]), x["source_url"], x["note"]] for x in r_]
+        table("UPC monthly NAV", "Uranium Participation Corporation: monthly net asset value", "D44. The fund that SPUT replaced (Sprott took it over in July 2021). Monthly releases, December 2010 to May 2021; figures in CAD except the uranium price (USD per lb). Units as printed; shares outstanding are not printed in the releases.",
+              ["Release date", "As of", "NAV [CAD thousand]", "NAV per share [CAD]", "Shares outstanding", "U3O8 held [lb]", "UF6 held", "Uranium price used [USD/lb]", "Source", "Note"], rows_, [13, 12, 16, 14, 14, 14, 18, 16, 50, 70],
+              "Monthly NAV, NAV per share and uranium holdings of UPC.", "Monthly", f"{min(z[1] for z in rows_):%Y-%m-%d} to {max(z[1] for z in rows_):%Y-%m-%d}",
+              fmts=["yyyy-mm-dd", "yyyy-mm-dd", INT, NUM, INT, INT, None, NUM, None, None], wrap=(10,))
+    ph = sorted((RAW / "physical").glob("*.csv")) if (RAW / "physical").exists() else []
+    if ph:
+        rows_ = []
+        for p in ph:
+            for x in read_csv(p):
+                v = x["value"]
+                try:
+                    v = float(v) if v != "" else None
+                except ValueError:
+                    pass
+                rows_.append([p.stem, x["year"], x["country_or_scope"], v, x["unit"], x["note"], x["source_url"]])
+        table("Physical sources", "Physical-market series, long table", "V092-V109. One row per series, year and country or scope, as printed in the source. Read through page text, not from downloaded files: check a value against the source before quoting it. Files are in data/raw/physical.",
+              ["Series (file)", "Year or date", "Country or scope", "Value", "Unit", "Note", "Source"], rows_, [52, 14, 34, 14, 28, 60, 50],
+              "US and world production, requirements, trade, inventories and IAEA reactor statistics from EIA, IAEA, NEA, WNA and Euratom.", "Annual (irregular coverage)",
+              "1993 to 2024 (varies by series)", fmts=[None, None, None, "#,##0.###", None, None, None], wrap=(6,), plain=True)
+
     # ---- source files kept whole
     meta = [(t, fe.TICKERS[t], g, cur) for t, cur, g in EQUITIES]
     rows_by = {**S["equities_raw"], **S["markets_raw"]}
@@ -648,7 +774,7 @@ def main():
     sheets.insert(1, ("Guide", "Gaps", "Missing, weak or open items, by area.", "-", "-", len(GAPS), 4))
     wb_layout.write_contents(wb, sheets, status_counts, "8 November 2026")
 
-    names = ["Contents", "Variables", "Gaps", "Monthly", "Quarterly", "Annual", "Weekly", "Daily", "SPUT purchases", "SPUT issuance", "SPUT statements", "UxC volumes", "Prices OHLCV", "World Bank monthly"]
+    names = ["Contents", "Variables", "Gaps", "Monthly", "Quarterly", "Annual", "Weekly", "Daily", "SPUT purchases", "SPUT issuance", "SPUT statements", "UxC volumes", "Yellow Cake reports", "UPC monthly NAV", "Physical sources", "Prices OHLCV", "World Bank monthly"]
     wb._sheets = [wb[n] for n in names if n in wb.sheetnames]
     wb.active = 0
     OUT.parent.mkdir(parents=True, exist_ok=True)

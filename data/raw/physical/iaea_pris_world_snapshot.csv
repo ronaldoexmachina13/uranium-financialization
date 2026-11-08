@@ -1,0 +1,8 @@
+year,country_or_scope,value,unit,source_url,note
+2026-11-08,World - in operation (reactors),417,reactors,https://pris-stats.iaea.org/,"PRIS Analytics home page text read in browser pane on 2026-11-08; live counter, as-of date not printed on page; 31 countries"
+2026-11-08,World - in operation (net capacity),379611,MW(e),https://pris-stats.iaea.org/,"Printed ""379 611""; same page, same caveats"
+2026-11-08,World - under construction (reactors),78,reactors,https://pris-stats.iaea.org/,17 countries
+2026-11-08,World - under construction (net capacity),81349,MW(e),https://pris-stats.iaea.org/,"Printed ""81 349"""
+2026-11-08,World - suspended operation (reactors),21,reactors,https://pris-stats.iaea.org/,2 countries
+2026-11-08,World - suspended operation (net capacity),19387,MW(e),https://pris-stats.iaea.org/,"Printed ""19 387"""
+2025,World - electricity produced,2635,TWh,https://pris-stats.iaea.org/,"Printed ""2 635"" TWh on home page (rounded as printed); the page also prints ""2 013.4 GWh Electrical equivalent of heat for NEA"" which was not copied as a series"

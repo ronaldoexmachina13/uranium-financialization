@@ -112,3 +112,10 @@ Not extracted: 2021-2022 cash and flows, earlier prospectuses' prior-sales table
 
 ## EIA annual series (read from eia.gov tables, 8 Nov 2026)
 - `data/raw/eia/`: Table 3 (US uranium production 2011-2025), Tables 22 and 23 (US inventories at year-end 2021-2025), Table 11 (unfilled requirements), Table 10 (contracted deliveries), Table 12 (maximum requirements). Withheld cells (W) are left as W in the raw files and blank in the workbook. IAEA PRIS, NEA/IAEA and WNA series are not retrieved.
+
+## Yellow Cake report series, physical-market series, macro series, UPC NAV (8 Nov 2026)
+- `data/raw/yellowcake/yellowcake_report_series_verified.csv`: 48 reports (32 quarterly updates, 8 interim, 8 annual results), every number re-read from the company PDFs (pdf.js text). Seven corrections to the earlier web-text pass (buyback cost in GBP, a pro-forma net-assets figure, one missing annual-report row, rounded cash values). The first-pass file `yellowcake_report_series_FIRSTPASS_unverified.csv` is superseded; delete it.
+- `data/raw/physical/` (15 files): WNA and NEA/IAEA Red Book production by country, Red Book requirements (2022 actual, projections after), EIA production 1993-2010, EIA UMAR 2015 tables (1994-2015 purchases, enrichment, trade, inventories), IAEA TECDOC-2030 inventories end 2021 (two regions read), Euratom EU stocks (2010, 2012), IAEA reactor data booklet selected years, PRIS home-page snapshot. Read through page text, NOT downloaded files: verify before quoting. PRIS annual series not retrieved.
+- `data/raw/macro/` (38 files, see macro_index.csv): US GDP and growth, OECD/G7 industrial production, categorical EPU, GPR (monthly, daily, historical), TED spread and commercial-paper/T-bill/SOFR rates, Kilian index, Google Trends 'uranium ETF', energy uncertainty index (source dates corrupted; not used). Baltic Dry Index not retrieved.
+- `data/raw/upc/upc_monthly_nav.csv`: 125 monthly releases, Dec 2010 to May 2021 (May 2018 missing); CAD; shares outstanding not printed.
+- Not found: SPUT dated issuances before 12 May 2025; SPUT monthly units.
