@@ -755,7 +755,7 @@ def main():
                                       "Long table: one row per ticker and day, with open, high, low, close, adjusted close and volume. The Daily sheet holds the adjusted close only.",
                                       ["Date", "Ticker", "Description", "Group", "Currency", "Open", "High", "Low", "Close", "Adj. close", "Volume"], rows,
                                       [12, 10, 40, 18, 10, 12, 12, 12, 12, 12, 14], fmts=["yyyy-mm-dd", None, None, None, None, NUM4, NUM4, NUM4, NUM4, NUM4, INT], tab="dump", plain=True)
-    sheets.append(("Source files kept whole", "Prices OHLCV", "Open, high, low, close, adjusted close and volume for every ticker retrieved.", "Daily", rng(dates), len(rows), 11))
+    sheets.append(("Source files kept whole", "Prices OHLCV", "Open, high, low, close, adjusted close and volume for every ticker retrieved.", "Daily", f"{min(r[0] for r in rows):%Y-%m-%d} to {max(r[0] for r in rows):%Y-%m-%d}", len(rows), 11))
     wb_layout.write_data_sheet(wb, "World Bank monthly", "World Bank Pink Sheet, monthly (all columns as published)",
                                "Monthly period averages as published by the World Bank, 1960 onwards, kept whole. Columns that match a handoff variable are placed first.",
                                pink_months, pk, "Month", "yyyy-mm", mk, width=15, tab="dump", pink=True, extra_label="Other Pink Sheet series (not in the handoff table)")
