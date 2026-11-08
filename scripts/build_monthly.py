@@ -114,6 +114,17 @@ def main():
     data["Uranium futures final settlement (reconstructed from UxC benchmark)"] = {ym(r["month"] + "-01"): float(r["price_usd_lb"]) for r in rec}
     meta["Uranium futures final settlement (reconstructed from UxC benchmark)"] = ("UX final settlement", "UxC benchmark via Cameco and Yellow Cake documents", "USD per lb", "reconstructed, 8 months Stooq lacks; see data/raw/uxc; not verified against CME bulletins")
 
+    yc = read_csv(RAW / "yellowcake" / "nav_quarterly.csv")
+    data["Yellow Cake NAV per share"] = {ym(r["quarter_end"]): float(r["nav_per_share_gbp"]) for r in yc}
+    meta["Yellow Cake NAV per share"] = ("nav_quarterly", "Yellow Cake plc quarterly operating updates", "GBP", "QUARTERLY: filled at quarter-end months only, blank otherwise (no monthly NAV is published)")
+    data["Yellow Cake uranium held"] = {ym(r["quarter_end"]): float(r["uranium_held_million_lb"]) for r in yc if r["uranium_held_million_lb"]}
+    meta["Yellow Cake uranium held"] = ("nav_quarterly", "Yellow Cake plc quarterly operating updates", "million lb U3O8", "QUARTERLY, quarter-end months only; see lb_basis in the raw file (stated, derived or carried)")
+    conv = read_csv(RAW / "cameco" / "conversion_prices_quarterly.csv")
+    for col, key in [("Conversion spot, North America", "conv_spot_na_usd_kgu"), ("Conversion spot, Europe", "conv_spot_eu_usd_kgu"),
+                     ("Conversion long-term, North America", "conv_lt_na_usd_kgu"), ("Conversion long-term, Europe", "conv_lt_eu_usd_kgu")]:
+        data[col] = {ym(r["quarter_end"]): float(r[key]) for r in conv if r[key]}
+        meta[col] = (key, "Cameco quarterly reports (TradeTech and UxC average)", "USD per kgU as UF6", "QUARTERLY: quarter-end months only; complete from 2014-03, only scattered quarters from 2010 to 2013; monthly values are not free")
+
     sd = read_csv(RAW / "sprott" / "sput_daily.csv")
     for col, key, unit in [("SPUT price", "price_usd", "USD"), ("SPUT NAV per unit", "nav_usd", "USD"), ("SPUT premium/discount", "premium_discount_pct", "percent")]:
         data[col] = month_end(sd, "date", key)
@@ -179,6 +190,7 @@ def main():
         "Pink Sheet commodities are monthly averages (no month-end values are published) and are used as published.",
         "The IMF uranium series is kept only as a cross-check; it runs about 20% below Cameco from 2021 (cause not confirmed).",
         "Stooq futures are missing Oct 2021 to Mar 2022 and Apr to Aug 2023; Investing fills Jan to Mar 2022 and a reconstructed UxC-benchmark column fills Oct to Dec 2021 and Apr to Aug 2023, each in its own column.",
+        "Yellow Cake NAV and holdings and the conversion prices are quarterly: they appear only in quarter-end months (Mar, Jun, Sep, Dec) and are blank in between. They are not interpolated.",
         "Blank cells mean the source has no value for that month. SPUT starts in Jul 2021; equities start at their listing dates.",
         "Equity listing currencies are assigned by ticker; check before comparing across tickers.",
         f"The panel ends at {last[0]}-{last[1]:02d}, the last month with a Cameco spot price.",

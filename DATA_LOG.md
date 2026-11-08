@@ -30,7 +30,7 @@ Why: Pink Sheet and FRED differ for Australian coal (211 of 417 months differ by
 
 Timing: the main price is a month-end price, so daily series use the last available value of each month. Pink Sheet commodities are published only as monthly averages and are used as published. Futures: Stooq and Investing closes stay in separate columns.
 
-Processed: data/processed/monthly_panel.xlsx, built by scripts/build_monthly.py (238 months, Jan 2007 to Oct 2026, 46 series: uranium prices, futures, SPUT, 17 equities, macro, commodities).
+Processed: data/processed/monthly_panel.xlsx, built by scripts/build_monthly.py (238 months, Jan 2007 to Oct 2026, 52 series: uranium prices, futures, SPUT, 17 equities, macro, commodities).
 | 2026-11-08 | SPUT price, NAV and premium/discount (USD, U.U) | Sprott fund page | daily, 1332 rows, 2021-07-19 to 2026-11-06 | data/raw/sprott/sput_daily.csv |
 | 2026-11-08 | SPUT pounds of U3O8 held | Sprott fund page | weekly, 271 rows, 2021-07-16 to 2026-11-06 | data/raw/sprott/sput_holdings.csv |
 | 2026-11-08 | SPUT pounds acquired and cumulative | Sprott fund page | purchase days, 259 rows, 2021-07-19 to 2026-07-30 | data/raw/sprott/sput_acquired.csv |
