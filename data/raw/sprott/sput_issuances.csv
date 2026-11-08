@@ -1,100 +1,344 @@
-date,price_usd_per_unit,units_issued,issue_type
-2025-05-12,17.1400,1490662,non-brokered private placement
-2025-06-13,17.0955,69800,at-the-market (sales agreement)
-2025-06-13,17.0737,318100,at-the-market (sales agreement)
-2025-06-20,17.2500,11600000,bought deal public offering
-2025-08-29,18.3193,66300,at-the-market (sales agreement)
-2025-08-29,18.4081,1295300,at-the-market (sales agreement)
-2025-09-02,18.5047,51800,at-the-market (sales agreement)
-2025-09-03,18.5900,25000,at-the-market (sales agreement)
-2025-09-03,18.5580,446400,at-the-market (sales agreement)
-2025-09-04,18.5417,511900,at-the-market (sales agreement)
-2025-09-05,18.5060,89000,at-the-market (sales agreement)
-2025-09-08,18.6954,6900,at-the-market (sales agreement)
-2025-09-09,18.6946,14100,at-the-market (sales agreement)
-2025-09-15,18.5395,777400,at-the-market (sales agreement)
-2025-09-15,18.5895,899600,at-the-market (sales agreement)
-2025-09-16,18.5689,1479492,at-the-market (sales agreement)
-2025-09-16,18.5174,138100,at-the-market (sales agreement)
-2025-09-17,18.5697,103500,at-the-market (sales agreement)
-2025-09-18,18.6093,84500,at-the-market (sales agreement)
-2025-09-19,18.7523,301100,at-the-market (sales agreement)
-2025-09-19,18.8015,3386995,at-the-market (sales agreement)
-2025-09-22,19.2750,2090400,at-the-market (sales agreement)
-2025-09-22,19.3869,164400,at-the-market (sales agreement)
-2025-09-23,19.3077,1180000,at-the-market (sales agreement)
-2025-09-23,19.3383,66700,at-the-market (sales agreement)
-2025-09-24,19.6228,2010000,at-the-market (sales agreement)
-2025-09-24,19.7270,6100,at-the-market (sales agreement)
-2025-09-24,19.7177,265000,at-the-market (sales agreement)
-2025-09-26,20.3586,7000,at-the-market (sales agreement)
-2025-09-29,20.0365,38600,at-the-market (sales agreement)
-2025-09-29,20.0464,222200,at-the-market (sales agreement)
-2025-09-29,20.1349,91720,at-the-market (sales agreement)
-2025-09-30,20.0629,49100,at-the-market (sales agreement)
-2025-09-30,20.0268,1416900,at-the-market (sales agreement)
-2025-10-01,20.0314,8100,at-the-market (sales agreement)
-2025-10-01,19.9963,524600,at-the-market (sales agreement)
-2025-10-02,19.9718,48000,at-the-market (sales agreement)
-2025-10-02,19.9545,664900,at-the-market (sales agreement)
-2025-10-03,19.8101,19100,at-the-market (sales agreement)
-2025-10-03,19.8084,96800,at-the-market (sales agreement)
-2025-10-07,19.7458,85400,at-the-market (sales agreement)
-2025-10-07,19.7421,220600,at-the-market (sales agreement)
-2025-10-10,18.8203,300600,at-the-market (sales agreement)
-2025-10-10,18.8466,173400,at-the-market (sales agreement)
-2025-10-14,19.2203,7500,at-the-market (sales agreement)
-2025-10-14,19.1941,95700,at-the-market (sales agreement)
-2025-10-15,19.2645,101810,at-the-market (sales agreement)
-2025-10-16,19.3090,1000,at-the-market (sales agreement)
-2025-10-16,19.3232,25200,at-the-market (sales agreement)
-2025-10-28,19.0200,437000,at-the-market (sales agreement)
-2025-10-28,19.0704,2518000,at-the-market (sales agreement)
-2025-10-29,19.4956,282100,at-the-market (sales agreement)
-2025-10-29,19.4546,1512700,at-the-market (sales agreement)
-2025-10-30,19.6357,268100,at-the-market (sales agreement)
-2025-11-19,18.4132,43800,at-the-market (sales agreement)
-2025-12-04,18.4585,105000,at-the-market (sales agreement)
-2025-12-05,18.4600,70100,at-the-market (sales agreement)
-2025-12-09,18.4826,28000,at-the-market (sales agreement)
-2025-12-09,18.4838,60300,at-the-market (sales agreement)
-2025-12-09,18.4907,527600,at-the-market (sales agreement)
-2025-12-11,18.7346,97300,at-the-market (sales agreement)
-2025-12-11,18.7549,117200,at-the-market (sales agreement)
-2025-12-12,18.7629,14300,at-the-market (sales agreement)
-2025-12-12,18.7775,200,at-the-market (sales agreement)
-2025-12-18,19.1100,11100,at-the-market (sales agreement)
-2025-12-18,19.0870,97900,at-the-market (sales agreement)
-2025-12-19,19.1844,98400,at-the-market (sales agreement)
-2025-12-19,19.1354,1057700,at-the-market (sales agreement)
-2025-12-22,19.6257,61700,at-the-market (sales agreement)
-2025-12-22,19.6730,9045,at-the-market (sales agreement)
-2025-12-23,19.6201,28300,at-the-market (sales agreement)
-2025-12-24,19.6900,25000,at-the-market (sales agreement)
-2025-12-24,19.7004,55800,at-the-market (sales agreement)
-2025-12-29,19.7068,13900,at-the-market (sales agreement)
-2025-12-29,19.6938,287600,at-the-market (sales agreement)
-2025-12-30,19.8386,26100,at-the-market (sales agreement)
-2025-12-30,19.8084,183100,at-the-market (sales agreement)
-2026-01-02,19.9205,138900,at-the-market (sales agreement)
-2026-01-02,19.9143,918700,at-the-market (sales agreement)
-2026-01-05,19.8091,13500,at-the-market (sales agreement)
-2026-01-06,19.8706,29600,at-the-market (sales agreement)
-2026-01-07,19.9119,6200,at-the-market (sales agreement)
-2026-01-07,19.8962,57200,at-the-market (sales agreement)
-2026-01-08,19.9771,63700,at-the-market (sales agreement)
-2026-01-08,19.9445,956700,at-the-market (sales agreement)
-2026-01-09,20.0256,6300,at-the-market (sales agreement)
-2026-01-09,19.9915,533800,at-the-market (sales agreement)
-2026-01-12,20.2702,46000,at-the-market (sales agreement)
-2026-01-12,20.2672,1006000,at-the-market (sales agreement)
-2026-01-13,20.1829,12500,at-the-market (sales agreement)
-2026-01-13,20.2252,181512,at-the-market (sales agreement)
-2026-01-14,20.6947,112800,at-the-market (sales agreement)
-2026-01-14,20.7298,1000000,at-the-market (sales agreement)
-2026-01-15,21.5367,78900,at-the-market (sales agreement)
-2026-01-15,21.5261,743400,at-the-market (sales agreement)
-2026-01-16,21.4472,142900,at-the-market (sales agreement)
-2026-01-16,21.4573,1010000,at-the-market (sales agreement)
-2026-01-19,21.8600,40700,at-the-market (sales agreement)
-2026-01-19,21.8810,279000,at-the-market (sales agreement)
+date,price_usd_per_unit,units_issued,issue_type,source
+2022-02-16,11.2043,6300,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-02-16,11.2067,35900,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-02-17,11.0431,26000,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-02-17,11.0600,1600,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-02-22,11.0526,268100,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-02-22,11.0851,41100,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-02-23,11.2563,1275800,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-02-23,11.2611,80000,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-02-24,11.4527,725400,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-02-24,11.4686,2886700,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-02-25,11.5450,10000,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-02-25,11.5601,63600,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-02-25,11.5826,6590200,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-02-28,12.3143,494500,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-02-28,12.3261,2602000,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-03-01,12.5026,1876600,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-03-01,12.5087,55800,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-03-02,12.8486,227400,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-03-02,12.9229,1546800,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-03-03,12.9444,337600,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-03-03,13.2500,600,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-03-04,12.8117,19900,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-03-07,12.9751,195700,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-03-07,12.9786,1796700,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-03-08,13.2417,3175400,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-03-08,13.2714,340400,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-03-09,13.6606,440800,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-03-09,13.7218,1356000,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-03-10,14.6550,284300,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-03-10,14.6727,1022100,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-03-17,14.0812,166100,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-03-17,14.1474,1034700,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-03-18,14.2431,121000,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-03-18,14.2635,9500,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-03-21,14.6112,135900,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-03-21,14.6217,1006100,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-03-22,14.7515,108600,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-03-22,14.8026,410000,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-03-23,14.8942,116400,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-03-23,14.9000,30000,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-03-24,14.9525,52500,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-03-24,14.9738,245500,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-03-25,14.8876,199700,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-03-25,14.9635,289000,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-03-30,14.7864,613100,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-03-30,14.8021,113500,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-03-31,14.7841,920600,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-03-31,14.8159,39800,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-04-01,15.0330,142500,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-04-01,15.0958,1649100,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-04-04,15.1207,118200,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-04-04,15.1808,1552100,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-04-05,15.2754,177500,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-04-05,15.2855,914000,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-04-06,15.5225,617400,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-04-06,15.5268,33000,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-04-07,15.7376,1444900,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-04-07,15.7534,21900,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-04-12,15.9986,11700,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-04-29,13.2402,170900,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-04-29,13.2500,43000,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-05-04,13.4909,106900,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-05-25,11.6261,100200,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-05-25,11.6480,552900,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-05-26,11.7087,199700,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-05-26,11.7458,886500,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-05-27,11.7993,131400,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-05-27,11.8189,338700,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-05-30,11.8981,130200,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-05-30,11.9120,183600,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-05-31,11.8681,202300,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-05-31,11.9202,8500,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-05-31,11.9467,113500,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-06-01,12.1178,37000,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-06-01,12.1738,382600,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-06-02,12.4050,134900,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-06-02,12.4068,1749600,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-06-03,12.4926,450800,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-06-03,12.4965,34200,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-06-06,12.6035,75000,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-06-06,12.6035,98000,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-06-06,12.6555,10000,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-06-07,13.1118,129200,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-06-07,13.1798,2024200,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-06-08,12.9834,330800,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-06-08,12.9842,20400,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-08-24,12.0702,291200,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-08-25,12.1529,68600,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-08-25,12.1764,115700,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-08-29,12.2846,63500,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-08-29,12.2996,1279300,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-08-30,12.3269,668600,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-08-30,12.4600,1600,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-09-06,12.9027,89300,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-09-06,12.9131,14600,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-09-08,12.9508,638400,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-09-08,12.9671,42500,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-09-09,13.0382,11300,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-09-09,13.0598,226400,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-09-19,11.9731,83100,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-09-19,11.9900,4900,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-09-20,11.8899,11600,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-10-04,12.2567,1500,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-10-04,12.2631,11800,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-10-05,12.2078,85000,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-10-05,12.2321,7000,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-10-06,12.2226,7300,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-10-13,12.3726,597900,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-10-13,12.3971,179000,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-10-14,12.4384,244900,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-10-17,12.6880,234300,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-10-17,12.7394,44000,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-10-18,12.7830,430100,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-10-18,12.8144,17900,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-10-27,13.1958,18100,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-10-27,13.2333,3000,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-11-07,12.5724,30400,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-11-07,12.5751,185000,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-11-08,12.5431,125900,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-11-08,12.6694,322400,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-11-09,12.6618,24900,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-11-09,12.9000,3600,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-11-10,12.6048,97300,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-11-10,12.7143,7600,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-11-11,12.6071,143200,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2022-11-11,12.6354,96600,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2023-01-05,12.0722,6400,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2023-01-06,12.2521,105000,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2023-01-06,12.3195,211100,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2023-01-09,12.4091,95500,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2023-01-09,12.4432,585800,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2023-01-25,12.3931,1245900,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2023-01-25,12.4062,56500,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2023-01-26,12.5225,33400,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2023-01-26,12.5381,1223800,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2023-01-27,12.8140,1950300,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2023-01-27,12.8497,84200,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2023-01-30,12.9371,717900,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2023-01-30,12.9399,117000,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2023-01-31,12.8222,200000,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2023-01-31,12.8606,24700,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2023-01-31,12.8843,344405,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2023-02-01,12.9282,1088990,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2023-02-01,12.9399,87900,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2023-02-02,12.9541,577500,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2023-02-02,12.9838,19900,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2023-02-03,12.7272,60300,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2023-02-07,12.7746,11800,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2023-02-07,12.7860,279600,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2023-02-08,12.8051,16900,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2023-02-09,12.7188,56800,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2023-02-09,12.7468,514002,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2023-02-10,12.7137,10500,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2023-02-10,12.7759,46900,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2023-02-14,12.8554,360100,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2023-02-14,12.8634,14300,at-the-market (sales agreement),Prospectus supplement 15 Feb 2023
+2023-02-15,12.8040,427600,not stated in the document (listed in Prior Sales),Prospectus supplement 3 Jan 2024
+2023-02-16,12.8955,374500,not stated in the document (listed in Prior Sales),Prospectus supplement 3 Jan 2024
+2023-02-16,12.9412,12300,not stated in the document (listed in Prior Sales),Prospectus supplement 3 Jan 2024
+2023-02-17,12.9867,1500,not stated in the document (listed in Prior Sales),Prospectus supplement 3 Jan 2024
+2023-02-17,12.9887,51400,not stated in the document (listed in Prior Sales),Prospectus supplement 3 Jan 2024
+2023-03-03,12.6278,55520,not stated in the document (listed in Prior Sales),Prospectus supplement 3 Jan 2024
+2023-08-30,14.5935,57500,not stated in the document (listed in Prior Sales),Prospectus supplement 3 Jan 2024
+2023-08-30,14.6110,4100,not stated in the document (listed in Prior Sales),Prospectus supplement 3 Jan 2024
+2023-09-13,15.5294,83400,not stated in the document (listed in Prior Sales),Prospectus supplement 3 Jan 2024
+2023-09-13,15.5490,934850,not stated in the document (listed in Prior Sales),Prospectus supplement 3 Jan 2024
+2023-09-14,16.2274,496800,not stated in the document (listed in Prior Sales),Prospectus supplement 3 Jan 2024
+2023-09-14,16.2837,25000,not stated in the document (listed in Prior Sales),Prospectus supplement 3 Jan 2024
+2023-09-15,16.4065,556938,not stated in the document (listed in Prior Sales),Prospectus supplement 3 Jan 2024
+2023-09-15,16.4170,15000,not stated in the document (listed in Prior Sales),Prospectus supplement 3 Jan 2024
+2023-09-18,16.5093,393700,not stated in the document (listed in Prior Sales),Prospectus supplement 3 Jan 2024
+2023-09-18,16.5152,6400,not stated in the document (listed in Prior Sales),Prospectus supplement 3 Jan 2024
+2023-09-19,16.7245,1100,not stated in the document (listed in Prior Sales),Prospectus supplement 3 Jan 2024
+2023-09-19,16.7397,34200,not stated in the document (listed in Prior Sales),Prospectus supplement 3 Jan 2024
+2023-09-20,16.6502,133950,not stated in the document (listed in Prior Sales),Prospectus supplement 3 Jan 2024
+2023-09-20,16.6564,5700,not stated in the document (listed in Prior Sales),Prospectus supplement 3 Jan 2024
+2023-09-21,16.6135,49300,not stated in the document (listed in Prior Sales),Prospectus supplement 3 Jan 2024
+2023-09-21,16.6333,1500,not stated in the document (listed in Prior Sales),Prospectus supplement 3 Jan 2024
+2023-09-22,17.0854,791530,not stated in the document (listed in Prior Sales),Prospectus supplement 3 Jan 2024
+2023-09-25,17.6745,30000,not stated in the document (listed in Prior Sales),Prospectus supplement 3 Jan 2024
+2023-09-25,17.7132,455000,not stated in the document (listed in Prior Sales),Prospectus supplement 3 Jan 2024
+2023-09-26,17.4396,31800,not stated in the document (listed in Prior Sales),Prospectus supplement 3 Jan 2024
+2023-09-27,17.5808,1200,not stated in the document (listed in Prior Sales),Prospectus supplement 3 Jan 2024
+2023-09-27,17.6041,55100,not stated in the document (listed in Prior Sales),Prospectus supplement 3 Jan 2024
+2023-09-28,18.0007,15000,not stated in the document (listed in Prior Sales),Prospectus supplement 3 Jan 2024
+2023-09-28,18.0365,182800,not stated in the document (listed in Prior Sales),Prospectus supplement 3 Jan 2024
+2023-10-25,18.2127,282700,not stated in the document (listed in Prior Sales),Prospectus supplement 3 Jan 2024
+2023-11-13,18.3237,495300,not stated in the document (listed in Prior Sales),Prospectus supplement 3 Jan 2024
+2023-11-13,18.3346,48400,not stated in the document (listed in Prior Sales),Prospectus supplement 3 Jan 2024
+2023-11-14,18.4940,20600,not stated in the document (listed in Prior Sales),Prospectus supplement 3 Jan 2024
+2023-11-14,18.4984,25000,not stated in the document (listed in Prior Sales),Prospectus supplement 3 Jan 2024
+2023-11-15,18.4754,128500,not stated in the document (listed in Prior Sales),Prospectus supplement 3 Jan 2024
+2023-11-16,18.5500,5000,not stated in the document (listed in Prior Sales),Prospectus supplement 3 Jan 2024
+2023-11-16,18.6283,1666140,not stated in the document (listed in Prior Sales),Prospectus supplement 3 Jan 2024
+2023-11-17,19.0547,181000,not stated in the document (listed in Prior Sales),Prospectus supplement 3 Jan 2024
+2023-12-12,20.4026,87100,at-the-market (sales agreement),Prospectus supplement 3 Jan 2024; amended and restated supplement Dec 2024
+2024-01-12,23.7378,134100,at-the-market (sales agreement),Amended and restated prospectus supplement Dec 2024
+2024-01-12,23.7852,2207100,at-the-market (sales agreement),Amended and restated prospectus supplement Dec 2024
+2024-03-15,20.7161,200,at-the-market (sales agreement),Amended and restated prospectus supplement Dec 2024
+2024-04-02,21.5328,10000,at-the-market (sales agreement),Amended and restated prospectus supplement Dec 2024
+2024-04-02,21.5552,809900,at-the-market (sales agreement),Amended and restated prospectus supplement Dec 2024
+2024-04-03,21.7266,36000,at-the-market (sales agreement),Amended and restated prospectus supplement Dec 2024
+2024-04-03,21.7414,798500,at-the-market (sales agreement),Amended and restated prospectus supplement Dec 2024
+2024-04-10,21.7893,115000,at-the-market (sales agreement),Amended and restated prospectus supplement Dec 2024
+2024-04-11,21.8287,98200,at-the-market (sales agreement),Amended and restated prospectus supplement Dec 2024
+2024-04-11,21.9500,1500,at-the-market (sales agreement),Amended and restated prospectus supplement Dec 2024
+2024-04-12,21.7700,437200,at-the-market (sales agreement),Amended and restated prospectus supplement Dec 2024
+2024-04-26,21.3945,111800,at-the-market (sales agreement),Amended and restated prospectus supplement Dec 2024
+2024-04-29,21.5779,633100,at-the-market (sales agreement),Amended and restated prospectus supplement Dec 2024
+2024-04-30,21.7033,140400,at-the-market (sales agreement),Amended and restated prospectus supplement Dec 2024
+2024-05-01,22.2751,296600,at-the-market (sales agreement),Amended and restated prospectus supplement Dec 2024
+2024-05-02,22.8374,111300,at-the-market (sales agreement),Amended and restated prospectus supplement Dec 2024
+2024-05-02,22.8974,1312100,at-the-market (sales agreement),Amended and restated prospectus supplement Dec 2024
+2024-05-03,22.8149,330100,at-the-market (sales agreement),Amended and restated prospectus supplement Dec 2024
+2024-05-03,22.8241,9900,at-the-market (sales agreement),Amended and restated prospectus supplement Dec 2024
+2024-05-06,22.8306,238000,at-the-market (sales agreement),Amended and restated prospectus supplement Dec 2024
+2024-05-06,22.8582,42500,at-the-market (sales agreement),Amended and restated prospectus supplement Dec 2024
+2024-05-07,22.7237,109200,at-the-market (sales agreement),Amended and restated prospectus supplement Dec 2024
+2024-05-07,22.8235,7700,at-the-market (sales agreement),Amended and restated prospectus supplement Dec 2024
+2024-05-09,23.1832,19800,at-the-market (sales agreement),Amended and restated prospectus supplement Dec 2024
+2024-05-09,23.2135,50000,at-the-market (sales agreement),Amended and restated prospectus supplement Dec 2024
+2024-05-10,23.1398,57000,at-the-market (sales agreement),Amended and restated prospectus supplement Dec 2024
+2024-05-10,23.1610,15300,at-the-market (sales agreement),Amended and restated prospectus supplement Dec 2024
+2024-05-13,22.5955,223500,at-the-market (sales agreement),Amended and restated prospectus supplement Dec 2024
+2024-05-13,22.6206,5000,at-the-market (sales agreement),Amended and restated prospectus supplement Dec 2024
+2024-05-17,22.4922,43900,at-the-market (sales agreement),Amended and restated prospectus supplement Dec 2024
+2024-05-17,22.5442,1236900,at-the-market (sales agreement),Amended and restated prospectus supplement Dec 2024
+2024-05-21,22.6831,1101700,at-the-market (sales agreement),Amended and restated prospectus supplement Dec 2024
+2024-09-23,19.6264,63200,at-the-market (sales agreement),Amended and restated prospectus supplement Dec 2024
+2024-09-24,19.6881,291600,at-the-market (sales agreement),Amended and restated prospectus supplement Dec 2024
+2024-09-24,19.7689,133900,at-the-market (sales agreement),Amended and restated prospectus supplement Dec 2024
+2024-09-25,19.8608,103700,at-the-market (sales agreement),Amended and restated prospectus supplement Dec 2024
+2024-09-26,19.9604,417700,at-the-market (sales agreement),Amended and restated prospectus supplement Dec 2024
+2024-09-26,19.9664,157500,at-the-market (sales agreement),Amended and restated prospectus supplement Dec 2024
+2024-10-02,20.1670,124700,at-the-market (sales agreement),Amended and restated prospectus supplement Dec 2024
+2024-10-02,20.1780,11200,at-the-market (sales agreement),Amended and restated prospectus supplement Dec 2024
+2024-10-03,20.1971,333900,at-the-market (sales agreement),Amended and restated prospectus supplement Dec 2024
+2024-10-04,20.2811,1034200,at-the-market (sales agreement),Amended and restated prospectus supplement Dec 2024
+2024-10-04,20.3218,27100,at-the-market (sales agreement),Amended and restated prospectus supplement Dec 2024
+2024-10-07,20.3050,12400,at-the-market (sales agreement),Amended and restated prospectus supplement Dec 2024
+2024-10-08,20.4060,339100,at-the-market (sales agreement),Amended and restated prospectus supplement Dec 2024
+2024-10-17,20.4569,215200,at-the-market (sales agreement),Amended and restated prospectus supplement Dec 2024
+2024-11-15,19.6283,88500,at-the-market (sales agreement),Amended and restated prospectus supplement Dec 2024
+2025-01-02,17.9723,27800,at-the-market (sales agreement),Prospectus supplement 18 Jun 2025
+2025-05-12,17.1400,1490662,non-brokered private placement,Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2025-06-13,17.0737,318100,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2025-06-13,17.0955,69800,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2025-06-20,17.2500,11600000,bought deal public offering,Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2025-08-29,18.3193,66300,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2025-08-29,18.4081,1295300,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2025-09-02,18.5047,51800,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2025-09-03,18.5580,446400,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2025-09-03,18.5900,25000,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2025-09-04,18.5417,511900,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2025-09-05,18.5060,89000,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2025-09-08,18.6954,6900,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2025-09-09,18.6946,14100,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2025-09-15,18.5395,777400,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2025-09-15,18.5895,899600,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2025-09-16,18.5174,138100,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2025-09-16,18.5689,1479492,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2025-09-17,18.5697,103500,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2025-09-18,18.6093,84500,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2025-09-19,18.7523,301100,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2025-09-19,18.8015,3386995,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2025-09-22,19.2750,2090400,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2025-09-22,19.3869,164400,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2025-09-23,19.3077,1180000,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2025-09-23,19.3383,66700,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2025-09-24,19.6228,2010000,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2025-09-24,19.7177,265000,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2025-09-24,19.7270,6100,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2025-09-26,20.3586,7000,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2025-09-29,20.0365,38600,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2025-09-29,20.0464,222200,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2025-09-29,20.1349,91720,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2025-09-30,20.0268,1416900,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2025-09-30,20.0629,49100,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2025-10-01,19.9963,524600,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2025-10-01,20.0314,8100,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2025-10-02,19.9545,664900,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2025-10-02,19.9718,48000,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2025-10-03,19.8084,96800,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2025-10-03,19.8101,19100,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2025-10-07,19.7421,220600,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2025-10-07,19.7458,85400,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2025-10-10,18.8203,300600,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2025-10-10,18.8466,173400,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2025-10-14,19.1941,95700,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2025-10-14,19.2203,7500,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2025-10-15,19.2645,101810,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2025-10-16,19.3090,1000,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2025-10-16,19.3232,25200,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2025-10-28,19.0200,437000,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2025-10-28,19.0704,2518000,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2025-10-29,19.4546,1512700,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2025-10-29,19.4956,282100,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2025-10-30,19.6357,268100,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2025-11-19,18.4132,43800,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2025-12-04,18.4585,105000,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2025-12-05,18.4600,70100,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2025-12-09,18.4826,28000,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2025-12-09,18.4838,60300,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2025-12-09,18.4907,527600,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2025-12-11,18.7346,97300,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2025-12-11,18.7549,117200,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2025-12-12,18.7629,14300,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2025-12-12,18.7775,200,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2025-12-18,19.0870,97900,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2025-12-18,19.1100,11100,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2025-12-19,19.1354,1057700,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2025-12-19,19.1844,98400,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2025-12-22,19.6257,61700,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2025-12-22,19.6730,9045,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2025-12-23,19.6201,28300,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2025-12-24,19.6900,25000,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2025-12-24,19.7004,55800,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2025-12-29,19.6938,287600,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2025-12-29,19.7068,13900,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2025-12-30,19.8084,183100,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2025-12-30,19.8386,26100,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2026-01-02,19.9143,918700,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2026-01-02,19.9205,138900,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2026-01-05,19.8091,13500,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2026-01-06,19.8706,29600,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2026-01-07,19.8962,57200,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2026-01-07,19.9119,6200,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2026-01-08,19.9445,956700,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2026-01-08,19.9771,63700,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2026-01-09,19.9915,533800,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2026-01-09,20.0256,6300,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2026-01-12,20.2672,1006000,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2026-01-12,20.2702,46000,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2026-01-13,20.1829,12500,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2026-01-13,20.2252,181512,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2026-01-14,20.6947,112800,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2026-01-14,20.7298,1000000,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2026-01-15,21.5261,743400,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2026-01-15,21.5367,78900,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2026-01-16,21.4472,142900,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2026-01-16,21.4573,1010000,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2026-01-19,21.8600,40700,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)
+2026-01-19,21.8810,279000,at-the-market (sales agreement),Base shelf prospectus 22 Jan 2026 (Prior Sales)

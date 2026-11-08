@@ -1,14 +1,49 @@
-month,uu_high_usd,uu_low_usd,uu_avg_daily_volume,uun_high_cad,uun_low_cad,uun_avg_daily_volume,note
-2025-01,18.07,15.12,36344,26.11,21.71,748047,
-2025-02,16.48,14.01,66704,23.84,20.07,693865,
-2025-03,15.20,13.31,61106,21.81,19.17,890956,
-2025-04,15.15,12.65,52227,20.99,18.12,732489,
-2025-05,17.49,14.97,37863,23.60,20.58,567731,
-2025-06,18.92,15.82,78784,25.86,21.66,940841,
-2025-07,18.42,16.05,68102,25.16,21.97,773955,
-2025-08,18.46,15.85,74455,25.48,21.80,879454,
-2025-09,20.60,17.31,81584,28.39,23.93,1592636,
-2025-10,20.12,17.00,116035,28.00,23.84,1450584,
-2025-11,19.81,16.45,62877,27.75,23.20,1128408,
-2025-12,19.90,17.56,53006,27.24,24.54,739594,
-2026-01,22.42,19.42,113120,31.46,26.85,1860299,1-20 Jan 2026 only
+month,uu_high_usd,uu_low_usd,uu_avg_daily_volume,uun_high_cad,uun_low_cad,uun_avg_daily_volume,note,source
+2022-02,12.61,10.70,99519,15.99,13.53,1962049,,Prospectus supplement 15 Feb 2023
+2022-03,15.05,11.95,94006,19.17,15.25,1682408,,Prospectus supplement 15 Feb 2023
+2022-04,16.05,12.27,91947,20.19,15.74,1457974,,Prospectus supplement 15 Feb 2023
+2022-05,13.62,10.52,91889,17.27,13.73,1134083,,Prospectus supplement 15 Feb 2023
+2022-06,13.35,9.89,45190,16.76,12.76,874705,,Prospectus supplement 15 Feb 2023
+2022-07,11.94,9.40,25251,15.30,12.22,972210,,Prospectus supplement 15 Feb 2023
+2022-08,12.63,10.14,22893,16.60,13.22,691629,,Prospectus supplement 15 Feb 2023
+2022-09,13.16,10.5,21297,17.15,14.36,740645,,Prospectus supplement 15 Feb 2023
+2022-10,13.25,11.17,15980,17.94,15.395,509244,,Prospectus supplement 15 Feb 2023
+2022-11,13.18,11.05,22652,17.78,14.88,546156,,Prospectus supplement 15 Feb 2023
+2022-12,11.70,10.49,10771,15.87,14.235,472975,,Prospectus supplement 15 Feb 2023
+2023-01,13.00,11.64,20113,17.40,15.66,673083,,Prospectus supplement 3 Jan 2024
+2023-02,13.07,12.00,12080,17.58,16.26,609793,,Prospectus supplement 3 Jan 2024
+2023-03,12.64,10.66,20772,17.33,14.66,643452,,Prospectus supplement 3 Jan 2024
+2023-04,12.17,10.90,17397,16.63,14.75,466768,,Prospectus supplement 3 Jan 2024
+2023-05,12.86,11.53,6469,17.52,15.62,354679,,Prospectus supplement 3 Jan 2024
+2023-06,13.65,12.33,19643,18.22,16.72,382072,,Prospectus supplement 3 Jan 2024
+2023-07,13.32,12.00,7415,17.59,15.99,367981,,Prospectus supplement 3 Jan 2024
+2023-08,14.70,12.81,11242,19.92,17.08,557294,,Prospectus supplement 3 Jan 2024
+2023-09,18.33,14.61,49081,24.78,19.92,1099533,,Prospectus supplement 3 Jan 2024
+2023-10,18.25,15.53,42472,25.22,21.29,744766,,Prospectus supplement 3 Jan 2024
+2023-11,19.36,16.89,31597,26.39,23.31,653859,,Prospectus supplement 3 Jan 2024
+2023-12,21.55,19.15,45088,28.44,26.01,664616,,Prospectus supplement 3 Jan 2024
+2024-01,25.00,20.37,53649.05,33.75,27.17,1205137.36,,Amended and restated prospectus supplement Dec 2024
+2024-02,25.09,19.76,70328.30,33.84,26.73,1139241.05,,Amended and restated prospectus supplement Dec 2024
+2024-03,21.60,18.88,85258.35,29.32,25.46,793923.65,,Amended and restated prospectus supplement Dec 2024
+2024-04,22.04,19.84,46601.18,30.32,27.45,928749.68,,Amended and restated prospectus supplement Dec 2024
+2024-05,23.25,20.50,33375.55,31.87,27.94,658745.50,,Amended and restated prospectus supplement Dec 2024
+2024-06,20.74,18.25,39739.40,28.75,25.07,878940.00,,Amended and restated prospectus supplement Dec 2024
+2024-07,20.60,16.90,43601.91,28.15,23.32,796808.14,,Amended and restated prospectus supplement Dec 2024
+2024-08,19.24,16.82,74765.43,26.03,22.91,677654.95,,Amended and restated prospectus supplement Dec 2024
+2024-09,19.97,16.70,69002.25,26.93,22.63,824609.65,,Amended and restated prospectus supplement Dec 2024
+2024-10,20.50,18.13,29460.23,28.32,25.25,662604.23,,Amended and restated prospectus supplement Dec 2024
+2024-11,19.69,16.78,42287.00,27.7,23.36,690484.95,,Amended and restated prospectus supplement Dec 2024
+2024-12,18.88,15.88,41020,26.37,22.85,627320,,Prospectus supplement 18 Jun 2025
+2025-01,18.07,15.12,36344,26.11,21.71,748047,,Prospectus supplement 18 Jun 2025 and base shelf prospectus 22 Jan 2026 (identical)
+2025-02,16.48,14.01,66704,23.84,20.07,693865,,Prospectus supplement 18 Jun 2025 and base shelf prospectus 22 Jan 2026 (identical)
+2025-03,15.20,13.31,61106,21.81,19.17,890956,,Prospectus supplement 18 Jun 2025 and base shelf prospectus 22 Jan 2026 (identical)
+2025-04,15.15,12.65,52227,20.99,18.12,732489,,Prospectus supplement 18 Jun 2025 and base shelf prospectus 22 Jan 2026 (identical)
+2025-05,17.49,14.97,37863,23.60,20.58,567731,,Prospectus supplement 18 Jun 2025 and base shelf prospectus 22 Jan 2026 (identical)
+2025-06,18.92,15.82,78784,25.86,21.66,940841,Jun 2025 full month from the 22 Jan 2026 prospectus (the 18 Jun 2025 supplement gives 1-17 Jun only),Base shelf prospectus 22 Jan 2026
+2025-07,18.42,16.05,68102,25.16,21.97,773955,,Base shelf prospectus 22 Jan 2026
+2025-08,18.46,15.85,74455,25.48,21.80,879454,,Base shelf prospectus 22 Jan 2026
+2025-09,20.60,17.31,81584,28.39,23.93,1592636,,Base shelf prospectus 22 Jan 2026
+2025-10,20.12,17.00,116035,28.00,23.84,1450584,,Base shelf prospectus 22 Jan 2026
+2025-11,19.81,16.45,62877,27.75,23.20,1128408,,Base shelf prospectus 22 Jan 2026
+2025-12,19.90,17.56,53006,27.24,24.54,739594,,Base shelf prospectus 22 Jan 2026
+2026-01,22.42,19.42,113120,31.46,26.85,1860299,1-20 Jan 2026 only,Base shelf prospectus 22 Jan 2026
