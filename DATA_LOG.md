@@ -119,3 +119,14 @@ Not extracted: 2021-2022 cash and flows, earlier prospectuses' prior-sales table
 - `data/raw/macro/` (38 files, see macro_index.csv): US GDP and growth, OECD/G7 industrial production, categorical EPU, GPR (monthly, daily, historical), TED spread and commercial-paper/T-bill/SOFR rates, Kilian index, Google Trends 'uranium ETF', energy uncertainty index (source dates corrupted; not used). Baltic Dry Index not retrieved.
 - `data/raw/upc/upc_monthly_nav.csv`: 125 monthly releases, Dec 2010 to May 2021 (May 2018 missing); CAD; shares outstanding not printed.
 - Not found: SPUT dated issuances before 12 May 2025; SPUT monthly units.
+| 2026-11-08 | Uranium month-end spot and long-term price (Cameco industry average of UxC and TradeTech month-end prices), script run | https://www.cameco.com/invest/markets/uranium-price | monthly, 466 rows, 1988-01 to 2026-10 | data/raw/cameco/uranium_price_monthly.csv |
+| 2026-11-08 | Yellow Cake NAV per share and uranium held (quarterly operating updates), script run | https://otp.tools.investis.com/clients/uk/yellow_cake/rns/regulatory-news.aspx | quarterly, 33 rows, 0 new, 0 announcements unread | data/raw/yellowcake/nav_quarterly.csv |
+| 2026-11-08 | UF6 conversion prices (Cameco quarter-end tables), script run | Cameco quarterly reports | quarterly, 61 rows, 0 new, 17 reports skipped | data/raw/cameco/conversion_prices_quarterly.csv |
+| 2026-11-08 | GC=F: Gold futures, COMEX front month, USD per troy oz | Yahoo Finance | daily, USD, 6572 rows, 2000-08-29 to 2026-11-06 | data/raw/markets/GC=F.csv |
+| 2026-11-08 | SI=F: Silver futures, COMEX front month, USD per troy oz | Yahoo Finance | daily, USD, 6573 rows, 2000-08-29 to 2026-11-06 | data/raw/markets/SI=F.csv |
+| 2026-11-08 | HG=F: Copper futures, COMEX front month, USD per lb | Yahoo Finance | daily, USD, 6576 rows, 2000-08-29 to 2026-11-06 | data/raw/markets/HG=F.csv |
+| 2026-11-08 | PL=F: Platinum futures, NYMEX front month, USD per troy oz | Yahoo Finance | daily, USD, 6599 rows, 1997-10-29 to 2026-11-06 | data/raw/markets/PL=F.csv |
+| 2026-11-08 | CL=F: WTI crude futures, NYMEX front month, USD per barrel | Yahoo Finance | daily, USD, 6580 rows, 2000-08-22 to 2026-11-06 | data/raw/markets/CL=F.csv |
+| 2026-11-08 | BZ=F: Brent crude futures, ICE front month, USD per barrel | Yahoo Finance | daily, USD, 4798 rows, 2007-07-29 to 2026-11-06 | data/raw/markets/BZ=F.csv |
+| 2026-11-08 | NG=F: Natural gas futures (Henry Hub), NYMEX front month, USD per MMBtu | Yahoo Finance | daily, USD, 6577 rows, 2000-08-29 to 2026-11-06 | data/raw/markets/NG=F.csv |
+| 2026-11-08 | ^GSPC: S&P 500 index (full history) | Yahoo Finance | daily, USD, 14335 rows, 1970-01-02 to 2026-11-06 | data/raw/markets/^GSPC.csv |
