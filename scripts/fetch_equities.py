@@ -71,6 +71,8 @@ def rows_from(payload):
             continue
         day = (dt.datetime(1970, 1, 1) + dt.timedelta(seconds=ts + offset)).date().isoformat()
         rows.append([day, q["open"][i], q["high"][i], q["low"][i], q["close"][i], adj[i], q["volume"][i]])
+    # Yahoo sometimes returns the latest day twice (snapshot plus final row): keep the last row per date
+    rows = list({r[0]: r for r in rows}.values())
     return rows, res["meta"].get("currency", "")
 
 
