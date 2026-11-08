@@ -559,7 +559,7 @@ OVERRIDE = {  # id -> (status, where, note); the workbook holds the inputs of de
     "V039": ("Partly in workbook", "Yellow Cake reports: of which other", ""),
     "V041": ("Partly in workbook", "Yellow Cake reports: Cash; Cash and other net current assets", "Cash is stated separately only in some reports."),
     "V044": ("Partly in workbook", "Yellow Cake reports: Shares bought back; Buyback cost", "Only the periods with a buyback programme; early-2020 counts are cumulative and left blank."),
-    "V093": ("Partly in workbook", "Physical sources: WNA 2015-2024 and Red Book 2020-2023 production by country", "Tonnes U. WNA values re-read against the WNA page on 8 Nov 2026 (70 values, no differences); Red Book country rows sum to its totals; world totals agree within 1%. The 2021 WNA tU3O8 total (46,374) is printed so at source: use tonnes U. Country figures differ between WNA and Red Book for China, India, Ukraine and the USA in 2020."),
+    "V093": ("Partly in workbook", "Physical sources: WNA 2015-2024; Red Book 2018 edition (2014-2017), 2022 edition (2018-2021) and 2024 edition (2020-2023) production by country", "Tonnes U. WNA values re-read against the WNA page on 8 Nov 2026 (70 values, no differences); Red Book country rows sum to their totals except the 2018 edition cumulative column (+165). Editions overlap (2020 and 2021) and revise each other: both are kept, the note names the edition. The 2021 WNA tU3O8 total (46,374) is printed so at source: use tonnes U. WNA and Red Book differ for China, India, Ukraine, South Africa and the USA."),
     "V097": ("Partly in workbook", "Physical sources: IAEA TECDOC-2030 inventories at end 2021 (two regions); Euratom EU utility stocks 2010 and 2012", "No continuous global series exists; as-of dates, owners and material forms differ."),
     "V076": ("Partly in workbook", "Daily: TED spread (to Jan 2022), commercial paper 90-day AA, T-bill 3-month, SOFR; Monthly: month-end versions", "Raw rates only: no spread is computed and no single replacement for TED is chosen."),
     "V082": ("Partly in workbook", "Monthly: industrial production OECD total and G7 (to 2024-03), OECD growth", "OECD level series end 2024-03 on FRED; US industrial production is V081."),
@@ -571,14 +571,14 @@ OVERRIDE = {  # id -> (status, where, note); the workbook holds the inputs of de
     "D21": ("In workbook", "Monthly: Google Trends 'uranium ETF'", "Relative interest, peak = 100; carries measurement error."),
     "D44": ("Partly in workbook", "UPC monthly NAV, Dec 2010 to May 2021", "2009 to Nov 2010 and June 2021 not retrieved; shares outstanding not printed in the releases."),
     "V092": ("Partly in workbook", "Annual: US uranium concentrate production, 2011-2025", "US only. Global and country production (V093) not retrieved."),
-    "V095": ("Partly in workbook", "Annual: US reactor owners inventory (total and by material), year-end 2021-2025", "US only; five years in the current EIA report; 2025 preliminary."),
-    "V096": ("Partly in workbook", "Annual: US supplier inventory (uranium concentrate; UF6 withheld), year-end 2021-2025", "Natural and enriched UF6 held by suppliers are withheld by EIA."),
-    "V098": ("Partly in workbook", "Annual: US reactor requirements, maximum anticipated, 2026-2035; Physical sources: NEA/IAEA Red Book 2024 world requirements by region (2022 base year, projections to 2050)", "US figures forward-looking (EIA). World figures are Red Book scenarios, not observations; no continuous annual global series."),
-    "V042": ("Partly in workbook", "Quarterly: Yellow Cake NAV per share (with the quarter-end spot price used)", "NAV per share as announced. Total NAV is not tabulated; it follows from NAV per share and shares in issue (V035)."),
+    "V095": ("Partly in workbook", "Annual: US reactor owners inventory (total and by material), year-end 2021-2025; Physical sources: 2011-2015 (UMAR 2015), 2020 and 2024 preliminary (UMAR 2024), 2016-2019 as rounded totals (Table S3a)", "US only. 2016-2019 exist only as totals rounded to 0.1 million lb (EIA does not give the detailed tables for those years). The 2024 preliminary value (126.4 million lb) was revised to 115.1 in the 2025 edition."),
+    "V096": ("Partly in workbook", "Annual: US supplier inventory (uranium concentrate; UF6 withheld), year-end 2021-2025; Physical sources: 2011-2015, 2020 and 2024 preliminary, 2016-2019 as rounded totals", "Natural and enriched UF6 held by suppliers are withheld by EIA."),
+    "V098": ("Partly in workbook", "Annual: US reactor requirements, maximum anticipated, 2026-2035; Physical sources: NEA/IAEA Red Book 2018, 2022 and 2024 world requirements by region (actual years 2016, 2020, 2022; projections to 2050)", "US figures forward-looking (EIA). World figures are Red Book scenarios, not observations, and the editions revise each other (the 2035 low case is 53,010, 60,544 and 77,242 tU in the 2018, 2022 and 2024 editions)."),
+    "V042": ("In workbook", "Quarterly: Yellow Cake NAV per share (with the quarter-end spot price used); Yellow Cake reports: total NAV and NAV per share as stated, per report", "Total NAV is the figure each of the 48 reports states (read from the PDFs), never shares times NAV per share. Three reports state a pro forma or later figure; the basis column says which."),
     "D17": ("Partly in workbook", "Monthly: S&P 500 (^GSPC, from 1988) and S&P 500 (FRED, last ten years)", "MSCI World is licensed and not retrieved."),
     "V099": ("Partly in workbook", "Annual: US unfilled requirements, as of end 2024 and end 2025", "Forward-looking; two vintages only."),
     "V100": ("Partly in workbook", "Annual: US contracted deliveries, minimum and maximum, in effect end 2025", "Forward-looking; one vintage; US/foreign split withheld by EIA."),
-    "D47": ("Partly in workbook", "SPUT issuance (12 May 2025 to 19 Jan 2026); SPUT statements (period totals)", "Earlier dated issuances would need earlier prospectuses."),
+    "D47": ("Partly in workbook", "SPUT issuance (12 May 2025 to 19 Jan 2026); SPUT statements (period totals)", "Sprott publishes only annual and June reports, so no quarterly flows exist; earlier dated issuances would need earlier prospectuses."),
 }
 
 
@@ -724,10 +724,17 @@ def main():
                 return v
             return num(v)
         rows_ = sorted([[cell(k, x[k]) for k in keys_] for x in r_], key=lambda z: (z[0] is None, z[0]), reverse=True)
-        table("Yellow Cake reports", "Yellow Cake plc: facts from its reports", "V035-V041 and V044. One row per quarterly update, interim report and annual result, read from the company PDFs. Blank = not stated in that report. Period figures are never summed across lots.",
-              heads_, rows_, [14, 12, 16, 16, 16, 16, 16, 14, 12, 18, 14, 14, 40, 70, 10], "Shares, capital raised, purchases, cash and buybacks from every Yellow Cake report.", "Quarterly / half-year / annual",
+        # total NAV as stated in the same report (read from the PDFs 8 Nov 2026); inserted after "Cash and other net current assets"
+        navf = RAW / "yellowcake" / "yellowcake_total_nav.csv"
+        nav_ = {(day(x["announcement_date"]), day(x["period_end"])): x for x in read_csv(navf)} if navf.exists() else {}
+        for z in rows_:
+            x = nav_.get((z[0], z[1]))
+            z[10:10] = [num(x["total_nav_usd_m"]) if x else None, num(x["nav_per_share_gbp"]) if x else None, (x["basis"] or None) if x else None]
+        heads_[10:10] = ["Total NAV, as stated [USD million]", "NAV per share, as stated [GBP]", "NAV basis"]
+        table("Yellow Cake reports", "Yellow Cake plc: facts from its reports", "V035-V044. One row per quarterly update, interim report and annual result, read from the company PDFs. Blank = not stated in that report. Period figures are never summed across lots. Total NAV is the figure the report states, never shares times NAV per share.",
+              heads_, rows_, [14, 12, 16, 16, 16, 16, 16, 14, 12, 18, 16, 14, 30, 14, 14, 40, 70, 10], "Shares, capital raised, purchases, cash, total NAV and buybacks from every Yellow Cake report.", "Quarterly / half-year / annual",
               f"{min(z[1] for z in rows_ if z[1]):%Y-%m-%d} to {max(z[1] for z in rows_ if z[1]):%Y-%m-%d}",
-              fmts=["yyyy-mm-dd", "yyyy-mm-dd", INT, INT, NUM, INT, INT, INT, NUM, NUM, INT, NUM, None, None, None], wrap=(14,))
+              fmts=["yyyy-mm-dd", "yyyy-mm-dd", INT, INT, NUM, INT, INT, INT, NUM, NUM, NUM, NUM, None, INT, NUM, None, None, None], wrap=(13, 17))
 
     up = RAW / "upc" / "upc_monthly_nav.csv"
     if up.exists():
