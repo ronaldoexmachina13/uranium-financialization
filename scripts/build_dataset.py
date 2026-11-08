@@ -129,6 +129,91 @@ def quarters_between(a, b):
     return out
 
 
+ISS_FIRST, ISS_LAST = (2025, 2), (2025, 12)  # months fully covered by the prospectus "Prior Sales" table (12 months to 22 Jan 2026, listed to 19 Jan 2026)
+
+
+stmt_src_name = "SPUT annual report 2024, Q2 2025, Q4 2025 and Q2 2026 reports; prospectus 22 Jan 2026"
+
+
+def sput_fundraising(S, M, equities):
+    """SPUT units, issuance, proceeds, cash and TSX statistics.
+    The three CSVs in data/raw/sprott were typed from Sprott documents (see DATA_LOG.md); the build stops if one of the reconciliations below fails."""
+    sp = RAW / "sprott"
+    if not all((sp / f).exists() for f in ("sput_issuances.csv", "sput_statements.csv", "sput_tsx_monthly.csv")):
+        return
+    iss = sorted((day(r["date"]), num(r["price_usd_per_unit"]), int(r["units_issued"]), r["issue_type"]) for r in read_csv(sp / "sput_issuances.csv"))
+    stm = read_csv(sp / "sput_statements.csv")
+    tsx = read_csv(sp / "sput_tsx_monthly.csv")
+    S["issuances"], S["statements"] = iss, stm
+    byend = {r["period_end"]: r for r in stm}
+    U = lambda d: int(byend[d]["units_outstanding"])
+    iu = lambda d: int(byend[d]["units_issued_in_period"] or 0)
+
+    def need(ok, msg):
+        if not ok:
+            raise SystemExit("SPUT reconciliation failed: " + msg)
+    need(U("2022-12-31") + iu("2023-12-31") == U("2023-12-31"), "units 2022 + issued 2023 = units 2023")
+    need(U("2023-12-31") + iu("2024-12-31") == U("2024-12-31"), "units 2023 + issued 2024 = units 2024")
+    need(U("2023-12-31") + iu("2024-06-30") == U("2024-06-30"), "units 2023 + issued H1 2024 = units Jun 2024")
+    need(U("2024-12-31") + iu("2025-06-30") == U("2025-06-30"), "units 2024 + issued H1 2025 = units Jun 2025")
+    need(U("2024-12-31") + iu("2025-12-31") == U("2025-12-31"), "units 2024 + issued 2025 = units 2025")
+    need(U("2025-12-31") + iu("2026-06-30") == U("2026-06-30"), "units 2025 + issued H1 2026 = units Jun 2026")
+    h2 = [(d, pr, n) for d, pr, n, _ in iss if dt.date(2025, 6, 30) < d <= dt.date(2025, 12, 31)]
+    need(sum(n for _, _, n in h2) == U("2025-12-31") - U("2025-06-30"), "H2 2025 issuance list = change in reported units")
+    need(abs(sum(pr * n for _, pr, n in h2) / 1000 - (float(byend["2025-12-31"]["proceeds_from_issuance_usd_thousand"]) - float(byend["2025-06-30"]["proceeds_from_issuance_usd_thousand"]))) < 1, "H2 2025 price x units = reported proceeds")
+    print("SPUT reconciliations OK: unit roll-forward across all reports; H2 2025 issuance list equals the reported units and proceeds")
+
+    mkey = lambda d: (d.year, d.month)
+    me = lambda k: dt.date(k[0] + (k[1] == 12), k[1] % 12 + 1, 1) - dt.timedelta(days=1)
+    full = list(months_between(ISS_FIRST, ISS_LAST))
+    um, vm = defaultdict(int), defaultdict(float)
+    for d, pr, n, _ in iss:
+        if ISS_FIRST <= mkey(d) <= ISS_LAST:
+            um[mkey(d)] += n
+            vm[mkey(d)] += pr * n
+    a_d, a_u = dt.date(2025, 6, 30), U("2025-06-30")
+    rec = {k: a_u + sum(n for d, _, n, _ in iss if a_d < d <= me(k)) - sum(n for d, _, n, _ in iss if me(k) < d <= a_d) for k in full}
+    need(rec[(2025, 12)] == U("2025-12-31"), "reconstructed Dec 2025 units = reported")
+    stmt_src = "SPUT annual and interim reports (Sprott)"
+    raw_s = "data/raw/sprott/sput_statements.csv"
+    ends = [r for r in stm if r["period_type"] in ("annual", "interim")]
+
+    def rep_col(field, hdr, unit, fmt):
+        return col(hdr, {mkey(day(r["period_end"])): num(r[field]) for r in ends}, "native", stmt_src, field, "monthly (reporting dates only)", "reporting date", unit,
+                   "blank in months without an annual or interim report; Statements_SPUT has the full table", "H3", raw_s, fmt)
+    M.append(rep_col("units_outstanding", "SPUT units outstanding, reported", "units", INT))
+    M.append(rep_col("nav_usd_thousand", "SPUT total NAV, reported", "USD thousand", INT))
+    M.append(rep_col("cash_usd_thousand", "SPUT cash, reported", "USD thousand", INT))
+    M.append(col("SPUT units outstanding, month-end, reconstructed", rec, "reconstructed", "SPUT interim report (30 Jun 2025) and base shelf prospectus (22 Jan 2026)", "units_outstanding", "monthly", "month-end",
+                 "units", "units at 30 Jun 2025 plus or minus the dated issuances in the prospectus table; the result for Dec 2025 equals the reported figure. Feb-Dec 2025 only", "H3",
+                 "data/raw/sprott/sput_issuances.csv", INT))
+    M.append(col("SPUT units issued in month", {k: um.get(k, 0) for k in full}, "derived", "SPUT base shelf prospectus, 22 Jan 2026 (Prior Sales)", "units_issued", "monthly", "sum of issue dates in the month", "units",
+                 "complete months only (the table covers 22 Jan 2025 to 19 Jan 2026); 0 = no issue listed", "H3", "data/raw/sprott/sput_issuances.csv", INT))
+    M.append(col("SPUT gross issuance value in month [USD]", {k: vm.get(k, 0.0) for k in full}, "derived", "SPUT base shelf prospectus, 22 Jan 2026 (Prior Sales)", "price x units", "monthly", "sum of price x units in the month",
+                 "USD", "an estimate of gross proceeds: for H2 2025 the sum equals the cash-flow proceeds in the annual report; net proceeds per issue are not published", "H3", "data/raw/sprott/sput_issuances.csv", INT))
+    ts = [r for r in tsx if r["month"] < "2026-01"]
+    for field, hdr, unit, fmt in [("uu_high_usd", "SPUT TSX high, U.U", "USD", NUM), ("uu_low_usd", "SPUT TSX low, U.U", "USD", NUM), ("uu_avg_daily_volume", "SPUT TSX average daily volume, U.U", "units", INT),
+                                  ("uun_high_cad", "SPUT TSX high, U.UN", "CAD", NUM), ("uun_low_cad", "SPUT TSX low, U.UN", "CAD", NUM), ("uun_avg_daily_volume", "SPUT TSX average daily volume, U.UN", "units", INT)]:
+        M.append(col(f"{hdr} [{unit}]", {(int(r["month"][:4]), int(r["month"][5:])): num(r[field]) for r in ts}, "native", "TMX via SPUT base shelf prospectus, 22 Jan 2026", field, "monthly", "calendar month", unit,
+                     "Jan-Dec 2025 only; the table's January 2026 row covers 1-20 Jan and is kept in the raw file. Yahoo daily volumes agree within 0.03%", "H3", "data/raw/sprott/sput_tsx_monthly.csv", fmt))
+    vol = defaultdict(float)
+    for t in ("U-U.TO", "U-UN.TO"):
+        for r in equities[t]:
+            d = day(r["date"])
+            if d >= dt.date(2021, 8, 1) and num(r["volume"]) is not None:
+                vol[mkey(d)] += num(r["volume"])
+    M.append(col("SPUT TSX volume, month total, U.U + U.UN [units]", dict(vol), "derived", "Yahoo Finance", "U-U.TO + U-UN.TO volume", "monthly", "sum of daily volume in the month", "units",
+                 "both TSX lines; from Aug 2021 (first full month); matches the TSX monthly averages in the prospectus within 0.03% for every month of 2025", "H3", "data/raw/yahoo/U-U.TO.csv, U-UN.TO.csv", INT))
+    # weekly holdings against the pounds in the reports (information only)
+    wk = sorted(S["weekly"][0]["values"].items())
+    for r in ends:
+        if r["pounds_u3o8_held"]:
+            d = day(r["period_end"])
+            near = [v for k, v in wk if k <= d]
+            if near:
+                print(f"  holdings check {r['period_end']}: report {float(r['pounds_u3o8_held']) / 1e6:.3f} m lb vs last weekly value {near[-1]:.3f} m lb")
+
+
 # ---------------------------------------------------------------- load
 def load():
     S = {}
@@ -232,6 +317,7 @@ def load():
     sput_months = list(months_between(min(M_ for M_ in month_end(D[[c["sid"] for c in D].index("price_usd")]["values"])), ym(max(D[[c["sid"] for c in D].index("price_usd")]["values"]))))
     M.append(col("SPUT pounds bought in month [lb U3O8]", {k: acq.get(k, 0.0) for k in sput_months}, "derived", "Sprott fund page", "pounds_acquired", "monthly", "sum of purchases in the month", "lb U3O8",
                  f"0 = no purchase listed; the purchase list ends {last_acq.isoformat()}", "H3", "data/raw/sprott/sput_acquired.csv", INT))
+    sput_fundraising(S, M, equities)
     for t, cur, grp in EQUITIES:
         c = next(c for c in D if c["sid"] == t)
         M.append(drv(c, f"{t} adj. close, month-end [{cur}]"))
@@ -406,6 +492,16 @@ def constructed(M, months):
     add("Dummy: SPUT launched (1 from Jul 2021)", {k: 1 if k >= (2021, 7) else 0 for k in months}, "0/1", "SPUT launch 19 Jul 2021 (month of launch = 1)", "H3 regime")
     add("Dummy: Kazakh unrest (1 in Jan 2022)", {k: 1 if k == (2022, 1) else 0 for k in months}, "0/1", "event month from the variables doc", "event")
     add("Dummy: Russia-Ukraine war (1 from Feb 2022)", {k: 1 if k >= (2022, 2) else 0 for k in months}, "0/1", "invasion 24 Feb 2022 (month of invasion = 1)", "event")
+    ur, uc = byh("SPUT units outstanding, reported"), byh("SPUT units outstanding, month-end, reconstructed")
+    if ur and uc:
+        units = {**uc["values"], **ur["values"]}
+        hold = byh("SPUT holdings, month-end")["values"]
+        add("SPUT uranium per unit [lb U3O8 per unit]", {k: hold[k] * 1e6 / units[k] for k in units if k in hold}, "lb per unit",
+            "last weekly SPUT holdings of the month divided by units outstanding at month-end (reported, else reconstructed); the two dates can differ by up to six days. Sprott's weekly holdings are rounded to 0.1 million lb and trailed the reported pounds by up to 0.3 million lb at three 2025-26 reporting dates, so Statements_SPUT (exact pounds) is more reliable on those dates", "H3")
+        vol = byh("SPUT TSX volume")
+        if vol:
+            add("SPUT TSX turnover in month [% of units outstanding]", {k: vol["values"][k] / units[k] * 100 for k in units if k in vol["values"]}, "percent",
+                "TSX volume of U.U + U.UN in the month divided by units outstanding at month-end (reported, else reconstructed)", "H3")
     return out
 
 
@@ -463,6 +559,13 @@ def main():
             cat.append([sheet, c["header"], c["kind"], c["freq"], c["timing"], c["source"], c["sid"], c["unit"], first, last, n, miss, c["role"], c["note"], c["raw"]])
     cat.append(["Events_SPUT", "SPUT purchases: date, pounds acquired, cumulative pounds", "native", "irregular (purchase days)", "purchase date", "Sprott fund page", "sput_acquired", "lb U3O8",
                 min(e[0] for e in S["events"]).isoformat(), max(e[0] for e in S["events"]).isoformat(), len(S["events"]), "", "H3", "list ends at the last purchase date", "data/raw/sprott/sput_acquired.csv"])
+    if "issuances" in S:
+        iss_ = S["issuances"]
+        cat.append(["Issuance_SPUT", "SPUT dated unit issuances: date, price, units, gross value", "native", "irregular (issue days)", "issue date", "SPUT base shelf prospectus, 22 Jan 2026 (Prior Sales)", "sput_issuances", "USD per unit; units",
+                    iss_[0][0].isoformat(), iss_[-1][0].isoformat(), len(iss_), "", "H3", "covers the 12 months before the prospectus only; includes one private placement (12 May 2025) and one bought deal (20 Jun 2025)", "data/raw/sprott/sput_issuances.csv"])
+        stm_ = S["statements"]
+        cat.append(["Statements_SPUT", "SPUT balance-sheet and cash-flow anchors: units, NAV, cash, pounds, issuance, proceeds, costs, purchases", "native", "annual / interim / prospectus date", "period end", stmt_src_name, "sput_statements", "USD thousand; units; lb",
+                    stm_[0]["period_end"], stm_[-1]["period_end"], len(stm_), "", "H3", "2021-2022 rows hold units and NAV only; flows from 2023; 2025-2026 figures read through a web-fetch summary of the PDFs (units reconcile exactly)", "data/raw/sprott/sput_statements.csv"])
     for t, rows in list(S["equities_raw"].items()) + list(S["markets_raw"].items()):
         cat.append(["Daily_OHLCV", f"{t} open, high, low, close, adj. close, volume", "native", "daily", "daily", "Yahoo Finance", t, "listing currency", rows[0]["date"], rows[-1]["date"], len(rows), "",
                     "H3 context (volume)" if t in ("URA", "URNM", "NLR", "U-U.TO", "U-UN.TO", "YCA.L") else "context", EQ_NOTE.get(t, ""), f"data/raw/{'markets' if t in S['markets_raw'] else 'yahoo'}/{t}.csv"])
@@ -474,7 +577,7 @@ def main():
         ["H2 Price discovery", "Do the other markets move before uranium?", "Monthly (month-end columns); Daily for the comparators", "Same as H1; UX futures close (Stooq)",
          f"{n_core} months; futures close on {n_ux} months", "Lead-lag regressions, Granger causality or VAR, information-share comparison of spot and futures",
          "Feasible at monthly frequency only (daily or weekly uranium spot is paid). Month-end values avoid the timing bias that period averages create. Futures are thin (volume 0) and 11 months come from other sources."],
-        ["H3 Financial participation", "Does participation strengthen the links?", "Weekly, Monthly, Quarterly, Daily_OHLCV", "SPUT holdings, price, NAV, premium, monthly purchases (from Jul 2021); Yellow Cake NAV and holdings (quarterly); ETF volumes in Daily_OHLCV; UX volume and open interest (empty)",
+        ["H3 Financial participation", "Does participation strengthen the links?", "Weekly, Monthly, Quarterly, Daily_OHLCV", "SPUT holdings, price, NAV, premium, monthly purchases (from Jul 2021); SPUT units, issuance, proceeds and cash anchors (Statements_SPUT; dated issuances only May 2025 to Jan 2026); TSX volume and turnover; Yellow Cake NAV and holdings (quarterly); ETF volumes in Daily_OHLCV; UX volume and open interest (empty)",
          f"{n_h3} months with SPUT; {n_yc} quarters with Yellow Cake; none before 2021 for SPUT", "Sub-sample (2021 onwards) analysis, before/after split at SPUT's launch, interaction of participation proxies with the H1/H2 links",
          "Limited. No futures participation data, no participation measure before 2021, and no ETF assets or flows. Pre-2021 physical-fund holdings (Uranium Participation Corporation) not collected."],
         ["H4 Macro-financial exposure", "Is uranium sensitive to VIX, dollar and rates, and more so with participation?", "Monthly (month-end columns); Daily for the macro side", "VIX, broad dollar index, Fed funds, 10y yield, real yield, term and credit spreads, breakeven inflation, S&P 500",
@@ -496,6 +599,9 @@ def main():
         ["Funds", "SPUT starts Jul 2021; pre-2021 Uranium Participation Corporation holdings not collected. Monthly UPC releases exist for 2009 to 2020, but UPC held U3O8 and UF6 and reported NAV in CAD", "No participation measure before 2021", "Open: retrieval is a long manual job (about 150 releases)"],
         ["Funds", "Yellow Cake NAV and holdings are quarterly only (from Sep 2018); some holdings are derived or carried (see lb basis)", "33 quarterly observations", "No monthly NAV is published"],
         ["Funds", "ETF assets under management and shares outstanding not collected", "ETF flows cannot be built; only price and volume", "Open"],
+        ["Funds", "SPUT dated issuances cover only the 12 months before the 22 Jan 2026 prospectus (12 May 2025 to 19 Jan 2026). Earlier years have calendar-year or half-year totals and period-end units only. Gross proceeds are price x units (they match the cash-flow proceeds for H2 2025); net proceeds exist only as period totals", "Issuance-based H3 tests: about 8 months of dated events, or a handful of semiannual/annual observations", "Open: earlier prospectuses and supplements list the prior sales for earlier windows; none retrieved"],
+        ["Funds", "SPUT weekly holdings from the Sprott page are rounded to 0.1 million lb and the last weekly value before a reporting date trailed the reported pounds by 0.02 (Dec 2024), 0.27 (Jun 2025), 0.29 (Dec 2025) and 0.05 (Jun 2026) million lb", "Weekly holdings are slightly stale or rounded at quarter ends", "Statements_SPUT holds the exact pounds at reporting dates; reconcile before using holdings as a precise stock"],
+        ["Funds", "SPUT cash is published only at reporting dates (Dec 2023, Jun 2024, Dec 2024, Jun 2025, Dec 2025, Jun 2026 extracted); units outstanding monthly only for Feb-Dec 2025 (reconstructed). 2025 and 2026 figures were read through a web-fetch summary of the PDFs; the unit counts reconcile to the unit, and H2 2025 proceeds to the prospectus table, but the other money lines were not re-read against the PDFs", "No daily or monthly cash; purchase capacity is an anchor-to-anchor estimate only", "Open: re-read the five PDFs; Sprott monthly reports may give units each month"],
         ["Conversion / SWU", "Conversion complete from 2014-03 only; scattered quarters 2010-2013; nothing before 2010", "Short quarterly series", "UxC month-end prices are subscriber-only"],
         ["Conversion / SWU", "No SWU (enrichment) prices", "Missing fuel-cycle price", "Only annual EIA figures exist free"],
         ["Equities", "Currencies assigned by ticker; U-UN.TO data from 2006 look like the predecessor fund", "Check before comparing across tickers", "Open"],
@@ -524,6 +630,63 @@ def main():
         ws.column_dimensions[L].width = w
     ws.row_dimensions[1].height = 40
     ws.freeze_panes = "A2"
+    if "issuances" in S:
+        ws = wb.create_sheet("Issuance_SPUT")
+        ws.append(["Issue date", "Price per unit [USD]", "Units issued", "Gross value, price x units [USD]", "Issue type", "Cumulative units in this list"])
+        cum = 0
+        for d_, pr_, n_, t_ in S["issuances"]:
+            cum += n_
+            ws.append([d_, pr_, n_, pr_ * n_, t_, cum])
+        for row in ws.iter_rows():
+            for cell in row:
+                cell.font = FONT
+        style_header(ws, ["native", "native", "native", "derived", "native", "derived"])
+        for r in range(2, ws.max_row + 1):
+            ws.cell(r, 1).number_format = "yyyy-mm-dd"
+            ws.cell(r, 2).number_format = "0.0000"
+            for c_ in (3, 4, 6):
+                ws.cell(r, c_).number_format = INT
+        for L, w in zip("ABCDEF", (13, 14, 14, 20, 34, 18)):
+            ws.column_dimensions[L].width = w
+        ws.row_dimensions[1].height = 54
+        ws.freeze_panes = "A2"
+        ws.auto_filter.ref = ws.dimensions
+        ws = wb.create_sheet("Statements_SPUT")
+        heads = [("Period end", "native"), ("Period type", "native"), ("Units outstanding", "native"), ("Total NAV [USD thousand]", "native"), ("NAV per unit [USD]", "native"),
+                 ("TSX closing price, U.U [USD]", "native"), ("Cash [USD thousand]", "native"), ("Uranium oxide at fair value [USD thousand]", "native"), ("Pounds U3O8 held", "native"),
+                 ("Units issued in the period (annual row = calendar year, interim row = first six months)", "native"), ("Proceeds from issuance [USD thousand]", "native"),
+                 ("Issue costs, cash flow [USD thousand]", "native"), ("Purchases of uranium oxide [USD thousand]", "native"), ("Source", "native"), ("Note", "native"),
+                 ("Net proceeds, proceeds minus costs [USD thousand]", "derived"), ("Average issue price [USD]", "derived"), ("Pounds per unit [lb]", "derived"),
+                 ("Uranium oxide fair value per lb [USD]", "derived"), ("Cash as % of NAV", "derived")]
+        ws.append([h for h, _ in heads])
+        fields = ["period_end", "period_type", "units_outstanding", "nav_usd_thousand", "nav_per_unit_usd", "tsx_close_usd", "cash_usd_thousand", "uranium_oxide_fv_usd_thousand",
+                  "pounds_u3o8_held", "units_issued_in_period", "proceeds_from_issuance_usd_thousand", "issue_costs_cashflow_usd_thousand", "purchases_of_uranium_usd_thousand"]
+        for r in S["statements"]:
+            v = [num(r[f]) if f not in ("period_end", "period_type") else r[f] for f in fields]
+            v[0] = day(v[0])
+            units_, nav_, cash_, fv_, lb_, iss_, pr_, co_ = v[2], v[3], v[6], v[7], v[8], v[9], v[10], v[11]
+            ws.append(v + [r["source"], r["note"],
+                           pr_ - co_ if pr_ is not None and co_ is not None else None,
+                           pr_ * 1000 / iss_ if pr_ is not None and iss_ else None,
+                           lb_ / units_ if lb_ and units_ else None,
+                           fv_ * 1000 / lb_ if fv_ and lb_ else None,
+                           cash_ / nav_ * 100 if cash_ is not None and nav_ else None])
+        for row in ws.iter_rows():
+            for cell in row:
+                cell.font = FONT
+        style_header(ws, [k for _, k in heads])
+        fm_ = [None, None, INT, INT, "0.0000", NUM, INT, INT, INT, INT, INT, INT, INT, None, None, INT, NUM, "0.0000", NUM, NUM]
+        for r in range(2, ws.max_row + 1):
+            ws.cell(r, 1).number_format = "yyyy-mm-dd"
+            for i, f_ in enumerate(fm_, 1):
+                if f_:
+                    ws.cell(r, i).number_format = f_
+            for i in (14, 15):
+                ws.cell(r, i).alignment = Alignment(wrap_text=True, vertical="top")
+        for i in range(1, len(heads) + 1):
+            ws.column_dimensions[get_column_letter(i)].width = 44 if i in (14, 15) else 16
+        ws.row_dimensions[1].height = 92
+        ws.freeze_panes = "C2"
     ws = wb.create_sheet("Daily_OHLCV")
     ws.append(["Date", "Ticker", "Description", "Group", "Currency", "Open", "High", "Low", "Close", "Adj. close", "Volume"])
     meta = [(t, fe.TICKERS[t], g, cur) for t, cur, g in EQUITIES]
@@ -571,7 +734,7 @@ def main():
         ["HOW IT IS ORGANISED"],
         ["One sheet per native frequency. A series is in the sheet of the frequency at which it is published; nothing is averaged or dropped to fit another frequency."],
         ["Daily: market and macro series, SPUT daily, month rows are not aggregated. Weekly: SPUT holdings. Monthly: uranium prices, futures and month-end versions of daily series."],
-        ["Quarterly: Yellow Cake NAV and holdings, conversion prices. Events_SPUT: SPUT purchase days. Daily_OHLCV: full open/high/low/close/adjusted close/volume for every Yahoo ticker (long table)."],
+        ["Quarterly: Yellow Cake NAV and holdings, conversion prices. Events_SPUT: SPUT purchase days. Issuance_SPUT: SPUT dated unit issuances. Statements_SPUT: SPUT annual and interim anchors (units, NAV, cash, issuance, proceeds, purchases). Daily_OHLCV: full open/high/low/close/adjusted close/volume for every Yahoo ticker (long table)."],
         ["Monthly_Pink: the World Bank Pink Sheet as published (monthly AVERAGES, 1960 onwards), kept as a cross-check. There is no Annual sheet: no annual series has been retrieved yet."],
         ["Constructed: variables built from Monthly columns (spot-minus-long-term, log return, 12-month momentum and volatility, futures basis, SPUT discount state, CPI inflation, real spot, Baa-Aaa, dummies). Events: dated events behind the dummies."],
         ["Variable_Coverage lists the 119 records of the Uranium Data Source Map (the ChatGPT handoff) and 11 extra items from the variables doc, with where each is in this workbook or why it is not."],
@@ -600,7 +763,7 @@ def main():
             cell.font = BOLD if (cell.value and str(cell.value).isupper()) or cell.row == 1 else FONT
             cell.alignment = Alignment(wrap_text=True, vertical="top")
     ws.column_dimensions["A"].width = 150
-    order = ["README", "Variable_Coverage", "Catalogue", "Analysis_Map", "Gaps", "Monthly", "Constructed", "Quarterly", "Weekly", "Daily", "Events_SPUT", "Events", "Daily_OHLCV", "Monthly_Pink"]
+    order = ["README", "Variable_Coverage", "Catalogue", "Analysis_Map", "Gaps", "Monthly", "Constructed", "Quarterly", "Weekly", "Daily", "Events_SPUT", "Issuance_SPUT", "Statements_SPUT", "Events", "Daily_OHLCV", "Monthly_Pink"]
     wb._sheets = [wb[n] for n in order]
     from collections import Counter
     print(dict(Counter(r[8] for r in cov if r[0].startswith("V"))))

@@ -94,3 +94,15 @@ Processed: data/processed/thesis_dataset.xlsx, built by scripts/build_dataset.py
 | 2026-11-08 | USEPUINDXM: Economic Policy Uncertainty index, US, monthly | FRED | monthly, 442 rows | data/raw/fred/USEPUINDXM.csv |
 | 2026-11-08 | GEPUCURRENT: Global Economic Policy Uncertainty index, current-price GDP weights | FRED | monthly, 355 rows | data/raw/fred/GEPUCURRENT.csv |
 | 2026-11-08 | DHHNGSP: Henry Hub natural gas spot price, USD per MMBtu (EIA) | FRED | daily, 7781 rows | data/raw/fred/DHHNGSP.csv |
+
+## SPUT fundraising extracts (typed by hand from Sprott documents, 8 Nov 2026)
+
+These three files are not downloaded by a script: figures were read from the documents named below and typed into CSV. `build_dataset.py` stops if the unit roll-forward or the H2 2025 proceeds reconciliation fails.
+
+| Date | File | Source | Content | Check |
+|---|---|---|---|---|
+| 2026-11-08 | data/raw/sprott/sput_issuances.csv | SPUT short form base shelf prospectus, 22 Jan 2026, "Prior Sales" (library: SPUT2026 - Short Form Base Shelf Prospectus 22 January 2026) | 99 dated issuances, 12 May 2025 to 19 Jan 2026: price per unit (USD), units; one private placement (12 May 2025), one bought deal (20 Jun 2025), the rest at-the-market | H2 2025 units equal the change in reported units (27,695,562); H2 2025 price x units equals the reported proceeds (US$529.862 million) exactly. Units on 20 Jan 2026 (318,488,764) exceed 311,070,452 + the table's January units by 40,000, so about 40,000 units were issued on 20 Jan or are not listed |
+| 2026-11-08 | data/raw/sprott/sput_statements.csv | SPUT Annual Report 2024 (PDF in library); Q2 2025, Q4 2025 and Q2 2026 reports on sprott.com (read through WebFetch, which summarises); prospectus capitalisation (20 Jan 2026) | Units outstanding, NAV, NAV per unit, TSX close, cash, uranium oxide fair value, pounds, units issued, proceeds, issue costs (cash flow), purchases, for Dec 2021 to Jun 2026 (9 dates; flows from 2023) | Units roll forward exactly across all six reports; Dec 2024 figures in the Q2 2025 report equal the Annual Report 2024; H2 2025 proceeds equal the prospectus table. The money lines of the 2025-26 reports were not re-read against the PDFs (the shell cannot reach sprott.com) |
+| 2026-11-08 | data/raw/sprott/sput_tsx_monthly.csv | Same prospectus, "Market Price of Trust Units" (TMX data) | Monthly TSX high, low and average daily volume for U.U (USD) and U.UN (CAD), Jan 2025 to 20 Jan 2026 | Yahoo daily volumes for U-U.TO and U-UN.TO reproduce the monthly averages within 0.03% for every month of 2025 |
+
+Not extracted: 2021-2022 cash and flows, earlier prospectuses' prior-sales tables, Sprott monthly reports.
