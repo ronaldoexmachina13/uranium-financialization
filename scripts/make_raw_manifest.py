@@ -1,0 +1,36 @@
+"""Writes data/raw_manifest.csv: one row per raw file with hash, source, retrieval date and the kind of support behind it."""
+import csv, hashlib, datetime as dt
+from pathlib import Path
+ROOT = Path(__file__).resolve().parents[1]; RAW = ROOT / "data" / "raw"
+idx = {r["file"]: r for r in csv.DictReader(open(RAW / "macro" / "macro_index.csv", encoding="utf-8"))}
+ORIG = "original download: the file is the support"
+TYPED = "read from documents or pages and typed: source documents not yet kept"
+KEPT = "read from documents and typed: source documents kept in 03_data/source_documents (partly, see source_manifest.csv)"
+def classify(p):
+    d, f = p.parent.name, p.name
+    if d == "fred": return ORIG, f"https://fred.stlouisfed.org/graph/fredgraph.csv?id={p.stem}&cosd=1990-01-01"
+    if d == "macro":
+        r = idx.get(f); return ORIG if r else TYPED, (r["source_url"] if r else "see macro_index.csv / DATA_LOG.md")
+    if d in ("markets", "yahoo"): return ORIG, f"https://query1.finance.yahoo.com/v8/finance/chart/{p.stem}"
+    if d == "worldbank": return ORIG, "https://www.worldbank.org/en/research/commodity-markets"
+    if d == "cameco": return TYPED, ("https://www.cameco.com/invest/markets/uranium-price" if "uranium_price" in f else "Cameco quarterly MD&A and SEC filings, listed in scripts/fetch_conversion.py")
+    if d == "yellowcake": return TYPED, "Yellow Cake regulatory news (otp.tools.investis.com/clients/uk/yellow_cake/rns) and company PDFs"
+    if d == "sprott":
+        return (KEPT if f in ("sput_issuances.csv", "sput_tsx_monthly.csv", "sput_prior_sales_2021-11-22_supplement.csv") else TYPED), "SPUT prospectus supplements (SEDAR+ 000052841) and sprott.com reports/fund page"
+    if d == "iaea_pris": return (KEPT if "rds2" in f else TYPED), "IAEA RDS-2 (2026) PDF; PRIS Data Browser (Power BI, read from screen)"
+    if d == "eia": return TYPED, "eia.gov uranium marketing annual report tables"
+    if d == "physical": return TYPED, "WNA, NEA/IAEA Red Book, EIA UMAR 2015, IAEA TECDOC-2030, Euratom (see DATA_LOG.md)"
+    if d == "baltic": return TYPED, "stock-marketdata.com/time-series/charts/commodity-bdi-baltic-dry-index.html (chart data, month-end), checked against investing.com/indices/baltic-dry-historical-data"
+    if d in ("investing", "stooq"): return TYPED, "investing.com / stooq.com UX futures pages (see DATA_LOG.md)"
+    if d == "upc": return TYPED, "Uranium Participation Corporation monthly releases (125)"
+    if d == "uxc": return TYPED, "reconstructed from UxC/Numerco benchmark (see DATA_LOG.md)"
+    return TYPED, ""
+rows = []
+for p in sorted(RAW.rglob("*")):
+    if p.is_file():
+        sup, url = classify(p); b = p.read_bytes()
+        rows.append([str(p.relative_to(ROOT)).replace("\\", "/"), len(b), hashlib.sha256(b).hexdigest(), sup, url,
+                     dt.datetime.fromtimestamp(p.stat().st_mtime).strftime("%Y-%m-%d")])
+with open(ROOT / "data" / "raw_manifest.csv", "w", newline="", encoding="utf-8") as f:
+    w = csv.writer(f); w.writerow(["file", "bytes", "sha256", "support", "source", "file_date"]); w.writerows(rows)
+import collections; print(len(rows), collections.Counter(r[3][:20] for r in rows))
