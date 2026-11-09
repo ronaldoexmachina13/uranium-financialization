@@ -209,3 +209,8 @@ Not extracted: 2021-2022 cash and flows, earlier prospectuses' prior-sales table
 
 ## 2026-11-09 - Raw file manifest (support for every number)
 - `data/raw_manifest.csv` (script `scripts/make_raw_manifest.py`): all 141 raw files with SHA-256, source, file date and the kind of support: 92 are original downloads (the file is the support), 49 were read from documents or pages and typed. Of those 49, the SPUT issuance, TSX and prior-sales files and the two IAEA RDS-2 files have their source PDFs kept in `03_data/source_documents/`; the rest (Yellow Cake, Cameco conversion, UPC, EIA, physical-market series, SPUT statements, IAEA PRIS performance, UX futures pages, Baltic Dry Index) still need their source documents or page copies saved.
+
+## 2026-11-09 - SPUT statements checked against all source reports
+- Saved from sprott.com (financial reports archive) through the user's Chrome and kept in `03_data/source_documents/sput_reports/`: annual reports and MRFPs FY2021 to FY2025, interim reports Q2 2022 to Q2 2026, and the Q1 2026 quarterly portfolio disclosure (11 PDFs, hashes in source_manifest.csv).
+- Check: all 93 filled values of the 11 period rows of `sput_statements.csv` (units, NAV, NAV per unit, TSX close, cash, uranium fair value, pounds, issuance, proceeds, costs, purchases) appear in the PDF of their period; 0 not found. This is a presence check (the number string occurs in the document), not a field-by-field page match. Not checked: the 20 Jan 2026 row (base shelf prospectus of 22 Jan 2026, not on file).
+- The earlier worry that part of the table came from WebFetch summaries is closed for the 11 reporting periods.

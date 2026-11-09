@@ -16,7 +16,7 @@ def classify(p):
     if d == "cameco": return TYPED, ("https://www.cameco.com/invest/markets/uranium-price" if "uranium_price" in f else "Cameco quarterly MD&A and SEC filings, listed in scripts/fetch_conversion.py")
     if d == "yellowcake": return TYPED, "Yellow Cake regulatory news (otp.tools.investis.com/clients/uk/yellow_cake/rns) and company PDFs"
     if d == "sprott":
-        return (KEPT if f in ("sput_issuances.csv", "sput_tsx_monthly.csv", "sput_prior_sales_2021-11-22_supplement.csv") else TYPED), "SPUT prospectus supplements (SEDAR+ 000052841) and sprott.com reports/fund page"
+        return (KEPT if f in ("sput_issuances.csv", "sput_tsx_monthly.csv", "sput_prior_sales_2021-11-22_supplement.csv", "sput_statements.csv") else TYPED), "SPUT prospectus supplements (SEDAR+ 000052841) and sprott.com reports/fund page"
     if d == "iaea_pris": return (KEPT if "rds2" in f else TYPED), "IAEA RDS-2 (2026) PDF; PRIS Data Browser (Power BI, read from screen)"
     if d == "eia": return TYPED, "eia.gov uranium marketing annual report tables"
     if d == "physical": return TYPED, "WNA, NEA/IAEA Red Book, EIA UMAR 2015, IAEA TECDOC-2030, Euratom (see DATA_LOG.md)"
