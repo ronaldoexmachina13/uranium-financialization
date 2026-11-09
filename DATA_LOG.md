@@ -195,3 +195,9 @@ Not extracted: 2021-2022 cash and flows, earlier prospectuses' prior-sales table
 - Investing.com did not apply the 1985 date range (its download held only the last 21 daily rows). The full daily series (10,482 observations, 7 Jan 1985 to 9 Nov 2026) is embedded in the chart page of stock-marketdata.com (time-series/charts/commodity-bdi-baltic-dry-index.html); month-end values were read from that chart in the browser.
 - `data/raw/baltic/baltic_dry_index_monthly.csv`: 503 months, Jan 1985 to Nov 2026 (Nov 2026 partial, left out of the workbook). Check: Jun to Oct 2026 equal the Investing.com monthly figures (2,501; 2,732; 3,186; 3,113; 2,714). The Monthly sheet column starts where the uranium price starts.
 - Dates inside each month are not stored (last trading day assumed); the daily series is not stored. Use for thesis only: Baltic Exchange restricts redistribution.
+
+## 2026-11-09 - Three open decisions applied (V076, V082, D17)
+- V076: funding spread = commercial paper 90-day AA financial (DCPF3M) minus T-bill 3-month (DTB3), computed on days where both exist (6,754 daily values, 1997-01-02 to 2026-11-05; 357 month-end values). Added to Daily and Monthly as "derived". Not spliced to the TED spread, which stays as raw data to Jan 2022. Caveat: commercial paper vs LIBOR, discount-basis bill.
+- V082: OECD industrial production growth (to 2026-07) is the main series. Check: growth computed from the level series equals the published growth series with a mean absolute difference of 0.28 points (max 1.19) over 579 overlapping months (different data vintages). Levels kept (end 2024-03).
+- D17: S&P 500 is the global-equity proxy (US index, longest history); MSCI World not retrieved (licensed).
+- Workbook now: 60 in workbook, 34 partly, 18 derived not computed, 11 not retrieved, 7 paid or unavailable.

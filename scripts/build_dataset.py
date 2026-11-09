@@ -335,6 +335,13 @@ def macro_cols(S):
         if me:
             M.append(col(f"{hdr}, month-end [{unit}]", month_end(v), "derived", src, sid, "monthly", "last observation of the month (from Daily)", unit, note, "", raw(f), NUM))
 
+    # Funding spread (V076): decision 9 Nov 2026 - commercial paper 90-day AA financial minus T-bill 3-month, on dates where both exist; not spliced to the TED spread
+    cp, tb = series("fred_DCPF3M.csv"), series("fred_DTB3.csv")
+    sp = {k: round(cp[k] - tb[k], 4) for k in cp if k in tb}
+    D.append(col("Funding spread, commercial paper 90-day AA financial minus T-bill 3-month [percentage points]", sp, "derived", "FRED (Federal Reserve): DCPF3M minus DTB3", "CP-TBILL", "daily", "daily difference on days both rates exist",
+                 "percentage points", "Replacement for the discontinued TED spread (chosen 9 Nov 2026). Differs in construction (commercial paper vs LIBOR; discount-basis bill): not spliced to TED, and the level is not comparable across the break", "", "data/raw/macro/fred_DCPF3M.csv; data/raw/macro/fred_DTB3.csv", NUM))
+    M.append(col("Funding spread, commercial paper 90-day AA financial minus T-bill 3-month, month-end [percentage points]", month_end(sp), "derived", "FRED (Federal Reserve): DCPF3M minus DTB3", "CP-TBILL", "monthly",
+                 "last observation of the month (from Daily)", "percentage points", "Replacement for the discontinued TED spread (chosen 9 Nov 2026); not spliced to TED", "", "data/raw/macro/fred_DCPF3M.csv; data/raw/macro/fred_DTB3.csv", NUM))
     # Baltic Dry Index (D18): last daily observation of each month, from the stock-marketdata.com series (1985 onwards)
     bdi_f = "baltic/baltic_dry_index_monthly.csv"
     bdi = {(int(r["month"][:4]), int(r["month"][5:7])): num(r["bdi_last_obs_of_month"]) for r in read_csv(RAW / bdi_f) if not r["note"]}
@@ -596,8 +603,8 @@ OVERRIDE = {  # id -> (status, where, note); the workbook holds the inputs of de
     "V044": ("Partly in workbook", "Yellow Cake reports: Shares bought back; Buyback cost", "Only the periods with a buyback programme; early-2020 counts are cumulative and left blank."),
     "V093": ("Partly in workbook", "Physical sources: WNA 2015-2024; Red Book 2018 edition (2014-2017), 2022 edition (2018-2021) and 2024 edition (2020-2023) production by country", "Tonnes U. WNA values re-read against the WNA page on 8 Nov 2026 (70 values, no differences); Red Book country rows sum to their totals except the 2018 edition cumulative column (+165). Editions overlap (2020 and 2021) and revise each other: both are kept, the note names the edition. The 2021 WNA tU3O8 total (46,374) is printed so at source: use tonnes U. WNA and Red Book differ for China, India, Ukraine, South Africa and the USA."),
     "V097": ("Partly in workbook", "Physical sources: IAEA TECDOC-2030 inventories at end 2021 (two regions); Euratom EU utility stocks 2010 and 2012", "No continuous global series exists; as-of dates, owners and material forms differ."),
-    "V076": ("Partly in workbook", "Daily: TED spread (to Jan 2022), commercial paper 90-day AA, T-bill 3-month, SOFR; Monthly: month-end versions", "Raw rates only: no spread is computed and no single replacement for TED is chosen."),
-    "V082": ("Partly in workbook", "Monthly: industrial production OECD total and G7 (to 2024-03), OECD growth", "OECD level series end 2024-03 on FRED; US industrial production is V081."),
+    "V076": ('In workbook', 'Daily and Monthly: funding spread = commercial paper 90-day AA financial minus T-bill 3-month (1997 onwards); raw TED spread (to Jan 2022), both rates and SOFR also kept', 'Decision 9 Nov 2026: commercial paper minus T-bill is the TED replacement. Not spliced to the TED spread; construction differs (commercial paper vs LIBOR).'),
+    "V082": ('In workbook', 'Monthly: OECD industrial production growth, year on year (to 2026-07), the main series; OECD and G7 levels (to 2024-03)', 'Decision 9 Nov 2026: the growth series is the main one. Checked against growth computed from the level series over 579 overlapping months: mean absolute difference 0.28 points, maximum 1.19 (different vintages). US industrial production is V081.'),
     "V083": ("In workbook", "Quarterly: real GDP, US, level and annualised growth", "US only; OECD and other national GDP not retrieved."),
     "V084": ("In workbook", "Monthly: Kilian global real economic activity index", "From the Dallas Fed file."),
     "V088": ("In workbook", "Monthly: categorical EPU, 11 categories", "No energy category in the categorical file."),
@@ -614,7 +621,7 @@ OVERRIDE = {  # id -> (status, where, note); the workbook holds the inputs of de
     "V096": ("Partly in workbook", "Annual: US supplier inventory (uranium concentrate; UF6 withheld), year-end 2021-2025; Physical sources: 2011-2015, 2020 and 2024 preliminary, 2016-2019 as rounded totals", "Natural and enriched UF6 held by suppliers are withheld by EIA."),
     "V098": ("Partly in workbook", "Annual: US reactor requirements, maximum anticipated, 2026-2035; Physical sources: NEA/IAEA Red Book 2018, 2022 and 2024 world requirements by region (actual years 2016, 2020, 2022; projections to 2050)", "US figures forward-looking (EIA). World figures are Red Book scenarios, not observations, and the editions revise each other (the 2035 low case is 53,010, 60,544 and 77,242 tU in the 2018, 2022 and 2024 editions)."),
     "V042": ("In workbook", "Quarterly: Yellow Cake NAV per share (with the quarter-end spot price used); Yellow Cake reports: total NAV and NAV per share as stated, per report", "Total NAV is the figure each of the 48 reports states (read from the PDFs), never shares times NAV per share. Three reports state a pro forma or later figure; the basis column says which."),
-    "D17": ("Partly in workbook", "Monthly: S&P 500 (^GSPC, from 1988) and S&P 500 (FRED, last ten years)", "MSCI World is licensed and not retrieved."),
+    "D17": ('In workbook', 'Monthly: S&P 500 (^GSPC, from 1988) and S&P 500 (FRED, last ten years)', 'Decision 9 Nov 2026: the S&P 500 is the global-equity proxy (US index; longest history). MSCI World is licensed and not retrieved.'),
     "V099": ("Partly in workbook", "Annual: US unfilled requirements, as of end 2024 and end 2025", "Forward-looking; two vintages only."),
     "V100": ("Partly in workbook", "Annual: US contracted deliveries, minimum and maximum, in effect end 2025", "Forward-looking; one vintage; US/foreign split withheld by EIA."),
     "D18": ("In workbook", "Monthly: Baltic Dry Index, month-end, Jan 1985 to Oct 2026", "Month-end values of a free daily series; agrees with the Investing.com monthly table for Jun to Oct 2026. Daily history not stored."),
