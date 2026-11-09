@@ -186,11 +186,11 @@ def sput_fundraising(S, M, equities):
 
     mkey = lambda d: (d.year, d.month)
     me = lambda k: dt.date(k[0] + (k[1] == 12), k[1] % 12 + 1, 1) - dt.timedelta(days=1)
-    full = list(months_between(ISS_FIRST, ISS_LAST))
+    full = list(months_between((2021, 8), (2021, 10))) + list(months_between(ISS_FIRST, ISS_LAST))  # Aug-Oct 2021: Prior Sales table of the 22 Nov 2021 supplement (17 Aug to 18 Nov 2021, reconciled to units outstanding); 19 Nov 2021 to 15 Feb 2022 not listed
     recm = list(months_between((2022, 6), ISS_LAST))
     um, vm = defaultdict(int), defaultdict(float)
     for d, pr, n, _ in iss:
-        if ISS_FIRST <= mkey(d) <= ISS_LAST:
+        if mkey(d) in full:
             um[mkey(d)] += n
             vm[mkey(d)] += pr * n
     anchors = sorted(dt.date.fromisoformat(r["period_end"]) for r in stm if r["period_type"] in ("annual", "interim") and r["units_outstanding"] and r["period_end"] >= "2022-06-30")
@@ -199,6 +199,10 @@ def sput_fundraising(S, M, equities):
         a_d = max(a for a in anchors if a <= me(k))  # latest reported date on or before the month-end
         rec[k] = U(a_d.isoformat()) + sum(n for d, _, n, _ in iss if a_d < d <= me(k))
     need(rec[(2025, 12)] == U("2025-12-31"), "reconstructed Dec 2025 units = reported")
+    # 2021: units from the arrangement (75,210,456 on 19 Jul 2021) plus dated issuances; the table total reconciles to the 162,558,000 units stated on 22 Nov 2021
+    need(75210456 + sum(n for d, _, n, _ in iss if d <= dt.date(2021, 11, 18)) == 162558000, "2021 Prior Sales table sums to 162,558,000 units outstanding on 22 Nov 2021")
+    for k in months_between((2021, 8), (2021, 10)):
+        rec[k] = 75210456 + sum(n for d, _, n, _ in iss if d <= me(k))
     stmt_src = "SPUT annual and interim reports (Sprott)"
     raw_s = "data/raw/sprott/sput_statements.csv"
     ends = [r for r in stm if r["period_type"] in ("annual", "interim")]
@@ -210,10 +214,10 @@ def sput_fundraising(S, M, equities):
     M.append(rep_col("nav_usd_thousand", "SPUT total NAV, reported", "USD thousand", INT))
     M.append(rep_col("cash_usd_thousand", "SPUT cash, reported", "USD thousand", INT))
     M.append(col("SPUT units outstanding, month-end, reconstructed", rec, "reconstructed", "SPUT annual and interim reports and the prospectus Prior Sales tables", "units_outstanding", "monthly", "month-end",
-                 "units", "units at the latest reported date (Jun/Dec) plus the dated issuances since; equals the reported figure at each reporting month. Jun 2022 to Dec 2025; in H2 2023 it omits 33,603 units issued that half-year that the prospectus table does not list", "H3",
+                 "units", "units at the latest reported date (Jun/Dec) plus the dated issuances since; equals the reported figure at each reporting month. Jun 2022 to Dec 2025, and Aug to Oct 2021 (75,210,456 arrangement units plus dated issuances); in H2 2023 it omits 33,603 units issued that half-year that the prospectus table does not list", "H3",
                  "data/raw/sprott/sput_issuances.csv", INT))
     M.append(col("SPUT units issued in month", {k: um.get(k, 0) for k in full}, "derived", "SPUT prospectus supplements and base shelf prospectus (Prior Sales tables)", "units_issued", "monthly", "sum of issue dates in the month", "units",
-                 "complete months only, Mar 2022 to Dec 2025 (the tables cover 16 Feb 2022 to 19 Jan 2026 without a gap); 0 = no issue listed. H2 2023 lacks 33,603 units that the reports show as issued", "H3", "data/raw/sprott/sput_issuances.csv", INT))
+                 "complete months only: Aug to Oct 2021 (17 Aug to 18 Nov 2021 listed) and Mar 2022 to Dec 2025 (16 Feb 2022 to 19 Jan 2026 listed without a gap); 19 Nov 2021 to 15 Feb 2022 is not listed, so those months are blank; 0 = no issue listed. H2 2023 lacks 33,603 units that the reports show as issued", "H3", "data/raw/sprott/sput_issuances.csv", INT))
     M.append(col("SPUT gross issuance value in month [USD]", {k: vm.get(k, 0.0) for k in full}, "derived", "SPUT prospectus supplements and base shelf prospectus (Prior Sales tables)", "price x units", "monthly", "sum of price x units in the month",
                  "USD", "an estimate of gross proceeds: it equals the cash-flow proceeds in the reports for H1 2023, H1 2024, FY2024, H1 2025 and H2 2025; net proceeds per issue are not published", "H3", "data/raw/sprott/sput_issuances.csv", INT))
     ts = [r for r in tsx if r["month"] < "2026-01"]
@@ -625,7 +629,7 @@ OVERRIDE = {  # id -> (status, where, note); the workbook holds the inputs of de
     "V099": ("Partly in workbook", "Annual: US unfilled requirements, as of end 2024 and end 2025", "Forward-looking; two vintages only."),
     "V100": ("Partly in workbook", "Annual: US contracted deliveries, minimum and maximum, in effect end 2025", "Forward-looking; one vintage; US/foreign split withheld by EIA."),
     "D18": ("In workbook", "Monthly: Baltic Dry Index, month-end, Jan 1985 to Oct 2026", "Month-end values of a free daily series; agrees with the Investing.com monthly table for Jun to Oct 2026. Daily history not stored."),
-    "D47": ("Partly in workbook", "SPUT issuance (16 Feb 2022 to 19 Jan 2026, 343 dated rows); SPUT statements (period totals)", "Dated issuances start 16 Feb 2022; 1 Jan to 15 Feb 2022 (about 18.6 million units) is not listed in any retrieved document. Sprott publishes only annual and June reports, so no quarterly flows exist."),
+    "D47": ("Partly in workbook", "SPUT issuance (17 Aug to 18 Nov 2021 and 16 Feb 2022 to 19 Jan 2026, 466 dated rows); SPUT statements (period totals)", "Dated issuances: 17 Aug to 18 Nov 2021 and 16 Feb 2022 onwards. 19 Nov 2021 to 15 Feb 2022 is not listed in any retrieved document (913,400 units in 19 Nov to 31 Dec 2021 by difference, and about 18.6 million units in 1 Jan to 15 Feb 2022 by the reports). Sprott publishes only annual and June reports, so no quarterly flows exist."),
 }
 
 
@@ -756,7 +760,7 @@ def main():
         for d_, pr_, n_, t_ in S["issuances"]:
             cum += n_
             rows.append([d_, pr_, n_, pr_ * n_, t_, cum, S["issuance_src"][(d_, pr_, n_)]])
-        table("SPUT issuance", "SPUT unit issuance", "V022 (new units), V023 (issue price) and V024 (gross proceeds). Dates from the Prior Sales tables of the prospectus supplements of 15 Feb 2023, 3 Jan 2024, Dec 2024 and 18 Jun 2025 and the 22 Jan 2026 base shelf prospectus (16 Feb 2022 to 19 Jan 2026, no gap); gross value = price × units. Issue 1 Jan to 15 Feb 2022 is not listed.",
+        table("SPUT issuance", "SPUT unit issuance", "V022 (new units), V023 (issue price) and V024 (gross proceeds). Dates from the Prior Sales tables of the prospectus supplements of 22 Nov 2021 (17 Aug to 18 Nov 2021), 15 Feb 2023, 3 Jan 2024, Dec 2024 and 18 Jun 2025 and the 22 Jan 2026 base shelf prospectus (16 Feb 2022 to 19 Jan 2026, no gap); gross value = price × units. Issues from 19 Nov 2021 to 15 Feb 2022 are not listed. The 2021 table plus the 75,210,456 arrangement units equals the 162,558,000 units stated on 22 Nov 2021.",
               ["Issue date", "Price per unit [USD]", "Units issued", "Gross value, price × units [USD]", "Issue type", "Cumulative units in this list", "Source document"], rows, [14, 18, 16, 26, 44, 22, 52],
               "Dated unit issues of SPUT (private placement, bought deal, at-the-market).", "Irregular", f"{rows[0][0]:%Y-%m-%d} to {rows[-1][0]:%Y-%m-%d}",
               fmts=["yyyy-mm-dd", "0.0000", INT, INT, None, INT, None])
