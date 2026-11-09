@@ -491,7 +491,7 @@ def load():
     for hdr, k in [("Conversion spot, North America", "conv_spot_na_usd_kgu"), ("Conversion spot, Europe", "conv_spot_eu_usd_kgu"),
                    ("Conversion long-term, North America", "conv_lt_na_usd_kgu"), ("Conversion long-term, Europe", "conv_lt_eu_usd_kgu")]:
         Q.append(col(f"{hdr} [USD/kgU]", {day(r["quarter_end"]): num(r[k]) for r in conv}, "native", csrc, k, "quarterly", "quarter-end", "USD per kgU as UF6",
-                     "complete from 2014-03; only scattered quarters 2010-2013; nothing before 2010; no SWU prices", "context", craw, NUM))
+                     "complete quarter-ends from 2005-12; read from Cameco filings (see data/source_manifest.csv); no SWU prices", "context", craw, NUM))
     yca = sorted((day(r["date"]), num(r["close"])) for r in equities["YCA.L"] if num(r["close"]))
     prem = {}
     for r in yc:
