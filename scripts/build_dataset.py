@@ -599,6 +599,7 @@ OVERRIDE = {  # id -> (status, where, note); the workbook holds the inputs of de
     "D21": ("In workbook", "Monthly: Google Trends 'uranium ETF'", "Relative interest, peak = 100; carries measurement error."),
     "D44": ("Partly in workbook", "UPC monthly NAV, Dec 2010 to May 2021; Daily and Monthly: UPC adj. close, 2006 to Jul 2021", "2009 to Nov 2010 and June 2021 not retrieved; shares outstanding not printed in the releases."),
     "V103": ("In workbook", "Annual: world nuclear electricity produced, IAEA PRIS, 1970-2025", "World total only; country detail sits in the PRIS Data Browser (read on screen, no export). Values match RDS-2 for the six years checked."),
+    "V106": ("In workbook", "Annual: world nuclear construction starts, grid connections, permanent shutdowns and reactors in operation, IAEA RDS-2 (2026 edition), 1954-2025", "World totals per year; the reactor-level shutdown list (220 reactors) is in the raw CSV. Operating status is the year-end count of reactors in operation."),
     "V105": ("In workbook", "Annual: world nuclear energy availability, load, unit capability factors and forced loss rate, IAEA PRIS, 1970-2025", "World totals only; PRIS reports the energy availability factor (EAF) as its headline and the load factor (LF) as the realised measure. Six more indicators sit in the raw CSV."),
     "V104": ("In workbook", "Annual: world nuclear operated capacity, IAEA PRIS, 1970-2025", "World total only. PRIS operated capacity differs from the year-end net capacity printed in RDS-2."),
     "V092": ("Partly in workbook", "Annual: US uranium concentrate production, 2011-2025", "US only. Global and country production (V093) not retrieved."),
@@ -707,6 +708,20 @@ def main():
                                  ("forced_loss_rate_pct", "World nuclear forced loss rate, IAEA PRIS [%]", "Share of energy lost to unplanned outages (PRIS FLR)")]:
             ann.append(col(hdr, {int(r["year"]): num(r[field]) for r in pc}, "native", "IAEA PRIS", field, "annual", "calendar year, as published", "%", what + ". " + perf_note, "",
                            "data/raw/iaea_pris/iaea_pris_world_performance_1970_2025.csv", NUM))
+    ep = RAW / "iaea_pris" / "iaea_rds2_2026_world_reactor_events_1954_2025.csv"
+    if ep.exists():
+        ec = read_csv(ep)
+        ev_note = ("IAEA Reference Data Series No. 2 (RDS-2), 46th edition, 2026: Table 7 (construction starts, grid connections, reactors in operation at year-end; a blank in the report is entered as 0) and, for shutdowns, Table 16 (220 reactors permanently shut down by 31 Dec 2025, counted by year of shutdown; "
+                   "their net capacity adds to 110,812 MW(e), the figure the report prints). Typed from the PDF text by script. Operating count does not equal the previous year plus connections minus shutdowns in 18 years, because PRIS also moves reactors in and out of suspended operation (e.g. Japan after 2011); the raw file keeps all columns. "
+                   "Reactor-level shutdown list: data/raw/iaea_pris/iaea_rds2_2026_permanently_shut_down_reactors.csv")
+        for field, hdr, unit in [("construction_starts_units", "World nuclear construction starts, IAEA RDS-2 [units]", "units"),
+                                 ("grid_connections_units", "World nuclear grid connections, IAEA RDS-2 [units]", "units"),
+                                 ("grid_connections_mwe", "World nuclear grid connections, IAEA RDS-2 [MW(e)]", "MW(e)"),
+                                 ("permanent_shutdowns_units", "World nuclear permanent shutdowns, IAEA RDS-2 [units]", "units"),
+                                 ("permanent_shutdowns_net_mwe", "World nuclear permanent shutdowns, IAEA RDS-2 [MW(e)]", "MW(e)"),
+                                 ("reactors_in_operation_units", "World nuclear reactors in operation, year-end, IAEA RDS-2 [units]", "units")]:
+            ann.append(col(hdr, {int(r["year"]): num(r[field]) for r in ec}, "native", "IAEA RDS-2 (2026 edition)", field, "annual", "calendar year, as published", unit, ev_note, "",
+                           "data/raw/iaea_pris/iaea_rds2_2026_world_reactor_events_1954_2025.csv", INT))
     if ann:
         ayears = list(range(min(min(c["values"]) for c in ann), max(max(c["values"]) for c in ann) + 1))
         freq("Annual", "Annual series", "One row per year. Realised values come first; 2026-2035 columns are the reactor owners' own forward-looking figures from the EIA survey, as of the date in the column name.",
