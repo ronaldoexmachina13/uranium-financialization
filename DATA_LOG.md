@@ -190,3 +190,8 @@ Not extracted: 2021-2022 cash and flows, earlier prospectuses' prior-sales table
 
 ## 2026-11-09 - Baltic Dry Index (D18): looked, not retrieved
 - Stooq has no BDI symbol (^BDI and a name search both return "does not exist"). Investing.com (indices/baltic-dry-historical-data) has a daily/weekly/monthly table without sign-in for the default range (last value 2,805 on 6 Nov 2026), but widening the date range to 1985 triggers a sign-up pop-up; no account was created. D18 stays "Not retrieved". Options: sign in yourself and read the monthly table, or use another free source (e.g. a broker or shipping-index site) if one is found.
+
+## 2026-11-09 - Baltic Dry Index (D18): retrieved (supersedes the entry above)
+- Investing.com did not apply the 1985 date range (its download held only the last 21 daily rows). The full daily series (10,482 observations, 7 Jan 1985 to 9 Nov 2026) is embedded in the chart page of stock-marketdata.com (time-series/charts/commodity-bdi-baltic-dry-index.html); month-end values were read from that chart in the browser.
+- `data/raw/baltic/baltic_dry_index_monthly.csv`: 503 months, Jan 1985 to Nov 2026 (Nov 2026 partial, left out of the workbook). Check: Jun to Oct 2026 equal the Investing.com monthly figures (2,501; 2,732; 3,186; 3,113; 2,714). The Monthly sheet column starts where the uranium price starts.
+- Dates inside each month are not stored (last trading day assumed); the daily series is not stored. Use for thesis only: Baltic Exchange restricts redistribution.

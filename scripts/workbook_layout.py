@@ -53,7 +53,7 @@ _PREFIX = [
     ("Real GDP, US", "V083"), ("Real GDP growth, US", "V083"), ("Industrial production, OECD", "V082"), ("Industrial production, G7", "V082"), ("OECD industrial production growth", "V082"),
     ("Categorical EPU", "V088"), ("Geopolitical risk index, overall", "V089"), ("Geopolitical risk index, daily overall", "V089"), ("Geopolitical risk index, threats", "V090"),
     ("Geopolitical risk index, acts", "V090"), ("Geopolitical risk index, daily threats", "V090"), ("Geopolitical risk index, daily acts", "V090"),
-    ("Kilian global real economic activity index", "V084"), ("TED spread", "V076"), ("Commercial paper, 90-day", "V076"), ("T-bill, 3-month", "V076"), ("SOFR", "V076"),
+    ("Kilian global real economic activity index", "V084"), ("Baltic Dry Index", "D18"), ("TED spread", "V076"), ("Commercial paper, 90-day", "V076"), ("T-bill, 3-month", "V076"), ("SOFR", "V076"),
     ("US uranium concentrate production", "V092"), ("US reactor owners inventory", "V095"), ("US supplier inventory", "V096"),
     ("US reactor requirements, maximum anticipated", "V098"), ("US unfilled requirements", "V099"), ("US contracted deliveries", "V100"),
     ("Coal, Australia (IMF)", "V045"), ("Copper (IMF)", "V054"), ("Natural gas, Henry Hub (IMF)", "V051"),

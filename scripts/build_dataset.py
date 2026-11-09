@@ -335,6 +335,13 @@ def macro_cols(S):
         if me:
             M.append(col(f"{hdr}, month-end [{unit}]", month_end(v), "derived", src, sid, "monthly", "last observation of the month (from Daily)", unit, note, "", raw(f), NUM))
 
+    # Baltic Dry Index (D18): last daily observation of each month, from the stock-marketdata.com series (1985 onwards)
+    bdi_f = "baltic/baltic_dry_index_monthly.csv"
+    bdi = {(int(r["month"][:4]), int(r["month"][5:7])): num(r["bdi_last_obs_of_month"]) for r in read_csv(RAW / bdi_f) if not r["note"]}
+    M.append(col("Baltic Dry Index, month-end [index]", bdi, "derived", "stock-marketdata.com daily BDI series (Baltic Exchange index), read from its chart", "BDI", "monthly",
+                 "last daily observation of the month", "index, 1985-01-04 = 1000", "Month-end values from the daily series; Jun to Oct 2026 agree with the Investing.com monthly table. Partial month (Nov 2026) left out. Redistribution of Baltic Exchange data is restricted: for thesis use only", "context",
+                 "data/raw/" + bdi_f, NUM))
+
 # ---------------------------------------------------------------- load
 def load():
     S = {}
@@ -610,6 +617,7 @@ OVERRIDE = {  # id -> (status, where, note); the workbook holds the inputs of de
     "D17": ("Partly in workbook", "Monthly: S&P 500 (^GSPC, from 1988) and S&P 500 (FRED, last ten years)", "MSCI World is licensed and not retrieved."),
     "V099": ("Partly in workbook", "Annual: US unfilled requirements, as of end 2024 and end 2025", "Forward-looking; two vintages only."),
     "V100": ("Partly in workbook", "Annual: US contracted deliveries, minimum and maximum, in effect end 2025", "Forward-looking; one vintage; US/foreign split withheld by EIA."),
+    "D18": ("In workbook", "Monthly: Baltic Dry Index, month-end, Jan 1985 to Oct 2026", "Month-end values of a free daily series; agrees with the Investing.com monthly table for Jun to Oct 2026. Daily history not stored."),
     "D47": ("Partly in workbook", "SPUT issuance (16 Feb 2022 to 19 Jan 2026, 343 dated rows); SPUT statements (period totals)", "Dated issuances start 16 Feb 2022; 1 Jan to 15 Feb 2022 (about 18.6 million units) is not listed in any retrieved document. Sprott publishes only annual and June reports, so no quarterly flows exist."),
 }
 
