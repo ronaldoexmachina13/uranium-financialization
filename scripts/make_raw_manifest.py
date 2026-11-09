@@ -6,6 +6,7 @@ idx = {r["file"]: r for r in csv.DictReader(open(RAW / "macro" / "macro_index.cs
 ORIG = "original download: the file is the support"
 TYPED = "read from documents or pages and typed: source documents not yet kept"
 KEPT = "read from documents and typed: source documents kept in 03_data/source_documents (partly, see source_manifest.csv)"
+PARTIAL = "read from documents and typed: source documents kept for part of the values (Uranium 2022 Red Book edition is behind an NEA login, not kept), see source_manifest.csv"
 def classify(p):
     d, f = p.parent.name, p.name
     if d == "fred": return ORIG, f"https://fred.stlouisfed.org/graph/fredgraph.csv?id={p.stem}&cosd=1990-01-01"
@@ -13,16 +14,16 @@ def classify(p):
         r = idx.get(f); return ORIG if r else TYPED, (r["source_url"] if r else "see macro_index.csv / DATA_LOG.md")
     if d in ("markets", "yahoo"): return ORIG, f"https://query1.finance.yahoo.com/v8/finance/chart/{p.stem}"
     if d == "worldbank": return ORIG, "https://www.worldbank.org/en/research/commodity-markets"
-    if d == "cameco": return TYPED, ("https://www.cameco.com/invest/markets/uranium-price" if "uranium_price" in f else "Cameco quarterly MD&A and SEC filings, listed in scripts/fetch_conversion.py")
+    if d == "cameco": return KEPT, ("https://www.cameco.com/invest/markets/uranium-price" if "uranium_price" in f else "Cameco quarterly MD&A and SEC filings, listed in scripts/fetch_conversion.py")
     if d == "yellowcake": return KEPT, "Yellow Cake regulatory news (otp.tools.investis.com/clients/uk/yellow_cake/rns) and company PDFs, kept in 03_data/source_documents/yellowcake (48 PDFs)"
     if d == "sprott":
         return (KEPT if f in ("sput_issuances.csv", "sput_tsx_monthly.csv", "sput_prior_sales_2021-11-22_supplement.csv", "sput_statements.csv") else TYPED), "SPUT prospectus supplements (SEDAR+ 000052841) and sprott.com reports/fund page"
     if d == "iaea_pris": return (KEPT if "rds2" in f else TYPED), "IAEA RDS-2 (2026) PDF; PRIS Data Browser (Power BI, read from screen)"
-    if d == "eia": return TYPED, "eia.gov uranium marketing annual report tables"
-    if d == "physical": return TYPED, "WNA, NEA/IAEA Red Book, EIA UMAR 2015, IAEA TECDOC-2030, Euratom (see DATA_LOG.md)"
+    if d == "eia": return KEPT, "eia.gov uranium marketing annual report tables (UMAR 2025 and DUPR PDFs kept in 03_data/source_documents/eia)"
+    if d == "physical": return (TYPED if "pris_world_snapshot" in f else PARTIAL if "redbook2018_2022" in f else KEPT), "WNA, NEA/IAEA Red Book, EIA UMAR 2015, IAEA TECDOC-2030, Euratom (see DATA_LOG.md)"
     if d == "baltic": return TYPED, "stock-marketdata.com/time-series/charts/commodity-bdi-baltic-dry-index.html (chart data, month-end), checked against investing.com/indices/baltic-dry-historical-data"
     if d in ("investing", "stooq"): return TYPED, "investing.com / stooq.com UX futures pages (see DATA_LOG.md)"
-    if d == "upc": return TYPED, "Uranium Participation Corporation monthly releases (125)"
+    if d == "upc": return KEPT, "Uranium Participation Corporation monthly releases (125)"
     if d == "uxc": return TYPED, "reconstructed from UxC/Numerco benchmark (see DATA_LOG.md)"
     return TYPED, ""
 rows = []
