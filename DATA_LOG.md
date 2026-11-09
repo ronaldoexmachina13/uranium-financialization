@@ -201,3 +201,8 @@ Not extracted: 2021-2022 cash and flows, earlier prospectuses' prior-sales table
 - V082: OECD industrial production growth (to 2026-07) is the main series. Check: growth computed from the level series equals the published growth series with a mean absolute difference of 0.28 points (max 1.19) over 579 overlapping months (different data vintages). Levels kept (end 2024-03).
 - D17: S&P 500 is the global-equity proxy (US index, longest history); MSCI World not retrieved (licensed).
 - Workbook now: 60 in workbook, 34 partly, 18 derived not computed, 11 not retrieved, 7 paid or unavailable.
+
+## 2026-11-09 - Source documents kept as proof
+- Original PDFs (4 SPUT prospectus supplements, the Nov 2021 ATM supplement, the FY2021 annual information form, financial statements and MRFP, and IAEA RDS-2) copied to `03_data/source_documents/` in the Drive thesis folder (not in git: size). `data/source_manifest.csv` (same as `source_manifest.csv` in that folder) lists each file with SHA-256, pages, what was taken from it and the workbook items it feeds.
+- Not on file: the SPUT supplement of 15 Feb 2023, and the Sprott annual and interim report PDFs behind `sput_statements.csv`. To be re-downloaded if wanted.
+- Web sources are not kept as documents; their raw files are in `data/raw/` with retrieval dates in this log.
