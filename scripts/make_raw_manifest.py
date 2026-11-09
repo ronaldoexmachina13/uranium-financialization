@@ -14,7 +14,7 @@ def classify(p):
     if d in ("markets", "yahoo"): return ORIG, f"https://query1.finance.yahoo.com/v8/finance/chart/{p.stem}"
     if d == "worldbank": return ORIG, "https://www.worldbank.org/en/research/commodity-markets"
     if d == "cameco": return TYPED, ("https://www.cameco.com/invest/markets/uranium-price" if "uranium_price" in f else "Cameco quarterly MD&A and SEC filings, listed in scripts/fetch_conversion.py")
-    if d == "yellowcake": return TYPED, "Yellow Cake regulatory news (otp.tools.investis.com/clients/uk/yellow_cake/rns) and company PDFs"
+    if d == "yellowcake": return KEPT, "Yellow Cake regulatory news (otp.tools.investis.com/clients/uk/yellow_cake/rns) and company PDFs, kept in 03_data/source_documents/yellowcake (48 PDFs)"
     if d == "sprott":
         return (KEPT if f in ("sput_issuances.csv", "sput_tsx_monthly.csv", "sput_prior_sales_2021-11-22_supplement.csv", "sput_statements.csv") else TYPED), "SPUT prospectus supplements (SEDAR+ 000052841) and sprott.com reports/fund page"
     if d == "iaea_pris": return (KEPT if "rds2" in f else TYPED), "IAEA RDS-2 (2026) PDF; PRIS Data Browser (Power BI, read from screen)"
