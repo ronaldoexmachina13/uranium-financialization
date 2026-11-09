@@ -599,6 +599,7 @@ OVERRIDE = {  # id -> (status, where, note); the workbook holds the inputs of de
     "D21": ("In workbook", "Monthly: Google Trends 'uranium ETF'", "Relative interest, peak = 100; carries measurement error."),
     "D44": ("Partly in workbook", "UPC monthly NAV, Dec 2010 to May 2021; Daily and Monthly: UPC adj. close, 2006 to Jul 2021", "2009 to Nov 2010 and June 2021 not retrieved; shares outstanding not printed in the releases."),
     "V103": ("In workbook", "Annual: world nuclear electricity produced, IAEA PRIS, 1970-2025", "World total only; country detail sits in the PRIS Data Browser (read on screen, no export). Values match RDS-2 for the six years checked."),
+    "V105": ("In workbook", "Annual: world nuclear energy availability, load, unit capability factors and forced loss rate, IAEA PRIS, 1970-2025", "World totals only; PRIS reports the energy availability factor (EAF) as its headline and the load factor (LF) as the realised measure. Six more indicators sit in the raw CSV."),
     "V104": ("In workbook", "Annual: world nuclear operated capacity, IAEA PRIS, 1970-2025", "World total only. PRIS operated capacity differs from the year-end net capacity printed in RDS-2."),
     "V092": ("Partly in workbook", "Annual: US uranium concentrate production, 2011-2025", "US only. Global and country production (V093) not retrieved."),
     "V095": ("Partly in workbook", "Annual: US reactor owners inventory (total and by material), year-end 2021-2025; Physical sources: 2011-2015 (UMAR 2015), 2020 and 2024 preliminary (UMAR 2024), 2016-2019 as rounded totals (Table S3a)", "US only. 2016-2019 exist only as totals rounded to 0.1 million lb (EIA does not give the detailed tables for those years). The 2024 preliminary value (126.4 million lb) was revised to 115.1 in the 2025 edition."),
@@ -694,6 +695,18 @@ def main():
                        "calendar year, as published", "MWh", pris_note, "", "data/raw/iaea_pris/iaea_pris_world_annual_1970_2025.csv", INT))
         ann.append(col("World nuclear operated capacity, IAEA PRIS [MW(e)]", {int(r["year"]): num(r["operated_capacity_mwe"]) for r in pr}, "native", "IAEA PRIS", "PRIS operated capacity", "annual",
                        "calendar year, as published", "MW(e)", "Net capacity of the reactors PRIS counts as operated in the year; it differs from the year-end net capacity in RDS-2 (e.g. 2015: 364,367 against 360,504 MW(e)). " + pris_note, "", "data/raw/iaea_pris/iaea_pris_world_annual_1970_2025.csv", INT))
+    pp = RAW / "iaea_pris" / "iaea_pris_world_performance_1970_2025.csv"
+    if pp.exists():
+        pc = read_csv(pp)
+        perf_note = ("PRIS Analytics Data Browser, Performance indicators, table view, all countries; read from the on-screen table on 9 Nov 2026 (no export). Annual world value as published by PRIS. "
+                     "Checks: EAF + EUF = 100, UCF = 100 - PUF - UCL and EUF = PUF + UCL + XUF hold within rounding for all 56 years. 1970 has too few reactors to be meaningful (operating factor 31.5% below load factor 59.7%, as published). "
+                     "The other PRIS indicators (EUF, XUF, OF, PUF, UCL, UUF) are in data/raw/iaea_pris/iaea_pris_world_performance_1970_2025.csv")
+        for field, hdr, what in [("energy_availability_factor_pct", "World nuclear energy availability factor, IAEA PRIS [%]", "Energy available as a share of reference energy (PRIS EAF, the capacity-factor measure PRIS now headlines)"),
+                                 ("load_factor_pct", "World nuclear load factor, IAEA PRIS [%]", "Energy produced as a share of reference energy (PRIS LF); closest to a realised capacity factor"),
+                                 ("unit_capability_factor_pct", "World nuclear unit capability factor, IAEA PRIS [%]", "Energy available excluding external losses (PRIS UCF)"),
+                                 ("forced_loss_rate_pct", "World nuclear forced loss rate, IAEA PRIS [%]", "Share of energy lost to unplanned outages (PRIS FLR)")]:
+            ann.append(col(hdr, {int(r["year"]): num(r[field]) for r in pc}, "native", "IAEA PRIS", field, "annual", "calendar year, as published", "%", what + ". " + perf_note, "",
+                           "data/raw/iaea_pris/iaea_pris_world_performance_1970_2025.csv", NUM))
     if ann:
         ayears = list(range(min(min(c["values"]) for c in ann), max(max(c["values"]) for c in ann) + 1))
         freq("Annual", "Annual series", "One row per year. Realised values come first; 2026-2035 columns are the reactor owners' own forward-looking figures from the EIA survey, as of the date in the column name.",

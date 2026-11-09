@@ -49,7 +49,7 @@ _PREFIX = [
     ("U-UN.TO", "V011"), ("UPC adj. close", "D44"), ("U-U.TO", "V012"), ("YCA.L", "V033"),
     ("Yellow Cake NAV", "V042"), ("Yellow Cake uranium held", "V040"), ("Yellow Cake lb basis", "V040"), ("Yellow Cake quarter-end spot", "V042"),
     ("Yellow Cake announcement", "V042"), ("Yellow Cake premium", "V043"),
-    ("UxC spot volume", "V101"), ("World nuclear electricity produced", "V103"), ("World nuclear operated capacity", "V104"),
+    ("UxC spot volume", "V101"), ("World nuclear electricity produced", "V103"), ("World nuclear operated capacity", "V104"), ("World nuclear energy availability factor", "V105"), ("World nuclear load factor", "V105"), ("World nuclear unit capability factor", "V105"), ("World nuclear forced loss rate", "V105"),
     ("Real GDP, US", "V083"), ("Real GDP growth, US", "V083"), ("Industrial production, OECD", "V082"), ("Industrial production, G7", "V082"), ("OECD industrial production growth", "V082"),
     ("Categorical EPU", "V088"), ("Geopolitical risk index, overall", "V089"), ("Geopolitical risk index, daily overall", "V089"), ("Geopolitical risk index, threats", "V090"),
     ("Geopolitical risk index, acts", "V090"), ("Geopolitical risk index, daily threats", "V090"), ("Geopolitical risk index, daily acts", "V090"),
