@@ -10,6 +10,7 @@ CHECKFILE = "my own check output (not a source): compares the typed SPUT stateme
 INDEXFILE = "index of the macro files (metadata, not data)"
 LIVE = "read from a live page with no downloadable document: the page text of the 9 Nov 2026 reading is kept in 03_data/source_documents/iaea"
 NOPAGE = "read from a page and typed: the page (Investing.com UX futures, monthly) could not be saved again (404); cross-checked against Stooq, see DATA_LOG.md"
+EXPORT = "converted from the PRIS Data Browser export files (xlsx, saved in 03_data/source_documents/iaea_pris/): the export is the support; checked cell by cell"
 NODOC = "read from the PRIS Data Browser on screen (no export, no document exists; the RDS-2 report does not print these series): not supportable by a saved document"
 PARTIAL = "read from documents and typed: source documents kept for part of the values (Uranium 2022 Red Book edition is behind an NEA login, not kept), see source_manifest.csv"
 def classify(p):
@@ -24,7 +25,7 @@ def classify(p):
     if d == "yellowcake": return KEPT, "Yellow Cake regulatory news (otp.tools.investis.com/clients/uk/yellow_cake/rns) and company PDFs, kept in 03_data/source_documents/yellowcake (48 PDFs)"
     if d == "sprott":
         return (CHECKFILE if f == "sput_statements_check.csv" else KEPT if f in ("sput_issuances.csv", "sput_tsx_monthly.csv", "sput_prior_sales_2021-11-22_supplement.csv", "sput_statements.csv", "sput_daily.csv", "sput_holdings.csv", "sput_acquired.csv") else TYPED), "SPUT prospectus supplements (SEDAR+ 000052841) and sprott.com reports/fund page"
-    if d == "iaea_pris": return (KEPT if "rds2" in f else NODOC), "IAEA RDS-2 (2026) PDF; PRIS Data Browser (Power BI, read from screen)"
+    if d == "iaea_pris": return (KEPT if "rds2" in f else EXPORT), "IAEA RDS-2 (2026) PDF; PRIS Data Browser export (xlsx)"
     if d == "eia": return KEPT, "eia.gov uranium marketing annual report tables (UMAR 2025 and DUPR PDFs kept in 03_data/source_documents/eia)"
     if d == "physical": return (LIVE if "pris_world_snapshot" in f else PARTIAL if "redbook2018_2022" in f else KEPT), "WNA, NEA/IAEA Red Book, EIA UMAR 2015, IAEA TECDOC-2030, Euratom (see DATA_LOG.md)"
     if d == "baltic": return KEPT, "stock-marketdata.com/time-series/charts/commodity-bdi-baltic-dry-index.html (chart data, month-end), checked against investing.com/indices/baltic-dry-historical-data"
