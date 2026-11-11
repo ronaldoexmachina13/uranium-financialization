@@ -82,9 +82,6 @@ EQ_NOTE = {"U-UN.TO": "SPUT only, from 26 Jul 2021 (the ticker's earlier history
 
 
 # ---------------------------------------------------------------- helpers
-from derived import derived_columns
-
-
 def read_csv(path):
     with open(path, newline="", encoding="utf-8") as f:
         return list(csv.DictReader(f))
@@ -690,25 +687,9 @@ OVERRIDE = {  # id -> (status, where, note); the workbook holds the inputs of de
     "D47": ("Partly in workbook", "SPUT issuance (17 Aug to 18 Nov 2021 and 16 Feb 2022 to 19 Jan 2026, 466 dated rows); SPUT statements (period totals)", "Dated issuances: 17 Aug to 18 Nov 2021 and 16 Feb 2022 onwards. 19 Nov 2021 to 15 Feb 2022 is not listed in any retrieved document (913,400 units in 19 Nov to 31 Dec 2021 by difference, and about 18.6 million units in 1 Jan to 15 Feb 2022 by the reports). Sprott publishes only annual and June reports, so no quarterly flows exist."),
 }
 
-_D = "Computed from Monthly columns by scripts/derived.py; monthly frequency; blank where an input is missing."
 OVERRIDE.update({
     "V060": ("Partly in workbook", "Monthly: Newcastle coal futures close (Investing NCFMc1)", "Newcastle only, Jan 2009 to Oct 2026, monthly bar close. API2 Rotterdam not retrieved."),
     "V075": ("Partly in workbook", "Monthly: Monetary-policy surprise, raw and orthogonalized, sum over FOMC events in month", "San Francisco Fed series, Jan 2012 to Dec 2023 only (chart file); 2024 onward not retrieved."),
-    "V006": ("In workbook", "Monthly: Spot-long-term price difference, month-end", _D),
-    "V031": ("In workbook", "Monthly: SPUT TSX volume / units outstanding, month", _D + " Only Aug 2021 to Dec 2025, where units outstanding are reconstructed."),
-    "V069": ("In workbook", "Monthly: US inflation, month on month; US inflation, year on year", _D),
-    "V072": ("In workbook", "Monthly: Credit spread, Baa minus Aaa", _D),
-    "V074": ("In workbook", "Monthly: monthly change of month-end for the 10y yield, 3m yield and fed funds rate", _D),
-    "V110": ("In workbook", "Monthly: Uranium spot log return, monthly", _D + " Uranium only; returns of the other series are taken in the analysis."),
-    "V111": ("In workbook", "Monthly: Uranium spot in real terms", _D + " Deflator: US CPI-U, latest month as base."),
-    "V112": ("In workbook", "Monthly: Uranium spot momentum, 12-month log return", _D + " 12-month window is a choice."),
-    "V113": ("In workbook", "Monthly: Uranium spot volatility, 12-month rolling, annualised", _D),
-    "V114": ("In workbook", "Monthly: Rolling 36-month correlation of returns, uranium vs gold, silver, copper, WTI", _D + " 36-month window is a choice."),
-    "V115": ("In workbook", "Monthly: Rolling 36-month correlation of absolute returns, uranium vs gold, silver, copper, WTI", _D + " Proxy for volatility co-movement; a GARCH-type measure is left to the analysis."),
-    "D13": ("In workbook", "Monthly: three regime flags (post-2005, SPUT listed, Russia-Ukraine war)", "Dates: Jan 2005, Jul 2021, Feb 2022."),
-    "D27": ("Partly in workbook", "Monthly: event-month flags for Kazakhstan unrest (Jan 2022) and the Russian invasion (Feb 2022)", "Sanctions date not listed in the variables document, so no sanctions flag."),
-    "D35": ("In workbook", "Monthly: Futures basis, Stooq UX close minus Cameco spot", _D + " Stooq contract roll is undocumented."),
-    "D45": ("In workbook", "Monthly: SPUT trades below NAV, flag", _D),
     "V118": ("Partly in workbook", "Daily: UX volume and open interest, CME bulletin (20 Mar to 9 Nov 2026); Monthly: UX volume and open interest, CME monthly report (volume 42 months from Jun 2014, open interest 30 months from Aug 2014 to May 2024)",
              "CME publishes no free history. The workbook holds only what archived CME files show: 124 trading days in 2026 (open interest 250 to 350 contracts, volume above zero on 6 days) and scattered months from 2014. Every other period is blank. The Stooq volume and open interest columns are not used. Full daily history is only in the paid CME DataMine product."),
 })
@@ -751,7 +732,6 @@ def rng(keys):
 
 def main():
     S = load()
-    S["monthly"].extend(derived_columns(S["monthly"], col, NUM4, INT))
     pk = pink()
     D, W, M, Q = S["daily"], S["weekly"], S["monthly"], S["quarterly"]
 
