@@ -82,6 +82,9 @@ EQ_NOTE = {"U-UN.TO": "SPUT only, from 26 Jul 2021 (the ticker's earlier history
 
 
 # ---------------------------------------------------------------- helpers
+from derived import derived_columns
+
+
 def read_csv(path):
     with open(path, newline="", encoding="utf-8") as f:
         return list(csv.DictReader(f))
@@ -404,6 +407,33 @@ def load():
                  "8 months Stooq lacks (2021-10 to 2021-12, 2023-04 to 2023-08); not checked against CME bulletins; April 2023 calendar month-end would be 53.85",
                  "H1, H2", "data/raw/uxc/ux_final_settlement_reconstructed.csv", NUM))
 
+    cm = read_csv(RAW / "cme" / "ux_volume_oi_monthly_cme_reports.csv")
+    order = {"current month": 0, "previous month": 1, "same month prior year": 2}
+    for metric, hdr, fmtx in [("volume", "UX futures volume, CME monthly report [contracts]", INT), ("open_interest", "UX futures open interest, CME monthly report [contracts]", INT)]:
+        best = {}
+        for r in cm:
+            if r["metric"] != metric or "-" not in r["month"] or r["month"].endswith("YTD"):
+                continue
+            y, mth = r["month"].split("-")
+            k = (int(y), int(mth))
+            rk = order.get(r["how_in_report"], 3)
+            if k not in best or rk < best[k][0]:
+                best[k] = (rk, num(r["value"]))
+        M.append(col(hdr, {k: v[1] for k, v in best.items()}, "native", "CME NYMEX/COMEX monthly Exchange Volume and Open Interest reports (Wayback Machine copies)", "cme_" + metric, "monthly",
+                     "month total" if metric == "volume" else "month-end", "contracts",
+                     "only the months the archived reports print (current, previous or same month a year earlier); no continuous series; all other months are blank, not zero. "
+                     "Each month comes from the report that shows it as the current month where possible", "H3", "data/raw/cme/ux_volume_oi_monthly_cme_reports.csv", fmtx))
+
+    mp = read_csv(RAW / "macro" / "sf_fed_monetary_policy_surprises_2012_2023.csv")
+    for k, hdr, sid in [("Surprise", "Monetary-policy surprise, raw, sum over FOMC events in month [basis points]", "mps_raw"),
+                        ("Orthogonalized Surprise", "Monetary-policy surprise, orthogonalized, sum over FOMC events in month [basis points]", "mps_orth")]:
+        acc = {}
+        for r in mp:
+            kk = ym(day(r["Date"]))
+            acc[kk] = acc.get(kk, 0) + num(r[k])
+        M.append(col(hdr, {a: round(b, 2) for a, b in acc.items()}, "native", "San Francisco Fed, Monetary Policy Surprises (Bauer and Swanson high-frequency measure)", sid, "monthly", "sum of event values in the month", "basis points (as published)",
+                     "event-level values (Jan 2012 to Dec 2023, 101 FOMC events incl. unscheduled 2020 meetings) summed per month; months without an event are blank, not zero. The page's chart file ends Dec 2023; the full Excel file was not read", "H4",
+                     "data/raw/macro/sf_fed_monetary_policy_surprises_2012_2023.csv", NUM))
     # daily series
     D = S["daily"]
     oil_me = []
@@ -417,6 +447,20 @@ def load():
     if (RAW / "fred" / "USEPUINDXD.csv").exists():
         D.append(col("Economic policy uncertainty, US, daily [index]", daily_series(RAW / "fred" / "USEPUINDXD.csv", "observation_date", "USEPUINDXD"), "native", "FRED", "USEPUINDXD", "daily",
                      "daily index", "index", "", "H4", "data/raw/fred/USEPUINDXD.csv", NUM))
+    sq = read_csv(RAW / "stooq" / "ux_futures_daily.csv")
+    D.append(col("UX futures close, daily (Stooq) [USD/lb]", {day(r["date"]): num(r["close"]) for r in sq}, "native", "Stooq UX.F", "ux_close_d", "daily", "daily close", "USD per lb",
+                 "continuous front contract, roll undocumented; no rows 28 Sep 2021 to 21 Jan 2022, 31 Mar to 11 Sep 2023 and 15 Sep to 2 Oct 2023; Stooq volume and open interest are not reliable and are not used", "H1, H2",
+                 "data/raw/stooq/ux_futures_daily.csv", NUM))
+    ig = read_csv(RAW / "investing" / "ux_daily_gapfill_2022_investing_UXXc2.csv")
+    D.append(col("UX futures close, daily (Investing UXXc2, gap fill) [USD/lb]", {day(r["date"]): num(r["close"]) for r in ig}, "gap-fill", "Investing.com Uranium Futures UXXc2 (second continuous contract)", "ux_close_inv_d",
+                 "daily", "daily close", "USD per lb", "24 Jan to 1 Apr 2022 only; a different continuous series from Stooq (roll differs after Mar 2022), kept in its own column", "H1, H2",
+                 "data/raw/investing/ux_daily_gapfill_2022_investing_UXXc2.csv", NUM))
+    cd = read_csv(RAW / "cme" / "ux_volume_oi_daily_cme_bulletins.csv")
+    for k, hdr, unit, fmtx in [("ux_total_volume", "UX futures volume, CME bulletin [contracts]", "contracts", INT), ("ux_open_interest", "UX futures open interest, CME bulletin [contracts]", "contracts", INT),
+                               ("front_settle", "UX front-month settlement, CME bulletin [USD/lb]", "USD per lb", NUM)]:
+        D.append(col(hdr, {day(r["trade_date"]): num(r[k]) for r in cd}, "native", "CME daily bulletin, Section 62 (Wayback Machine copies)", "cme_" + k, "daily", "trade date", unit,
+                     "20 Mar to 9 Nov 2026 only (archive copies); earlier days are blank, not zero. Volume is the sum over all listed contract months; open interest checked against Section 02B (13 days differ in the 02B check and are kept as in Section 62)" if k != "front_settle" else
+                     "20 Mar to 9 Nov 2026 only; settlement of the nearest listed contract month", "H3" if k != "front_settle" else "H1, H2", "data/raw/cme/ux_volume_oi_daily_cme_bulletins.csv", fmtx))
     sd = read_csv(RAW / "sprott" / "sput_daily.csv")
     for k, hdr, unit, f in [("price_usd", "SPUT price", "USD", NUM), ("nav_usd", "SPUT NAV per unit", "USD", NUM), ("premium_discount_pct", "SPUT premium/discount", "percent", NUM)]:
         D.append(col(f"{hdr} [{unit}]", {day(r["date"]): num(r[k]) for r in sd}, "native", "Sprott fund page", k, "daily", "daily close", unit, "starts Jul 2021", "H3", "data/raw/sprott/sput_daily.csv", f))
@@ -641,6 +685,28 @@ OVERRIDE = {  # id -> (status, where, note); the workbook holds the inputs of de
     "D47": ("Partly in workbook", "SPUT issuance (17 Aug to 18 Nov 2021 and 16 Feb 2022 to 19 Jan 2026, 466 dated rows); SPUT statements (period totals)", "Dated issuances: 17 Aug to 18 Nov 2021 and 16 Feb 2022 onwards. 19 Nov 2021 to 15 Feb 2022 is not listed in any retrieved document (913,400 units in 19 Nov to 31 Dec 2021 by difference, and about 18.6 million units in 1 Jan to 15 Feb 2022 by the reports). Sprott publishes only annual and June reports, so no quarterly flows exist."),
 }
 
+_D = "Computed from Monthly columns by scripts/derived.py; monthly frequency; blank where an input is missing."
+OVERRIDE.update({
+    "V075": ("Partly in workbook", "Monthly: Monetary-policy surprise, raw and orthogonalized, sum over FOMC events in month", "San Francisco Fed series, Jan 2012 to Dec 2023 only (chart file); 2024 onward not retrieved."),
+    "V006": ("In workbook", "Monthly: Spot-long-term price difference, month-end", _D),
+    "V031": ("In workbook", "Monthly: SPUT TSX volume / units outstanding, month", _D + " Only Aug 2021 to Dec 2025, where units outstanding are reconstructed."),
+    "V069": ("In workbook", "Monthly: US inflation, month on month; US inflation, year on year", _D),
+    "V072": ("In workbook", "Monthly: Credit spread, Baa minus Aaa", _D),
+    "V074": ("In workbook", "Monthly: monthly change of month-end for the 10y yield, 3m yield and fed funds rate", _D),
+    "V110": ("In workbook", "Monthly: Uranium spot log return, monthly", _D + " Uranium only; returns of the other series are taken in the analysis."),
+    "V111": ("In workbook", "Monthly: Uranium spot in real terms", _D + " Deflator: US CPI-U, latest month as base."),
+    "V112": ("In workbook", "Monthly: Uranium spot momentum, 12-month log return", _D + " 12-month window is a choice."),
+    "V113": ("In workbook", "Monthly: Uranium spot volatility, 12-month rolling, annualised", _D),
+    "V114": ("In workbook", "Monthly: Rolling 36-month correlation of returns, uranium vs gold, silver, copper, WTI", _D + " 36-month window is a choice."),
+    "V115": ("In workbook", "Monthly: Rolling 36-month correlation of absolute returns, uranium vs gold, silver, copper, WTI", _D + " Proxy for volatility co-movement; a GARCH-type measure is left to the analysis."),
+    "D13": ("In workbook", "Monthly: three regime flags (post-2005, SPUT listed, Russia-Ukraine war)", "Dates: Jan 2005, Jul 2021, Feb 2022."),
+    "D27": ("Partly in workbook", "Monthly: event-month flags for Kazakhstan unrest (Jan 2022) and the Russian invasion (Feb 2022)", "Sanctions date not listed in the variables document, so no sanctions flag."),
+    "D35": ("In workbook", "Monthly: Futures basis, Stooq UX close minus Cameco spot", _D + " Stooq contract roll is undocumented."),
+    "D45": ("In workbook", "Monthly: SPUT trades below NAV, flag", _D),
+    "V118": ("Partly in workbook", "Daily: UX volume and open interest, CME bulletin (20 Mar to 9 Nov 2026); Monthly: UX volume and open interest, CME monthly report (volume 42 months from Jun 2014, open interest 30 months from Aug 2014 to May 2024)",
+             "CME publishes no free history. The workbook holds only what archived CME files show: 124 trading days in 2026 (open interest 250 to 350 contracts, volume above zero on 6 days) and scattered months from 2014. Every other period is blank. The Stooq volume and open interest columns are not used. Full daily history is only in the paid CME DataMine product."),
+})
+
 
 def clean(t):
     t = t or ""
@@ -679,6 +745,7 @@ def rng(keys):
 
 def main():
     S = load()
+    S["monthly"].extend(derived_columns(S["monthly"], col, NUM4, INT))
     pk = pink()
     D, W, M, Q = S["daily"], S["weekly"], S["monthly"], S["quarterly"]
 

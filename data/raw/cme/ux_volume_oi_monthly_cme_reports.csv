@@ -1,0 +1,119 @@
+month,metric,value,how_in_report,report_file
+2014-08,open_interest,6527.0,same month prior year,Web_OI_Report_NYMEX_COMEX__wayback20150906121455.pdf
+2014-10,open_interest,6004.0,same month prior year,Web_OI_Report_NYMEX_COMEX__wayback20151123005814.pdf
+2015-07,open_interest,4620.0,previous month,Web_OI_Report_NYMEX_COMEX__wayback20150906121455.pdf
+2015-07,open_interest,4620.0,same month prior year,Web_OI_Report_NYMEX_COMEX__wayback20160812060228.pdf
+2015-08,open_interest,4554.0,current month,Web_OI_Report_NYMEX_COMEX__wayback20150906121455.pdf
+2015-09,open_interest,4654.0,previous month,Web_OI_Report_NYMEX_COMEX__wayback20151123005814.pdf
+2015-10,open_interest,4577.0,current month,Web_OI_Report_NYMEX_COMEX__wayback20151123005814.pdf
+2016-02,open_interest,4785.0,same month prior year,Web_OI_Report_NYMEX_COMEX__wayback20170329070249.pdf
+2016-06,open_interest,6472.0,previous month,Web_OI_Report_NYMEX_COMEX__wayback20160812060228.pdf
+2016-06,open_interest,6472.0,same month prior year,Web_OI_Report_NYMEX_COMEX__wayback20170713042216.pdf
+2016-07,open_interest,5551.0,current month,Web_OI_Report_NYMEX_COMEX__wayback20160812060228.pdf
+2016-11,open_interest,4751.0,same month prior year,Web_OI_Report_NYMEX_COMEX__wayback20171215120508.pdf
+2017-01,open_interest,4275.0,previous month,Web_OI_Report_NYMEX_COMEX__wayback20170329070249.pdf
+2017-01,open_interest,4275.0,same month prior year,Web_OI_Report_NYMEX_COMEX__wayback20180219004909.pdf
+2017-02,open_interest,5022.0,current month,Web_OI_Report_NYMEX_COMEX__wayback20170329070249.pdf
+2017-05,open_interest,4931.0,previous month,Web_OI_Report_NYMEX_COMEX__wayback20170713042216.pdf
+2017-06,open_interest,4988.0,current month,Web_OI_Report_NYMEX_COMEX__wayback20170713042216.pdf
+2017-10,open_interest,4227.0,previous month,Web_OI_Report_NYMEX_COMEX__wayback20171215120508.pdf
+2017-11,open_interest,4015.0,current month,Web_OI_Report_NYMEX_COMEX__wayback20171215120508.pdf
+2018-01,open_interest,4050.0,current month,Web_OI_Report_NYMEX_COMEX__wayback20180219004909.pdf
+2018-12,open_interest,3900.0,previous month,Web_OI_Report_NYMEX_COMEX__wayback20180219004909.pdf
+2020-12,open_interest,303.0,same month prior year,Web_OI_Report_NYMEX_COMEX__wayback20220125041058.pdf
+2021-11,open_interest,800.0,previous month,Web_OI_Report_NYMEX_COMEX__wayback20220125041058.pdf
+2021-12,open_interest,800.0,current month,Web_OI_Report_NYMEX_COMEX__wayback20220125041058.pdf
+2022-04,open_interest,800.0,same month prior year,Web_OI_Report_NYMEX_COMEX__wayback20230527154427.pdf
+2022-08,open_interest,800.0,same month prior year,Web_OI_Report_NYMEX_COMEX__wayback20231002013435.pdf
+2023-03,open_interest,200.0,previous month,Web_OI_Report_NYMEX_COMEX__wayback20230527154427.pdf
+2023-04,open_interest,0.0,current month,Web_OI_Report_NYMEX_COMEX__wayback20230527154427.pdf
+2023-05,open_interest,0.0,same month prior year,Web_OI_Report_NYMEX_COMEX__wayback20240627122256.pdf
+2023-07,open_interest,0.0,previous month,Web_OI_Report_NYMEX_COMEX__wayback20231002013435.pdf
+2023-08,open_interest,0.0,current month,Web_OI_Report_NYMEX_COMEX__wayback20231002013435.pdf
+2024-04,open_interest,152.0,previous month,Web_OI_Report_NYMEX_COMEX__wayback20240627122256.pdf
+2024-05,open_interest,152.0,current month,Web_OI_Report_NYMEX_COMEX__wayback20240627122256.pdf
+2014-06,volume,200.0,same month prior year,Web_Volume_Report_NYMEX_COMEX__wayback20150727132727.pdf
+2014-08,volume,0.0,same month prior year,Web_Volume_Report_NYMEX_COMEX__wayback20150906124709.pdf
+2015-05,volume,1.0,previous month,Web_Volume_Report_NYMEX_COMEX__wayback20150727132727.pdf
+2015-06,volume,1154.0,current month,Web_Volume_Report_NYMEX_COMEX__wayback20150727132727.pdf
+2015-07,volume,0.0,previous month,Web_Volume_Report_NYMEX_COMEX__wayback20150906124709.pdf
+2015-07,volume,0.0,same month prior year,Web_Volume_Report_NYMEX_COMEX__wayback20160817074424.pdf
+2015-08,volume,1.0,current month,Web_Volume_Report_NYMEX_COMEX__wayback20150906124709.pdf
+2016-06,volume,400.0,previous month,Web_Volume_Report_NYMEX_COMEX__wayback20160817074424.pdf
+2016-06,volume,400.0,same month prior year,Web_Volume_Report_NYMEX_COMEX__wayback20170714152920.pdf
+2016-07,volume,0.0,current month,Web_Volume_Report_NYMEX_COMEX__wayback20160817074424.pdf
+2017-05,volume,915.0,previous month,Web_Volume_Report_NYMEX_COMEX__wayback20170714152920.pdf
+2017-06,volume,530.0,current month,Web_Volume_Report_NYMEX_COMEX__wayback20170714152920.pdf
+2019-06,volume,1234.0,same month prior year,Web_Volume_Report_NYMEX_COMEX__wayback20200725183348.pdf
+2019-09,volume,1217.0,same month prior year,Web_Volume_Report_NYMEX_COMEX__wayback20201022103658.pdf
+2020-03,volume,621.0,same month prior year,Web_Volume_Report_NYMEX_COMEX__wayback20210417080922.pdf
+2020-04,volume,5.0,same month prior year,Web_Volume_Report_NYMEX_COMEX__wayback20210522091410.pdf
+2020-05,volume,1.0,previous month,Web_Volume_Report_NYMEX_COMEX__wayback20200725183348.pdf
+2020-06,volume,18.0,current month,Web_Volume_Report_NYMEX_COMEX__wayback20200725183348.pdf
+2020-08,volume,0.0,previous month,Web_Volume_Report_NYMEX_COMEX__wayback20201022103658.pdf
+2020-09,volume,0.0,current month,Web_Volume_Report_NYMEX_COMEX__wayback20201022103658.pdf
+2021-02,volume,0.0,previous month,Web_Volume_Report_NYMEX_COMEX__wayback20210417080922.pdf
+2021-03,volume,400.0,current month,Web_Volume_Report_NYMEX_COMEX__wayback20210417080922.pdf
+2021-03,volume,400.0,previous month,Web_Volume_Report_NYMEX_COMEX__wayback20210522091410.pdf
+2021-04,volume,0.0,current month,Web_Volume_Report_NYMEX_COMEX__wayback20210522091410.pdf
+2022-03,volume,17.0,same month prior year,Web_Volume_Report_NYMEX_COMEX__wayback20230428013835.pdf
+2022-06,volume,0.0,same month prior year,Web_Volume_Report_NYMEX_COMEX__wayback20230713030702.pdf
+2023-02,volume,0.0,previous month,Web_Volume_Report_NYMEX_COMEX__wayback20230428013835.pdf
+2023-03,volume,0.0,current month,Web_Volume_Report_NYMEX_COMEX__wayback20230428013835.pdf
+2023-05,volume,0.0,previous month,Web_Volume_Report_NYMEX_COMEX__wayback20230713030702.pdf
+2023-06,volume,0.0,current month,Web_Volume_Report_NYMEX_COMEX__wayback20230713030702.pdf
+2023-12,volume,0.0,same month prior year,Web_Volume_Report_NYMEX_COMEX__wayback20250120184821.pdf
+2024-07,volume,0.0,same month prior year,Web_Volume_Report_NYMEX_COMEX__wayback20250830132403.pdf
+2024-10,volume,0.0,same month prior year,Web_Volume_Report_NYMEX_COMEX__wayback20251112061402.pdf
+2024-11,volume,0.0,previous month,Web_Volume_Report_NYMEX_COMEX__wayback20250120184821.pdf
+2024-12,volume,0.0,current month,Web_Volume_Report_NYMEX_COMEX__wayback20250120184821.pdf
+2025-06,volume,0.0,previous month,Web_Volume_Report_NYMEX_COMEX__wayback20250830132403.pdf
+2025-07,volume,0.0,current month,Web_Volume_Report_NYMEX_COMEX__wayback20250830132403.pdf
+2025-07,volume,0.0,same month prior year,Web_Volume_Report_NYMEX_COMEX__wayback20260823062754.pdf
+2025-08,volume,300.0,same month prior year,Web_Volume_Report_NYMEX_COMEX__wayback20260924062729.pdf
+2025-09,volume,150.0,previous month,Web_Volume_Report_NYMEX_COMEX__wayback20251112061402.pdf
+2025-09,volume,150.0,same month prior year,Web_Volume_Report_NYMEX_COMEX__wayback20261019213403.pdf
+2025-10,volume,10.0,current month,Web_Volume_Report_NYMEX_COMEX__wayback20251112061402.pdf
+2025-10,volume,10.0,same month prior year,Web_Volume_Report_NYMEX_COMEX__wayback20261104052029.pdf
+2026-06,volume,0.0,previous month,Web_Volume_Report_NYMEX_COMEX__wayback20260823062754.pdf
+2026-07,volume,500.0,current month,Web_Volume_Report_NYMEX_COMEX__wayback20260823062754.pdf
+2026-07,volume,500.0,previous month,Web_Volume_Report_NYMEX_COMEX__wayback20260924062729.pdf
+2026-08,volume,4.0,current month,Web_Volume_Report_NYMEX_COMEX__wayback20260924062729.pdf
+2026-08,volume,4.0,previous month,Web_Volume_Report_NYMEX_COMEX__wayback20261019213403.pdf
+2026-09,volume,508.0,current month,Web_Volume_Report_NYMEX_COMEX__wayback20261019213403.pdf
+2026-09,volume,508.0,previous month,Web_Volume_Report_NYMEX_COMEX__wayback20261104052029.pdf
+2026-10,volume,41.0,current month,Web_Volume_Report_NYMEX_COMEX__wayback20261104052029.pdf
+2014-YTD,volume_ytd,1029.0,"year to date, prior year",Web_Volume_Report_NYMEX_COMEX__wayback20150727132727.pdf
+2014-YTD,volume_ytd,1854.0,"year to date, prior year",Web_Volume_Report_NYMEX_COMEX__wayback20150906124709.pdf
+2015-YTD,volume_ytd,2347.0,year to date,Web_Volume_Report_NYMEX_COMEX__wayback20150727132727.pdf
+2015-YTD,volume_ytd,2348.0,year to date,Web_Volume_Report_NYMEX_COMEX__wayback20150906124709.pdf
+2015-YTD,volume_ytd,2347.0,"year to date, prior year",Web_Volume_Report_NYMEX_COMEX__wayback20160817074424.pdf
+2016-YTD,volume_ytd,6493.0,year to date,Web_Volume_Report_NYMEX_COMEX__wayback20160817074424.pdf
+2016-YTD,volume_ytd,6493.0,"year to date, prior year",Web_Volume_Report_NYMEX_COMEX__wayback20170714152920.pdf
+2017-YTD,volume_ytd,3939.0,year to date,Web_Volume_Report_NYMEX_COMEX__wayback20170714152920.pdf
+2019-YTD,volume_ytd,9084.0,"year to date, prior year",Web_Volume_Report_NYMEX_COMEX__wayback20200725183348.pdf
+2019-YTD,volume_ytd,10601.0,"year to date, prior year",Web_Volume_Report_NYMEX_COMEX__wayback20201022103658.pdf
+2020-YTD,volume_ytd,1854.0,year to date,Web_Volume_Report_NYMEX_COMEX__wayback20200725183348.pdf
+2020-YTD,volume_ytd,1854.0,year to date,Web_Volume_Report_NYMEX_COMEX__wayback20201022103658.pdf
+2020-YTD,volume_ytd,1830.0,"year to date, prior year",Web_Volume_Report_NYMEX_COMEX__wayback20210417080922.pdf
+2020-YTD,volume_ytd,1835.0,"year to date, prior year",Web_Volume_Report_NYMEX_COMEX__wayback20210522091410.pdf
+2021-YTD,volume_ytd,400.0,year to date,Web_Volume_Report_NYMEX_COMEX__wayback20210417080922.pdf
+2021-YTD,volume_ytd,400.0,year to date,Web_Volume_Report_NYMEX_COMEX__wayback20210522091410.pdf
+2022-YTD,volume_ytd,18.0,"year to date, prior year",Web_Volume_Report_NYMEX_COMEX__wayback20230428013835.pdf
+2022-YTD,volume_ytd,24.0,"year to date, prior year",Web_Volume_Report_NYMEX_COMEX__wayback20230713030702.pdf
+2023-YTD,volume_ytd,0.0,year to date,Web_Volume_Report_NYMEX_COMEX__wayback20230428013835.pdf
+2023-YTD,volume_ytd,0.0,year to date,Web_Volume_Report_NYMEX_COMEX__wayback20230713030702.pdf
+2023-YTD,volume_ytd,5.0,"year to date, prior year",Web_Volume_Report_NYMEX_COMEX__wayback20250120184821.pdf
+2024-YTD,volume_ytd,452.0,year to date,Web_Volume_Report_NYMEX_COMEX__wayback20250120184821.pdf
+2024-YTD,volume_ytd,152.0,"year to date, prior year",Web_Volume_Report_NYMEX_COMEX__wayback20250830132403.pdf
+2024-YTD,volume_ytd,452.0,"year to date, prior year",Web_Volume_Report_NYMEX_COMEX__wayback20251112061402.pdf
+2025-YTD,volume_ytd,150.0,year to date,Web_Volume_Report_NYMEX_COMEX__wayback20250830132403.pdf
+2025-YTD,volume_ytd,610.0,year to date,Web_Volume_Report_NYMEX_COMEX__wayback20251112061402.pdf
+2025-YTD,volume_ytd,150.0,"year to date, prior year",Web_Volume_Report_NYMEX_COMEX__wayback20260823062754.pdf
+2025-YTD,volume_ytd,450.0,"year to date, prior year",Web_Volume_Report_NYMEX_COMEX__wayback20260924062729.pdf
+2025-YTD,volume_ytd,600.0,"year to date, prior year",Web_Volume_Report_NYMEX_COMEX__wayback20261019213403.pdf
+2025-YTD,volume_ytd,610.0,"year to date, prior year",Web_Volume_Report_NYMEX_COMEX__wayback20261104052029.pdf
+2026-YTD,volume_ytd,1802.0,year to date,Web_Volume_Report_NYMEX_COMEX__wayback20260823062754.pdf
+2026-YTD,volume_ytd,1806.0,year to date,Web_Volume_Report_NYMEX_COMEX__wayback20260924062729.pdf
+2026-YTD,volume_ytd,2314.0,year to date,Web_Volume_Report_NYMEX_COMEX__wayback20261019213403.pdf
+2026-YTD,volume_ytd,2355.0,year to date,Web_Volume_Report_NYMEX_COMEX__wayback20261104052029.pdf
