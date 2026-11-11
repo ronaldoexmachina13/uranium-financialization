@@ -1,0 +1,14 @@
+{
+  "retrieved_on": "2026-10-06",
+  "capture_type": "faithful transcription of observed browser DOM tables and chart tooltip; not original server JSON",
+  "source_url": "https://www.cmegroup.com/markets/metals/other/uranium.volume.html",
+  "available_table_dates": ["2026-09-29", "2026-09-30", "2026-10-01", "2026-10-02", "2026-10-05"],
+  "table_columns": ["Globex", "Open Outcry", "PNT/ClearPort", "Total Volume", "Block Trades", "EFP", "EFR", "TAS", "Deliveries", "At Close", "Change"],
+  "records": [
+    {"trade_date":"2026-09-28","ux_total_volume":504,"ux_open_interest":256,"status":"UNSPECIFIED_CHART","provenance":"product_chart_tooltip","raw_tooltip":"September 28 Volume 504 Open Interest 256"},
+    {"trade_date":"2026-09-29","ux_total_volume":0,"ux_open_interest":256,"status":"FINAL","provenance":"product_table","totals":[0,0,0,0,0,0,0,0,0,256,0],"contract_months":["OCT26","DEC26","JAN27"],"contract_total_volumes":[0,0,0],"contract_open_interest":[2,252,2],"last_updated_ct":"2026-09-30 10:00:08"},
+    {"trade_date":"2026-10-01","ux_total_volume":20,"ux_open_interest":256,"status":"FINAL","provenance":"product_table","totals":[20,0,0,20,0,0,0,0,0,256,0],"contract_months":["OCT26","DEC26","JAN27"],"contract_total_volumes":[0,10,10],"contract_open_interest":[2,252,2],"last_updated_ct":"2026-10-02 10:00:08"},
+    {"trade_date":"2026-10-02","ux_total_volume":0,"ux_open_interest":256,"status":"FINAL","provenance":"product_table","totals":[0,0,0,0,0,0,0,0,0,256,0],"contract_months":["OCT26","DEC26","JAN27"],"contract_total_volumes":[0,0,0],"contract_open_interest":[2,252,2],"last_updated_ct":"2026-10-05 10:00:08"}
+  ],
+  "failed_date_navigation": {"requested":"2026-09-28","result":"URL hash changed but table date remained October 2; that table was not used for September 28. September 28 obtained from chart tooltip instead."}
+}

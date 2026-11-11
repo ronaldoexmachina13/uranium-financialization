@@ -1,0 +1,9 @@
+pandas>=2.2
+numpy>=1.26
+requests>=2.31
+pyyaml>=6.0
+yfinance>=0.2.50
+xlrd>=2.0         # EIA legacy .xls files
+pdfplumber>=0.11  # CME Daily Bulletin PDFs: per-word coordinates from the text layer (no OCR)
+openpyxl>=3.1      # writes data/DATA_OVERVIEW.xlsx
+playwright>=1.40   # Stooq UX.F pages via visible Chrome (see src/download_stooq_ux.py)

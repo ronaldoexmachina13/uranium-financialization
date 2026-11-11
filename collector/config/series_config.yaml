@@ -1,0 +1,184 @@
+# Series definitions for the uranium thesis data pipeline.
+# Every entry must match a row in data/source_audit.csv.
+# name: readable prefix used in raw file names: <name>__<source>-<id>__<YYYYMMDD>.<ext>
+# source types:
+#   fred    -> https://fred.stlouisfed.org/graph/fredgraph.csv?id=<id>  (no API key needed)
+#   cboe    -> official Cboe history CSV
+#   eia_xls -> https://www.eia.gov/dnav/pet/hist_xls/<id>d.xls
+#   yahoo   -> yfinance history(period="max", auto_adjust=False)  (unofficial; see audit)
+
+sample:
+  # Last day that is complete in every source (VIX, FRED, Stooq UX, CME bulletin all end here).
+  # Rows after this date are excluded in cleaning; later rows at download time were unfinished sessions.
+  end_date: 2026-09-25
+  # Any row dated on/after its file's download date (New York time) is treated as unfinished.
+  drop_rows_on_or_after_download_date_NY: true
+
+http:
+  user_agent: "uranium-thesis-data-pipeline/0.1 (academic research, ISCAP)"
+  timeout_seconds: 60
+
+series:
+  # ---------------- MACRO (download_macro_data.py) ----------------
+  - key: US10Y
+    name: US_10Y_treasury_yield   # readable file-name prefix
+    group: macro
+    source: fred
+    id: DGS10
+    raw_dir: macro
+    description: 10-Year Treasury Constant Maturity Rate
+    unit: percent
+    definition: Daily, business days; bond-market holidays are missing
+  - key: FedFunds
+    name: US_fed_funds_rate   # readable file-name prefix
+    group: macro
+    source: fred
+    id: DFF
+    raw_dir: macro
+    description: Effective Federal Funds Rate
+    unit: percent
+    definition: Daily, 7 days/week (weekend values carried by source)
+  - key: USD_Broad
+    name: USD_broad_index   # readable file-name prefix
+    group: macro
+    source: fred
+    id: DTWEXBGS
+    raw_dir: macro
+    description: Nominal Broad U.S. Dollar Index (goods and services)
+    unit: index Jan-2006=100
+    definition: Federal Reserve H.10, daily
+  - key: VIX
+    name: VIX_index   # readable file-name prefix
+    group: macro
+    source: cboe
+    id: VIX
+    url: https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv
+    raw_dir: macro
+    description: Cboe Volatility Index (official history)
+    unit: index points
+    definition: Daily OHLC; CLOSE is the level used
+  - key: VIX_FRED
+    name: VIX_index_FRED_check   # readable file-name prefix
+    group: macro
+    source: fred
+    id: VIXCLS
+    raw_dir: macro
+    description: Cboe VIX close via FRED (backup / cross-check only)
+    unit: index points
+    definition: Daily close
+  - key: USD_DXY
+    name: USD_DXY_index   # readable file-name prefix
+    group: macro
+    source: yahoo
+    id: DX-Y.NYB
+    raw_dir: macro
+    description: ICE US Dollar Index (DXY), robustness series
+    unit: index Mar-1973=100
+    definition: Daily; different basket from DTWEXBGS
+
+  # ---------------- COMMODITIES (download_market_data.py) ----------------
+  - key: Gold
+    name: gold_futures   # readable file-name prefix
+    group: market
+    source: yahoo
+    id: GC=F
+    raw_dir: commodities
+    description: COMEX gold, Yahoo continuous front-month futures
+    unit: USD per troy ounce
+    definition: Unadjusted front-month continuous series; roll rule undocumented by Yahoo
+  - key: Silver
+    name: silver_futures   # readable file-name prefix
+    group: market
+    source: yahoo
+    id: SI=F
+    raw_dir: commodities
+    description: COMEX silver, Yahoo continuous front-month futures
+    unit: USD per troy ounce
+    definition: Unadjusted front-month continuous series; roll rule undocumented by Yahoo
+  - key: Copper
+    name: copper_futures   # readable file-name prefix
+    group: market
+    source: yahoo
+    id: HG=F
+    raw_dir: commodities
+    description: COMEX high-grade copper, Yahoo continuous front-month futures
+    unit: USD per pound
+    definition: Unadjusted front-month continuous series; roll rule undocumented by Yahoo
+  - key: Oil
+    name: oil_WTI_futures   # readable file-name prefix
+    group: market
+    source: yahoo
+    id: CL=F
+    raw_dir: commodities
+    description: NYMEX WTI, Yahoo continuous front-month futures (PRIMARY oil series)
+    unit: USD per barrel
+    definition: Unadjusted front-month continuous series; matches EIA contract 1 on 96% of days 2000-2024
+  - key: Oil_WTI_C1
+    name: oil_WTI_futures_EIA_check   # readable file-name prefix
+    group: market
+    source: eia_xls
+    id: RCLC1
+    raw_dir: commodities
+    description: NYMEX WTI crude oil futures, contract 1 (EIA, official) - validation only; ends 2024-04-05
+    unit: USD per barrel
+    definition: Daily settlement of the nearest contract per EIA definition
+  - key: Oil_WTI_Spot
+    name: oil_WTI_spot_EIA_check   # readable file-name prefix
+    group: market
+    source: eia_xls
+    id: RWTC
+    raw_dir: commodities
+    description: WTI Cushing spot price (EIA) - cross-check only, NOT a futures price
+    unit: USD per barrel
+    definition: Daily spot
+
+  # ---------------- URANIUM PRICE (download_market_data.py) ----------------
+  - key: Uranium_Cameco
+    name: uranium_spot_monthly_Cameco   # readable file-name prefix
+    group: uranium
+    source: html
+    id: cameco-uranium-price
+    url: https://www.cameco.com/invest/markets/uranium-price
+    raw_dir: uranium
+    description: U3O8 spot price, month-end, industry average of UxC and TradeTech (Cameco) - PRIMARY
+    unit: USD per lb U3O8
+    definition: Month-end assessment; long-term price also on page. Personal non-commercial use only; do not redistribute
+  - key: Uranium_IMF
+    name: uranium_price_monthly_IMF   # readable file-name prefix
+    group: uranium
+    source: fred
+    id: PURANUSDM
+    raw_dir: uranium
+    description: IMF Global price of Uranium via FRED - cross-check
+    unit: USD per lb U3O8
+    definition: Monthly AVERAGE (not end-of-period)
+
+  # ---------------- SPUT / UPC market data (download_sput.py) ----------------
+  - key: SPUT_TSX
+    name: uranium_fund_UPC_SPUT_Toronto   # readable file-name prefix
+    group: sput
+    source: yahoo
+    id: U-UN.TO
+    raw_dir: sput
+    description: Sprott Physical Uranium Trust, TSX (CAD). Rows before 2021-07-26 are Uranium Participation Corp
+    unit: CAD per unit; volume in units
+    definition: Daily; split at 2021-07-19 (UPC last real trade 2021-07-16; 5 stale rows 07-19..07-23)
+  - key: SPUT_OTC
+    name: uranium_fund_SPUT_US_OTC   # readable file-name prefix
+    group: sput
+    source: yahoo
+    id: SRUUF
+    raw_dir: sput
+    description: Sprott Physical Uranium Trust, US OTC (USD) - robustness only
+    unit: USD per unit; volume in units
+    definition: Daily
+
+# CME Daily Bulletin forward collection (download_cme_uranium.py)
+cme_bulletin:
+  base_url: https://www.cmegroup.com/daily_bulletin/current/
+  sections:
+    S62: Section62_Metals_Futures_Products.pdf
+    S02B: Section02B_Summary_Volume_And_Open_Interest_Metals_Futures_And_Options.pdf
+  product_code: UX
+  product_name: UXC URANIUM U3O8 FUTURES
+  contract_size_lb: 250
