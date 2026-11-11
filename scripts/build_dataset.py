@@ -434,6 +434,11 @@ def load():
         M.append(col(hdr, {a: round(b, 2) for a, b in acc.items()}, "native", "San Francisco Fed, Monetary Policy Surprises (Bauer and Swanson high-frequency measure)", sid, "monthly", "sum of event values in the month", "basis points (as published)",
                      "event-level values (Jan 2012 to Dec 2023, 101 FOMC events incl. unscheduled 2020 meetings) summed per month; months without an event are blank, not zero. The page's chart file ends Dec 2023; the full Excel file was not read", "H4",
                      "data/raw/macro/sf_fed_monetary_policy_surprises_2012_2023.csv", NUM))
+    nc = read_csv(RAW / "investing" / "newcastle_coal_futures_monthly.csv")
+    M.append(col("Newcastle coal futures close (Investing NCFMc1), monthly bar [USD/tonne]", {ym(day(r["month"] + "-01")): num(r["close_usd_per_tonne"]) for r in nc if not r["note"]}, "native",
+                 "Investing.com Newcastle Coal Futures (NCFMc1, ICE)", "ncf_close", "monthly", "monthly bar close", "USD per tonne",
+                 "continuous front-month series from Jan 2009; Nov 2026 is a partial month and is left out; roll rule not documented by the source. Rotterdam API2 coal futures not retrieved", "H1 comparator",
+                 "data/raw/investing/newcastle_coal_futures_monthly.csv", NUM))
     # daily series
     D = S["daily"]
     oil_me = []
@@ -687,6 +692,7 @@ OVERRIDE = {  # id -> (status, where, note); the workbook holds the inputs of de
 
 _D = "Computed from Monthly columns by scripts/derived.py; monthly frequency; blank where an input is missing."
 OVERRIDE.update({
+    "V060": ("Partly in workbook", "Monthly: Newcastle coal futures close (Investing NCFMc1)", "Newcastle only, Jan 2009 to Oct 2026, monthly bar close. API2 Rotterdam not retrieved."),
     "V075": ("Partly in workbook", "Monthly: Monetary-policy surprise, raw and orthogonalized, sum over FOMC events in month", "San Francisco Fed series, Jan 2012 to Dec 2023 only (chart file); 2024 onward not retrieved."),
     "V006": ("In workbook", "Monthly: Spot-long-term price difference, month-end", _D),
     "V031": ("In workbook", "Monthly: SPUT TSX volume / units outstanding, month", _D + " Only Aug 2021 to Dec 2025, where units outstanding are reconstructed."),
