@@ -1,0 +1,2 @@
+event_date,event_type,quantity_lb,counterparty,price_usd_per_lb,consideration_usd,note
+2021-04-28,sale,-348068,Uranium Royalty Corp.,28.73,10000000,"Sale under the IPO subscription agreement option. URC exercised its option on 29 Mar 2021 (update of 20 Apr 2021 p4) or 30 Mar 2021 (FY2022 annual results p27); title moved 28 Apr 2021 (FY2022 annual results p11 and p27). Explains the gap in 30 Jun 2021 holdings: 9,856,385 + 3,454,231 + 343,053 - 348,068 = 13,305,601 lb (update of 2 Aug 2021 p1). Not in yellowcake_report_series_verified.csv, which lists purchases only."

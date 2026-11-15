@@ -35,7 +35,9 @@ WorksheetReader.bind_tables = lambda self: None  # the World Bank file has table
 
 ROOT = Path(__file__).resolve().parents[1]
 RAW = ROOT / "data" / "raw"
-OUT = Path(os.environ["THESIS_OUT"]) if os.environ.get("THESIS_OUT") else ROOT / "data" / "processed" / "thesis_dataset.xlsx"
+DATED = RAW / "markets_dated"   # futures with repaired dates (15 Nov 2026); the older files in data/raw/markets stay as evidence
+DATED_DAY = "20261115"
+OUT = Path(os.environ["THESIS_OUT"]) if os.environ.get("THESIS_OUT") else ROOT / "data" / "processed" / "thesis_dataset_v4.xlsx"
 
 NUM, NUM4, INT, PCT = "#,##0.00", "#,##0.00##", "#,##0", "0.00"
 FILL = {"constructed": "E4DFEC", "native": "D9E2D5", "derived": "DDEBF7", "average": "EDEDED", "gap-fill": "FFF2CC", "reconstructed": "FCE4D6"}
@@ -77,7 +79,7 @@ EQUITIES = [("URA", "USD", "ETF"), ("URNM", "USD", "ETF"), ("NLR", "USD", "ETF")
             ("DNN", "USD", "developer"), ("NXE", "USD", "developer"), ("PDN.AX", "AUD", "producer"), ("BOE.AX", "AUD", "producer"),
             ("DYL.AX", "AUD", "developer"), ("SLX.AX", "AUD", "enrichment tech"), ("BWXT", "USD", "nuclear supply"), ("1164.HK", "HKD", "producer")]
 SPLIT_DATE = dt.date(2021, 7, 26)  # first trading day of SPUT; before it the Yahoo U-UN.TO series is Uranium Participation Corp
-EQ_NOTE = {"U-UN.TO": "SPUT only, from 26 Jul 2021 (the ticker's earlier history is Uranium Participation Corp, see the UPC column)", "U-U.TO": "USD units of the Sprott trust",
+EQ_NOTE = {"U-UN.TO": "SPUT only, from 26 Jul 2021 (first SPUT row: close 11.14, volume 106,200; the ticker's earlier history is Uranium Participation Corp, see the UPC column; the five stale rows of 19 to 23 Jul 2021 between the two are blank here and kept in Prices OHLCV)", "U-U.TO": "USD units of the Sprott trust",
            "YCA.L": "prices in pence (GBp)", "KAP.IL": "London GDR in USD"}
 
 
@@ -465,16 +467,30 @@ def load():
                      "20 Mar to 9 Nov 2026 only; settlement of the nearest listed contract month", "H3" if k != "front_settle" else "H1, H2", "data/raw/cme/ux_volume_oi_daily_cme_bulletins.csv", fmtx))
     sd = read_csv(RAW / "sprott" / "sput_daily.csv")
     for k, hdr, unit, f in [("price_usd", "SPUT price", "USD", NUM), ("nav_usd", "SPUT NAV per unit", "USD", NUM), ("premium_discount_pct", "SPUT premium/discount", "percent", NUM)]:
-        D.append(col(f"{hdr} [{unit}]", {day(r["date"]): num(r[k]) for r in sd}, "native", "Sprott fund page", k, "daily", "daily close", unit, "starts Jul 2021", "H3", "data/raw/sprott/sput_daily.csv", f))
+        D.append(col(f"{hdr} [{unit}]", {day(r["date"]): num(r[k]) for r in sd}, "native", "Sprott fund page", k, "daily", "daily close", unit, "starts Jul 2021" + (" | FLAG: the NAV per unit is the same as on the previous day on 216 of 1,331 days (16.2%), so it is stale on those days (the NAV is rounded to the cent, and a stale NAV can make the prior NAV of an issuance row stale); the provider of the NAV price is not named in the Sprott documents" if k == "nav_usd" else ""), "H3", "data/raw/sprott/sput_daily.csv", f))
     mdir = RAW / "markets"
     markets = {}
     for t in fm.MARKETS:
-        p = mdir / f"{t}.csv"
+        dated = t.endswith("=F")   # the seven futures series come from the date-repaired files; ^GSPC stays on the old file
+        p = (DATED / f"{t}__fetched_{DATED_DAY}.csv") if dated else (mdir / f"{t}.csv")
+        if dated and not p.exists():
+            raise SystemExit(f"Missing date-repaired file {p}. The build does not fall back to the old files.")
         if p.exists():
             hdr, unit, role = MARKET_NAMES[t]
             markets[t] = read_csv(p)
             note = "continuous front-month; the contract changes at each roll, not back-adjusted" if t.endswith("=F") else ("spot quote from Yahoo" if t.endswith("=X") else "")
-            D.append(col(f"{hdr} close [{unit}]", {day(r["date"]): num(r["close"]) for r in markets[t]}, "native", "Yahoo Finance", t, "daily", "daily close", unit, note, role, f"data/raw/markets/{t}.csv", NUM))
+            if dated:
+                note += ("; dates repaired on 15 Nov 2026 (each bar dated with the exchange time zone, file in data/raw/markets_dated; the older file in data/raw/markets had 28,459 of 44,275 rows one day early across the seven futures series)")
+                stale = sum(1 for r in markets[t] if num(r["volume"]) == 0 and len({r["open"], r["high"], r["low"], r["close"]}) == 1)
+                if stale:
+                    note += f"; {stale} stale-looking days (open = high = low = close, volume 0) are kept and flagged, not removed"
+                neg = [(r["date"], num(r["close"])) for r in markets[t] if num(r["close"]) is not None and num(r["close"]) <= 0]
+                if neg:
+                    note += "; negative close kept as published: " + ", ".join(f"{d_} {v_:.2f}" for d_, v_ in neg)
+                if t == "PL=F":
+                    note += "; THIN MARKET: Yahoo's reply holds 796 empty bars with no prices (mostly 2002 to 2009, not in this column) and long stretches between bars with prices, so month-end values can be stale"
+            D.append(col(f"{hdr} close [{unit}]", {day(r["date"]): num(r["close"]) for r in markets[t]}, "native", "Yahoo Finance", t, "daily", "daily close", unit, note, role,
+                         f"data/raw/markets_dated/{t}__fetched_{DATED_DAY}.csv" if dated else f"data/raw/markets/{t}.csv", NUM))
     equities = {}
     for t, cur, grp in EQUITIES:
         equities[t] = read_csv(RAW / "yahoo" / f"{t}.csv")
@@ -489,7 +505,7 @@ def load():
             vals = {d: v for d, v in vals.items() if d >= SPLIT_DATE}
             D.append(col(f"UPC adj. close [{cur}]", upc, "native", "Yahoo Finance", "UPC", "daily", "daily close (adjusted for splits and dividends)", cur,
                          f"Uranium Participation Corp, the fund SPUT replaced: the Yahoo U-UN.TO series up to {max(upc):%d %b %Y} (last trade); level agrees with UPC's reported NAV per share (e.g. CAD 4.87 at May 2021 against a price of about CAD 5); "
-                         "no overlap with SPUT, so do not compute a return across the switch to the next column; days with zero volume are left blank", "H3 context", "data/raw/yahoo/U-UN.TO.csv", NUM4))
+                         "no overlap with SPUT, so do not compute a return across the switch to the next column; days with zero volume are left blank. The five rows 19 to 23 Jul 2021 in data/raw/yahoo/U-UN.TO.csv are stale (open = high = low = close = 5.11, volume 0: the last real UPC close, 16 Jul 2021); they are blank here and kept in Prices OHLCV", "H3 context", "data/raw/yahoo/U-UN.TO.csv", NUM4))
         D.append(col(f"{t} adj. close [{cur}]", vals, "native", "Yahoo Finance", t, "daily", "daily close (adjusted for splits and dividends)", cur,
                      note, "H3 context" if grp in ("ETF", "physical fund") else "context", f"data/raw/yahoo/{t}.csv", NUM4))
 
@@ -536,7 +552,18 @@ def load():
     yraw = "data/raw/yellowcake/nav_quarterly.csv"
     ysrc = "Yellow Cake plc quarterly operating updates"
     Q.append(col("Yellow Cake NAV per share [GBP]", {day(r["quarter_end"]): num(r["nav_per_share_gbp"]) for r in yc}, "native", ysrc, "nav_per_share_gbp", "quarterly", "quarter-end", "GBP", "no monthly NAV is published", "H3", yraw, NUM))
-    Q.append(col("Yellow Cake uranium held [million lb U3O8]", {day(r["quarter_end"]): num(r["uranium_held_million_lb"]) for r in yc}, "native", ysrc, "uranium_held_million_lb", "quarterly", "quarter-end", "million lb U3O8", "see lb_basis", "H3", yraw, NUM))
+    # 15 Nov 2026: 12.96 at 2021-03-31 is a pro forma figure. It stays as published; the corrected figure sits in the next column.
+    held_fix = {}
+    hc = RAW / "yellowcake" / "yellowcake_holdings_correction_2021-03-31.csv"
+    if hc.exists():
+        for r in read_csv(hc):
+            held_fix[day(r["quarter_end"])] = int(re.match(r"\d+", r["corrected_value"]).group())
+    held_flag = ("FLAG 31 Mar 2021: the value 12.96 is a pro forma figure (after the sale to Uranium Royalty Corp. and the Kazatomprom delivery), not the pounds held; it is left as published. "
+                 "Actually held: 9,856,385 lb (grade A), shown in the next column. Do not use 12.96 as held units. Source: data/raw/yellowcake/yellowcake_holdings_correction_2021-03-31.csv.")
+    Q.append(col("Yellow Cake uranium held [million lb U3O8]", {day(r["quarter_end"]): num(r["uranium_held_million_lb"]) for r in yc}, "native", ysrc, "uranium_held_million_lb", "quarterly", "quarter-end", "million lb U3O8", "see lb_basis. " + held_flag, "H3", yraw, NUM))
+    if held_fix:
+        Q.append(col("Yellow Cake uranium held, corrected [lb U3O8]", held_fix, "native", "Yellow Cake update of 20 Apr 2021 (page references in the correction file), read by the Data Curator on 15 Nov 2026", "holdings_correction", "quarterly", "quarter-end", "lb U3O8",
+                     "Only the quarters where the published holdings are not what was held. 31 Mar 2021: 9,856,385 lb held; the published 12.96 million lb is pro forma.", "H3", "data/raw/yellowcake/yellowcake_holdings_correction_2021-03-31.csv", INT))
     Q.append(col("Yellow Cake lb basis", {day(r["quarter_end"]): r["lb_basis"] for r in yc}, "native", ysrc, "lb_basis", "quarterly", "quarter-end", "text", "stated = in the announcement; derived = holdings value divided by quarter-end spot; carried = previous quarter", "H3", yraw, "@"))
     Q.append(col("Yellow Cake quarter-end spot used [USD/lb]", {day(r["quarter_end"]): num(r["spot_usd_lb"]) for r in yc}, "native", ysrc, "spot_usd_lb", "quarterly", "quarter-end", "USD per lb", "as given or derived for the announcement; compare with the Cameco quarter-end column", "H3", yraw, NUM))
     Q.append(col("Yellow Cake announcement date", {day(r["quarter_end"]): day(r["announcement_date"]) for r in yc if r["announcement_date"]}, "native", ysrc, "announcement_date", "quarterly", "date of announcement", "date", "", "H3", yraw, "yyyy-mm-dd"))
@@ -670,7 +697,7 @@ OVERRIDE = {  # id -> (status, where, note); the workbook holds the inputs of de
     "V089": ("In workbook", "Monthly and Daily: geopolitical risk index, overall", "Daily file covers calendar days; weekends are not shown on the Daily sheet."),
     "V090": ("In workbook", "Monthly and Daily: geopolitical risk, threats and acts", "Same note as V089."),
     "D21": ("In workbook", "Monthly: Google Trends 'uranium ETF'", "Relative interest, peak = 100; carries measurement error."),
-    "D44": ("Partly in workbook", "UPC monthly NAV, Dec 2010 to May 2021; Daily and Monthly: UPC adj. close, 2006 to Jul 2021", "2009 to Nov 2010 and June 2021 not retrieved; shares outstanding not printed in the releases."),
+    "D44": ("Partly in workbook", "UPC monthly NAV, Dec 2010 to May 2021 (126 months; May 2018 from the quarterly filings) and nine 2009 months (Jan to Apr, Aug to Dec); Daily and Monthly: UPC adj. close, 2006 to Jul 2021", "May to Jul 2009, Jan to Nov 2010 and June 2021 not retrieved; shares outstanding not printed in the releases."),
     "V103": ("In workbook", "Annual: world nuclear electricity produced, IAEA PRIS, 1970-2025", "World total only; country detail sits in the PRIS Data Browser (read on screen, no export). Values match RDS-2 for the six years checked."),
     "V106": ("In workbook", "Annual: world nuclear construction starts, grid connections, permanent shutdowns and reactors in operation, IAEA RDS-2 (2026 edition), 1954-2025", "World totals per year; the reactor-level shutdown list (220 reactors) is in the raw CSV. Operating status is the year-end count of reactors in operation."),
     "V105": ("In workbook", "Annual: world nuclear energy availability, load, unit capability factors and forced loss rate, IAEA PRIS, 1970-2025", "World totals only; PRIS reports the energy availability factor (EAF) as its headline and the load factor (LF) as the realised measure. Six more indicators sit in the raw CSV."),
@@ -761,8 +788,17 @@ def main():
     mk = lambda k: dt.date(k[0], k[1], 1)
     freq("Monthly", "Monthly series", "One row per calendar month. Prices and indicators are month-end values; period averages appear only where no daily source exists (type colour: grey).",
          months, M, "Month", "yyyy-mm", mk, "Uranium prices and the month-end value of every daily series, plus monthly-published series.", "Monthly", width=17)
-    freq("Quarterly", "Quarterly series", "One row per quarter-end. Series published once a quarter, plus the quarter-end value of monthly series.",
+    wsq = freq("Quarterly", "Quarterly series", "One row per quarter-end. Series published once a quarter, plus the quarter-end value of monthly series.",
          quarters, Q, "Quarter end", "yyyy-mm-dd", lambda k: k, "Conversion prices, Yellow Cake NAV and holdings, UxC spot volume and SPUT purchases per quarter.", "Quarterly", width=18)
+    # visible flag on the pro forma holdings cell (31 Mar 2021)
+    from openpyxl.comments import Comment
+    jh = [j for j in range(2, wsq.max_column + 1) if "uranium held" in str(wsq.cell(7, j).value or "").lower() and "corrected" not in str(wsq.cell(7, j).value or "").lower()]
+    rh = [r for r in range(11, wsq.max_row + 1) if (wsq.cell(r, 1).value.date() if hasattr(wsq.cell(r, 1).value, "date") else wsq.cell(r, 1).value) == dt.date(2021, 3, 31)]
+    if len(jh) != 1 or len(rh) != 1:
+        raise SystemExit(f"cannot find the Yellow Cake holdings cell for 31 Mar 2021 on the Quarterly sheet: columns {jh}, rows {rh}")
+    cell_ = wsq.cell(rh[0], jh[0])
+    cell_.fill = PatternFill("solid", fgColor=FILL["gap-fill"])
+    cell_.comment = Comment("PRO FORMA, not pounds held. Actually held at 31 Mar 2021: 9,856,385 lb (grade A; see the next column). Left as published. Source: data/raw/yellowcake/yellowcake_holdings_correction_2021-03-31.csv", "Dataset", width=340, height=110)
     freq("Weekly", "Weekly series", "One row per Friday.", wkeys, W, "Date (Friday)", "yyyy-mm-dd", lambda k: k, "SPUT holdings from the Sprott fund page.", "Weekly", width=18)
     freq("Daily", "Daily series", "One row per trading day. Blank cell = market closed or no observation; nothing is carried forward.",
          dates, D, "Date", "yyyy-mm-dd", lambda k: k, "Market, rate, risk and fund series at their daily frequency.", "Daily", width=16)
@@ -818,14 +854,17 @@ def main():
           ["Purchase date", "Pounds acquired [lb U3O8]", "Cumulative pounds acquired [lb U3O8]"], [list(r) for r in ev], [16, 26, 32], "Every SPUT purchase day with pounds acquired.", "Irregular",
           f"{ev[0][0]:%Y-%m-%d} to {ev[-1][0]:%Y-%m-%d}", fmts=["yyyy-mm-dd", INT, INT])
     if "issuances" in S:
+        FLAG_UW = "Underwritten deal priced against the 13 Jun 2025 NAV; not an ATM sale"
         cum, rows = 0, []
         for d_, pr_, n_, t_ in S["issuances"]:
             cum += n_
-            rows.append([d_, pr_, n_, pr_ * n_, t_, cum, S["issuance_src"][(d_, pr_, n_)]])
-        table("SPUT issuance", "SPUT unit issuance", "V022 (new units), V023 (issue price) and V024 (gross proceeds). Dates from the Prior Sales tables of the prospectus supplements of 22 Nov 2021 (17 Aug to 18 Nov 2021), 15 Feb 2023, 3 Jan 2024, Dec 2024 and 18 Jun 2025 and the 22 Jan 2026 base shelf prospectus (16 Feb 2022 to 19 Jan 2026, no gap); gross value = price × units. Issues from 19 Nov 2021 to 15 Feb 2022 are not listed. The 2021 table plus the 75,210,456 arrangement units equals the 162,558,000 units stated on 22 Nov 2021.",
-              ["Issue date", "Price per unit [USD]", "Units issued", "Gross value, price × units [USD]", "Issue type", "Cumulative units in this list", "Source document"], rows, [14, 18, 16, 26, 44, 22, 52],
+            flag_ = FLAG_UW if (str(d_)[:10] == "2025-06-20" and n_ == 11600000 and abs(pr_ - 17.25) < 1e-9) else None
+            rows.append([d_, pr_, n_, pr_ * n_, t_, cum, S["issuance_src"][(d_, pr_, n_)], flag_])
+        assert sum(1 for r_ in rows if r_[7]) == 1, "20 Jun 2025 underwritten row not found exactly once"
+        table("SPUT issuance", "SPUT unit issuance", "V022 (new units), V023 (issue price) and V024 (gross proceeds). Dates from the Prior Sales tables of the prospectus supplements of 22 Nov 2021 (17 Aug to 18 Nov 2021), 15 Feb 2023, 3 Jan 2024, Dec 2024 and 18 Jun 2025 and the 22 Jan 2026 base shelf prospectus (16 Feb 2022 to 19 Jan 2026, no gap); gross value = price × units. Issues from 19 Nov 2021 to 15 Feb 2022 are not listed. Jul to Dec 2023 is 33,603 units short of the 2023 report: that amount has no dates and is not spread over any day. By the daily-file test, 44 issuance rows are below the previous day's NAV (41 before 2026 including 20 Jun 2025, so 40 excluding it; 3 in Jan 2026). One of them, 20 Jun 2025 (11,600,000 units at 17.25 against a prior-day NAV of 18.33, 5.89%), is a timing effect: it is an underwritten bought deal priced on 13 Jun 2025 against that day's NAV of 17.0376 (net to the Trust 17.0376), not an ATM sale (see the flag column). The other 43 are shortfalls of 0.007% to 0.73%: 18 are shallower than 0.15% and 25 are between 0.15% and 0.75%; the deepest are 10 and 12 Apr 2024. The reason for those 43 is not in the documents. The daily NAV is rounded to the cent (five rows are within half a cent of the prior NAV), and the 216 days on which the NAV is unchanged may make the prior NAV stale. The 2021 table plus the 75,210,456 arrangement units equals the 162,558,000 units stated on 22 Nov 2021.",
+              ["Issue date", "Price per unit [USD]", "Units issued", "Gross value, price × units [USD]", "Issue type", "Cumulative units in this list", "Source document", "Flag, 15 Nov 2026"], rows, [14, 18, 16, 26, 44, 22, 52, 60],
               "Dated unit issues of SPUT (private placement, bought deal, at-the-market).", "Irregular", f"{rows[0][0]:%Y-%m-%d} to {rows[-1][0]:%Y-%m-%d}",
-              fmts=["yyyy-mm-dd", "0.0000", INT, INT, None, INT, None])
+              fmts=["yyyy-mm-dd", "0.0000", INT, INT, None, INT, None, None])
         heads = ["Period end", "Period type", "Units outstanding", "Total NAV [USD thousand]", "NAV per unit [USD]", "TSX closing price, U.U [USD]", "Cash [USD thousand]",
                  "Uranium oxide at fair value [USD thousand]", "Pounds U3O8 held", "Units issued in the period", "Proceeds from issuance [USD thousand]", "Issue costs, cash flow [USD thousand]",
                  "Purchases of uranium oxide [USD thousand]", "Source", "Note", "Net proceeds, proceeds minus costs [USD thousand]", "Average issue price [USD]", "Pounds per unit [lb]",
@@ -833,17 +872,50 @@ def main():
         fields = ["period_end", "period_type", "units_outstanding", "nav_usd_thousand", "nav_per_unit_usd", "tsx_close_usd", "cash_usd_thousand", "uranium_oxide_fv_usd_thousand",
                   "pounds_u3o8_held", "units_issued_in_period", "proceeds_from_issuance_usd_thousand", "issue_costs_cashflow_usd_thousand", "purchases_of_uranium_usd_thousand"]
         rows = []
+        unit_flags = {}
+        uf = RAW / "sprott" / "sput_unit_count_note_2026-01.csv"
+        if uf.exists():
+            unit_flags = {x["date"]: x for x in read_csv(uf)}
+        # 15 Nov 2026: cash, flows, fair value, pounds and units that the kept annual reports print but sput_statements.csv leaves blank.
+        # They are shown in extra columns at the right; the original cells are never overwritten.
+        CORR = [("cash_usd_thousand", "Cash, from the kept report [USD thousand]", INT), ("uranium_oxide_fv_usd_thousand", "Uranium oxide at fair value, from the kept report [USD thousand]", INT),
+                ("pounds_u3o8_held", "Pounds U3O8 held, from the kept report", INT), ("units_issued_in_period", "Units issued for cash, from the kept report", INT),
+                ("proceeds_from_issuance_usd_thousand", "Proceeds from issuance, from the kept report [USD thousand]", INT), ("issue_costs_cashflow_usd_thousand", "Issue costs, from the kept report [USD thousand]", INT),
+                ("purchases_of_uranium_usd_thousand", "Purchases of uranium oxide, from the kept report [USD thousand]", INT)]
+        cfix = {}
+        cf = RAW / "sprott" / "sput_statements_cash_correction_2026-11-15.csv"
+        for x in (read_csv(cf) if cf.exists() else []):
+            cfix.setdefault(x["period_end"], {})[x["field"]] = x
         for r in S["statements"]:
             v = [num(r[f]) if f not in ("period_end", "period_type") else r[f] for f in fields]
             v[0] = day(v[0])
             units_, nav_, cash_, fv_, lb_, iss_, pr_, co_ = v[2], v[3], v[6], v[7], v[8], v[9], v[10], v[11]
-            rows.append(v + [r["source"], r["note"], pr_ - co_ if pr_ is not None and co_ is not None else None, pr_ * 1000 / iss_ if pr_ is not None and iss_ else None,
-                             lb_ / units_ if lb_ and units_ else None, fv_ * 1000 / lb_ if fv_ and lb_ else None, cash_ / nav_ * 100 if cash_ is not None and nav_ else None])
+            uflag_ = unit_flags.get(r["period_end"])
+            note_ = r["note"] + ((" | FLAG (grade B): " + f"units {uflag_['value_in_original_file']} as printed in the base prospectus (p36); the supplement prints {uflag_['corrected_value']} for 22 Jan 2026 and the 22 issuance rows of 2 to 19 Jan 2026 add up to exactly that figure, so this value is probably a transposed digit. Left unchanged (2026 is parked). Source: data/raw/sprott/sput_unit_count_note_2026-01.csv") if uflag_ else "")
+            fx_ = cfix.get(r["period_end"], {})
+            cells_, pages_ = [], []
+            for f_, _h, _fm in CORR:
+                if f_ in fx_:
+                    orig_ = r[f_].strip()
+                    if orig_ != "" and num(orig_) != num(fx_[f_]["corrected_value"]):
+                        raise SystemExit(f"SPUT cash correction for {r['period_end']} {f_} disagrees with a non-blank value in sput_statements.csv")
+                    cells_.append(num(fx_[f_]["corrected_value"]))
+                    pages_.append(f"{f_.split('_')[0] if f_ != 'uranium_oxide_fv_usd_thousand' else 'fair value'} {fx_[f_]['page']}")
+                else:
+                    cells_.append(None)
+            if fx_:
+                docs_ = sorted({x["source_document"] for x in fx_.values()})
+                note_ += (" | CORRECTED VALUES (15 Nov 2026, grade A) are in the last columns, read from " + ", ".join(docs_) + " (03_data/source_documents/sput_reports): "
+                          + "; ".join(f"{x['field']} {x['page']}" for x in fx_.values()) + ". The original cells stay as they were. Source: data/raw/sprott/sput_statements_cash_correction_2026-11-15.csv")
+                if r["period_end"] == "2021-12-31":
+                    note_ += ". Units: 163,471,400 in total = 75,210,456 issued on acquiring UPC + 88,260,944 sold for cash (only these earned the proceeds); the cash-flow statement covers 23 Apr to 31 Dec 2021"
+            rows.append(v + [r["source"], note_, pr_ - co_ if pr_ is not None and co_ is not None else None, pr_ * 1000 / iss_ if pr_ is not None and iss_ else None,
+                             lb_ / units_ if lb_ and units_ else None, fv_ * 1000 / lb_ if fv_ and lb_ else None, cash_ / nav_ * 100 if cash_ is not None and nav_ else None] + cells_)
         table("SPUT statements", "SPUT statements at reporting dates",
-              "V019 (total NAV), V021 (units), V024 (proceeds), V026 (cash), V027 (purchases) and V029 (pounds held). Annual and interim reports and the prospectus; the last five columns are ratios of the others.",
-              heads, rows, [13, 14, 16, 16, 14, 16, 14, 18, 16, 16, 18, 18, 18, 36, 46, 18, 14, 14, 16, 12],
+              "V019 (total NAV), V021 (units), V024 (proceeds), V026 (cash), V027 (purchases) and V029 (pounds held). Annual and interim reports and the prospectus; the five columns after Note are ratios of the others. The seven last columns show values that the kept annual reports print for 31 Dec 2021, 31 Dec 2022 and 31 Dec 2023 where the original cells are blank (15 Nov 2026); the original cells are not overwritten. Cash at 20 Jan and 31 Mar 2026 stays blank (2026 is parked).",
+              heads + [h_ for _f, h_, _m in CORR], rows, [13, 14, 16, 16, 14, 16, 14, 18, 16, 16, 18, 18, 18, 36, 46, 18, 14, 14, 16, 12] + [16] * 7,
               "SPUT balance sheet and cash flow at each annual, interim and prospectus date.", "Reporting dates", f"{rows[0][0]:%Y-%m-%d} to {rows[-1][0]:%Y-%m-%d}",
-              fmts=["yyyy-mm-dd", None, INT, INT, "0.0000", NUM, INT, INT, INT, INT, INT, INT, INT, None, None, INT, NUM, "0.0000", NUM, NUM], wrap=(14, 15))
+              fmts=["yyyy-mm-dd", None, INT, INT, "0.0000", NUM, INT, INT, INT, INT, INT, INT, INT, None, None, INT, NUM, "0.0000", NUM, NUM] + [m_ for _f, _h, m_ in CORR], wrap=(14, 15))
     if "uxc_rows" in S:
         ur = sorted(S["uxc_rows"], key=lambda r: (r["period_start"], r["period_end"], r["announcement_date"]))
         rows = [[day(r["announcement_date"]), day(r["document_quarter_end"]), r["period_label"], r["period_type"], day(r["period_start"]), day(r["period_end"]), float(r["volume_mlb"]),
@@ -872,6 +944,31 @@ def main():
                 return v
             return num(v)
         rows_ = sorted([[cell(k, x[k]) for k in keys_] for x in r_], key=lambda z: (z[0] is None, z[0]), reverse=True)
+        # 15 Nov 2026 corrections and flags. The raw files are not changed; the Note column says what was done.
+        def row_of(ann, per):
+            hit = [z for z in rows_ if z[0] == day(ann) and z[1] == day(per)]
+            if len(hit) != 1:
+                raise SystemExit(f"Yellow Cake reports: expected one row for {ann} / {per}, found {len(hit)}")
+            return hit[0]
+        pf = RAW / "yellowcake" / "yellowcake_purchase_correction_2024-06.csv"
+        for fx in (read_csv(pf) if pf.exists() else []):
+            z = row_of(fx["announcement_date"], fx["period_end"])
+            old_, new_ = num(fx["value_in_original_file"]), num(fx["corrected_value"])
+            if z[5] != old_ or z[6] != old_:
+                raise SystemExit("Yellow Cake purchase correction: the file value no longer matches the raw report row")
+            z[5] = z[6] = new_
+            z[13] = (z[13] or "") + (f" | CORRECTED in this workbook (15 Nov 2026): the update prints only '1.53 million lb'; the exact {new_:,.0f} lb (delivered 3 Jun 2024, US$65.50/lb, US$100.0m) is printed in the interim report to 30 Sep 2024 (p12, p23), "
+                                     "the annual results to 31 Mar 2025 (p22) and the annual results to 31 Mar 2024 (p22, p24, p29). Columns 'Uranium purchased in period' and 'of which from Kazatomprom' show the exact figure; the raw file still holds 1,530,000. Source: data/raw/yellowcake/yellowcake_purchase_correction_2024-06.csv")
+        hf = RAW / "yellowcake" / "yellowcake_holdings_correction_2021-03-31.csv"
+        for fx in (read_csv(hf) if hf.exists() else []):
+            z = row_of(fx["announcement_date"], fx["quarter_end"])
+            z[13] = (z[13] or "") + (" | FLAG (15 Nov 2026, grade A): the holdings figure of 12.96 million lb in this update (used on the Quarterly sheet) is pro forma. Actually held at 31 Mar 2021: 9,856,385 lb "
+                                     "(update of 20 Apr 2021 p1 fn 2 and p5 fn 17). Not a column on this sheet; the Quarterly sheet shows both. Source: data/raw/yellowcake/yellowcake_holdings_correction_2021-03-31.csv")
+        sf = RAW / "yellowcake" / "yellowcake_sale_uranium_royalty_2021-04.csv"
+        for fx in (read_csv(sf) if sf.exists() else []):
+            z = row_of("2021-08-02", "2021-06-30")
+            z[13] = (z[13] or "") + (f" | NOTE (15 Nov 2026): the sale of {-num(fx['quantity_lb']):,.0f} lb to Uranium Royalty Corp. (title moved {fx['event_date']}, US${num(fx['price_usd_per_lb']):.2f}/lb, US$10.0m) is a sale, not a purchase, "
+                                     "so it has no column on this sheet. It explains the 30 Jun 2021 holdings of 13,305,601 lb: 9,856,385 - 348,068 + 343,053 + 3,454,231. Source: data/raw/yellowcake/yellowcake_sale_uranium_royalty_2021-04.csv")
         # total NAV as stated in the same report (read from the PDFs 8 Nov 2026); inserted after "Cash and other net current assets"
         navf = RAW / "yellowcake" / "yellowcake_total_nav.csv"
         nav_ = {(day(x["announcement_date"]), day(x["period_end"])): x for x in read_csv(navf)} if navf.exists() else {}
@@ -879,7 +976,7 @@ def main():
             x = nav_.get((z[0], z[1]))
             z[10:10] = [num(x["total_nav_usd_m"]) if x else None, num(x["nav_per_share_gbp"]) if x else None, (x["basis"] or None) if x else None]
         heads_[10:10] = ["Total NAV, as stated [USD million]", "NAV per share, as stated [GBP]", "NAV basis"]
-        table("Yellow Cake reports", "Yellow Cake plc: facts from its reports", "V035-V044. One row per quarterly update, interim report and annual result, read from the company PDFs. Blank = not stated in that report. Period figures are never summed across lots. Total NAV is the figure the report states, never shares times NAV per share.",
+        table("Yellow Cake reports", "Yellow Cake plc: facts from its reports", "V035-V044. One row per quarterly update, interim report and annual result, read from the company PDFs. Blank = not stated in that report. Period figures are never summed across lots. Total NAV is the figure the report states, never shares times NAV per share. Flags in the Note column (15 Nov 2026): the 31 Mar 2021 holdings of 12.96 million lb are pro forma (9,856,385 lb held); the 348,068 lb sale to Uranium Royalty Corp. (28 Apr 2021) is not a purchase and has no column; the Jun 2024 purchase shows the exact 1,526,717 lb.",
               heads_, rows_, [14, 12, 16, 16, 16, 16, 16, 14, 12, 18, 16, 14, 30, 14, 14, 40, 70, 10], "Shares, capital raised, purchases, cash, total NAV and buybacks from every Yellow Cake report.", "Quarterly / half-year / annual",
               f"{min(z[1] for z in rows_ if z[1]):%Y-%m-%d} to {max(z[1] for z in rows_ if z[1]):%Y-%m-%d}",
               fmts=["yyyy-mm-dd", "yyyy-mm-dd", INT, INT, NUM, INT, INT, INT, NUM, NUM, NUM, NUM, None, INT, NUM, None, None, None], wrap=(13, 17))
@@ -887,9 +984,48 @@ def main():
     up = RAW / "upc" / "upc_monthly_nav.csv"
     if up.exists():
         r_ = read_csv(up)
+        sup = RAW / "upc" / "upc_monthly_nav_2018-05_supplement.csv"
+        if sup.exists():  # May 2018 has no monthly release; the figures come from the quarterly filings
+            for x in read_csv(sup):
+                x["source_url"] = ("SEDAR+ (profile 000021970): UPC interim MD&A for the quarter ended 31 May 2018, filed 2018-06-27, and interim financial statements, filed 2018-06-28. "
+                                   "Not a monthly press release; see data/source_manifest.csv")
+                pos = next((i for i, y in enumerate(r_) if y["as_of_date"] > x["as_of_date"]), len(r_))
+                r_.insert(pos, x)
+            if [y["as_of_date"] for y in r_] != sorted(y["as_of_date"] for y in r_):
+                raise SystemExit("UPC monthly NAV is not in date order after adding May 2018")
+        # 2009 months (SEC filings, kept PDFs): the raw file is read as it is; the dated correction file supplies the page of each kept PDF,
+        # the Dec 2009 NAV per share and two note corrections. A row without a page reference is not added.
+        s09 = RAW / "upc" / "upc_monthly_nav_2009_2010.csv"
+        c09 = RAW / "upc" / "upc_monthly_nav_2009_correction_2026-11-15.csv"
+        if s09.exists():
+            fixes = {}
+            for f_ in (read_csv(c09) if c09.exists() else []):
+                fixes.setdefault(f_["as_of_date"], {})[f_["field"]] = f_
+            new09 = []
+            for x in read_csv(s09):
+                fx = fixes.get(x["as_of_date"], {})
+                if "source_page" not in fx:
+                    raise SystemExit(f"UPC 2009 row {x['as_of_date']} has no kept-PDF page reference in the correction file: not added")
+                if "nav_per_share_cad" in fx:
+                    if x["nav_per_share_cad"] != "":
+                        raise SystemExit("UPC 2009 correction for NAV per share expects a blank in the raw row")
+                    x["nav_per_share_cad"] = fx["nav_per_share_cad"]["corrected_value"]
+                    x["note"] = x["note"].replace(" NAV per share NOT VERIFIED: printed 'CDN$6.1 per share' (truncated by OCR); left blank.", "")
+                note_ = "Checked against the kept PDF page scan by the Data Curator on 15 Nov 2026 (grade A). " + x["note"].split(" Read from the OCR text")[0]
+                if "note" in fx:
+                    note_ += " Correction of the note above: " + fx["note"]["corrected_value"]
+                if "nav_per_share_cad" in fx:
+                    note_ += " NAV per share 6.17 comes from the correction file (the OCR text had a truncated '6.1')."
+                sp = fx["source_page"]
+                x["note"] = note_
+                x["source_url"] = f"Kept PDF in 03_data/source_documents/upc: {sp['corrected_value']}, page {sp['page']}. Originally {x['source_url']}"
+                new09.append(x)
+            r_[0:0] = new09
+            if [y["as_of_date"] for y in r_] != sorted(y["as_of_date"] for y in r_):
+                raise SystemExit("UPC monthly NAV is not in date order after adding the 2009 months")
         rows_ = [[day(x["release_date"]), day(x["as_of_date"]), num(x["nav_cad_thousand"]), num(x["nav_per_share_cad"]), num(x["shares_outstanding"]), num(x["u3o8_lb"]), x["uf6_kgu_or_lb_and_unit"],
                   num(x["uranium_price_used_usd"]), x["source_url"], x["note"]] for x in r_]
-        table("UPC monthly NAV", "Uranium Participation Corporation: monthly net asset value", "D44. The fund that SPUT replaced (Sprott took it over in July 2021). Monthly releases, December 2010 to May 2021; figures in CAD except the uranium price (USD per lb). Units as printed; shares outstanding are not printed in the releases.",
+        table("UPC monthly NAV", "Uranium Participation Corporation: monthly net asset value", "D44. The fund that SPUT replaced (Sprott took it over in July 2021). Monthly releases, December 2010 to May 2021 (May 2018 has no release: it comes from the quarterly MD&A and financial statements, see its Source column), plus nine 2009 months from SEC filings (Jan to Apr and Aug to Dec 2009; May to Jul 2009 and Jan to Nov 2010 are not in the sheet: releases not found); figures in CAD except the uranium price (USD per lb). Units as printed; shares outstanding are not printed in the releases.",
               ["Release date", "As of", "NAV [CAD thousand]", "NAV per share [CAD]", "Shares outstanding", "U3O8 held [lb]", "UF6 held", "Uranium price used [USD/lb]", "Source", "Note"], rows_, [13, 12, 16, 14, 14, 14, 18, 16, 50, 70],
               "Monthly NAV, NAV per share and uranium holdings of UPC.", "Monthly", f"{min(z[1] for z in rows_):%Y-%m-%d} to {max(z[1] for z in rows_):%Y-%m-%d}",
               fmts=["yyyy-mm-dd", "yyyy-mm-dd", INT, NUM, INT, INT, None, NUM, None, None], wrap=(10,))
@@ -918,7 +1054,7 @@ def main():
         for r in rows_by[t]:
             rows.append([day(r["date"]), t, desc, g, cur] + [num(r[k]) for k in ("open", "high", "low", "close", "adj_close", "volume")])
     ws_ = wb_layout.write_table_sheet(wb, "Prices OHLCV", "Daily prices and volume, all Yahoo Finance tickers (V011-V014, V033-V034, V059, V119)",
-                                      "Long table: one row per ticker and day, with open, high, low, close, adjusted close and volume, exactly as Yahoo returns them. Rows with volume 0 are days without trading (Yahoo repeats the previous price); the Daily sheet leaves those days blank and holds the adjusted close only.",
+                                      "Long table: one row per ticker and day, with open, high, low, close, adjusted close and volume, exactly as Yahoo returns them (the seven futures series come from the date-repaired files of 15 Nov 2026, data/raw/markets_dated). Rows with volume 0 are days without trading (Yahoo repeats the previous price); the Daily sheet leaves those days blank and holds the adjusted close only.",
                                       ["Date", "Ticker", "Description", "Group", "Currency", "Open", "High", "Low", "Close", "Adj. close", "Volume"], rows,
                                       [12, 10, 40, 18, 10, 12, 12, 12, 12, 12, 14], fmts=["yyyy-mm-dd", None, None, None, None, NUM4, NUM4, NUM4, NUM4, NUM4, INT], tab="dump", plain=True)
     sheets.append(("Source files kept whole", "Prices OHLCV", "Open, high, low, close, adjusted close and volume for every ticker retrieved.", "Daily", f"{min(r[0] for r in rows):%Y-%m-%d} to {max(r[0] for r in rows):%Y-%m-%d}", len(rows), 11))
@@ -938,7 +1074,7 @@ def main():
     wb_layout.write_table_sheet(wb, "Gaps", "Gaps and limits of the data", "What is missing, weak or open, by area.", ["Area", "Gap or limitation", "Effect", "Status / action"],
                                 [[clean(c) for c in g] for g in GAPS], [18, 90, 50, 60], wrap=(2, 3, 4), tab="guide")
     sheets.insert(1, ("Guide", "Gaps", "Missing, weak or open items, by area.", "-", "-", len(GAPS), 4))
-    wb_layout.write_contents(wb, sheets, status_counts, "8 November 2026", by, extras)
+    wb_layout.write_contents(wb, sheets, status_counts, "15 November 2026", by, extras)
 
     names = ["Contents", "Variables", "Gaps", "Monthly", "Quarterly", "Annual", "Weekly", "Daily", "SPUT purchases", "SPUT issuance", "SPUT statements", "UxC volumes", "Yellow Cake reports", "UPC monthly NAV", "Physical sources", "Prices OHLCV", "World Bank monthly"]
     wb._sheets = [wb[n] for n in names if n in wb.sheetnames]
