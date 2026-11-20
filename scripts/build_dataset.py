@@ -5,6 +5,10 @@ Run from the repo root after the fetch scripts:  python scripts/build_dataset.py
 Layout: one sheet per native frequency, nothing aggregated away.
   Daily, Weekly, Monthly, Quarterly, Events_SPUT (irregular), Daily_OHLCV (long table), Monthly_Pink (World Bank averages),
   plus README, Catalogue (every column described), Analysis_Map and Gaps.
+20 Nov 2026 (workbook v6, Ronaldo's decisions of 20 Nov 2026): the default output is data/processed/thesis_dataset_v6.xlsx (v2 to v5 are never written
+  unless THESIS_OUT names them). Every series is cut at 31 Oct 2026 (first prints and forward-looking columns by publication date); the six ratio
+  columns built by Claude are removed (their code is in reference/sput_ratio_columns_v5_NOT_USED.py); new sheets and columns come from
+  scripts/v6_additions.py. Each v6 change is marked "20 Nov 2026".
 Rules:
   - A series sits in the sheet of its own frequency. Month-end versions of daily series are added to Monthly, labelled "derived".
   - One source per column; sources are never mixed or averaged. Gap-fill and reconstructed values have their own columns.
@@ -27,9 +31,10 @@ from openpyxl.worksheet._reader import WorksheetReader
 import fetch_equities as fe
 import fetch_markets as fm
 from coverage_map import ROWS as COVERAGE
-from gaps import GAPS
+from gaps import GAPS, GAPS_V6  # 20 Nov 2026: GAPS_V6 is the rewritten list shown in v6
 from handoff_table import CHAT
 import workbook_layout as wb_layout
+import v6_additions as v6  # 20 Nov 2026: workbook v6 (cut-off, new columns and sheets, labels, Read me)
 
 WorksheetReader.bind_tables = lambda self: None  # the World Bank file has table links openpyxl cannot read
 
@@ -37,7 +42,7 @@ ROOT = Path(__file__).resolve().parents[1]
 RAW = ROOT / "data" / "raw"
 DATED = RAW / "markets_dated"   # futures with repaired dates (15 Nov 2026); the older files in data/raw/markets stay as evidence
 DATED_DAY = "20261115"
-OUT = Path(os.environ["THESIS_OUT"]) if os.environ.get("THESIS_OUT") else ROOT / "data" / "processed" / "thesis_dataset_v4.xlsx"
+OUT = Path(os.environ["THESIS_OUT"]) if os.environ.get("THESIS_OUT") else ROOT / "data" / "processed" / "thesis_dataset_v6.xlsx"  # 20 Nov 2026: v6 is the working file
 
 NUM, NUM4, INT, PCT = "#,##0.00", "#,##0.00##", "#,##0", "0.00"
 FILL = {"constructed": "E4DFEC", "native": "D9E2D5", "derived": "DDEBF7", "average": "EDEDED", "gap-fill": "FFF2CC", "reconstructed": "FCE4D6"}
@@ -276,16 +281,18 @@ def uxc_volume(S, M, Q):
                      "value printed in the MD&A of that quarter only (Q4 is not in any MD&A on file); rounded as printed ('about', 'just over'); comparison figures printed in later reports are in Physical sources", "H3", "data/raw/physical/cameco_mda_spot_market_volume_reported_2006_2026.csv", NUM))
     ev = S["events"]
     last_ev = max(e[0] for e in ev)
-    sq, share = {}, {}
-    for qd, v in qt.items():
-        if qd < dt.date(2021, 9, 30) or qd > last_ev:
-            continue
+    # 20 Nov 2026 (answers): every quarter from Q3 2021 to Q3 2026 (the last quarter that ends on or before the 31 Oct 2026 cut-off), whether or not
+    # a UxC volume exists for it (Ronaldo's answer 4). Same sum of dated purchase days as the Monthly column "SPUT pounds bought in month"; 0 = no purchase listed.
+    sq = {}
+    for qd in quarters_between(dt.date(2021, 9, 30), dt.date(2026, 9, 30)):
+        if qd > v6.CUTOFF:
+            raise SystemExit(f"SPUT purchases in quarter: quarter {qd} ends after the cut-off")
         a = sum(e[1] or 0 for e in ev if dt.date(qd.year, qd.month - 2, 1) <= e[0] <= qd)
         sq[qd] = a / 1e6
-        share[qd] = a / (v * 1e6) * 100
-    Q.append(col("SPUT purchases in quarter [million lb]", sq, "derived", "Sprott fund page", "pounds_acquired", "quarterly", "sum of purchase days in the quarter", "million lb U3O8", "for quarters with a UxC volume", "H3", "data/raw/sprott/sput_acquired.csv", NUM))
-    Q.append(col("SPUT purchases as % of UxC spot volume, quarter", share, "derived", "Sprott fund page and UxC via Yellow Cake", "SPUT lb / UxC volume", "quarterly", "quarter", "percent",
-                 "numerator from Sprott's purchase list (trade dates), denominator the first-reported UxC quarter volume; UxC volume is a provider-defined total and may include SPUT's own purchases", "H3", raw, NUM))
+    Q.append(col("SPUT purchases in quarter [million lb]", sq, "derived", "Sprott fund page", "pounds_acquired", "quarterly", "sum of purchase days in the quarter", "million lb U3O8",
+                 f"every quarter from Q3 2021 to Q3 2026 (20 Nov 2026, Ronaldo): sum of the purchase days (trade dates) in Sprott's dated purchase list, built the same way as the Monthly column "
+                 f"'SPUT pounds bought in month' and equal to the sum of its three months (checked by the build); 0 = no purchase listed; the purchase list ends {last_ev.isoformat()}. Official (grade A)", "H3", "data/raw/sprott/sput_acquired.csv", NUM))
+    # 20 Nov 2026: the ratio column "SPUT purchases as % of UxC spot volume, quarter" (v5 Quarterly I) is removed (Ronaldo, D-029); code in reference/sput_ratio_columns_v5_NOT_USED.py
     # cross-checks against SPUT purchases quoted in the same updates
     qsum = lambda a, b: sum(e[1] or 0 for e in ev if a <= e[0] <= b) / 1e6
     print("UxC / SPUT checks (text says -> purchase list):",
@@ -627,15 +634,8 @@ def load():
                    ("Conversion long-term, North America", "conv_lt_na_usd_kgu"), ("Conversion long-term, Europe", "conv_lt_eu_usd_kgu")]:
         Q.append(col(f"{hdr} [USD/kgU]", {day(r["quarter_end"]): num(r[k]) for r in conv}, "native", csrc, k, "quarterly", "quarter-end", "USD per kgU as UF6",
                      "complete quarter-ends from 2005-12; read from Cameco filings (see data/source_manifest.csv); no SWU prices", "context", craw, NUM))
-    yca = sorted((day(r["date"]), num(r["close"])) for r in equities["YCA.L"] if num(r["close"]))
-    prem = {}
-    for r in yc:
-        qd, nav = day(r["quarter_end"]), num(r["nav_per_share_gbp"])
-        px = [c for d_, c in yca if d_ <= qd]
-        if nav and px and (qd - max(d_ for d_, _ in yca if d_ <= qd)).days <= 7:
-            prem[qd] = round((px[-1] / 100.0 / nav - 1) * 100, 2)
-    Q.append(col("Yellow Cake premium/discount to NAV, quarter-end [percent]", prem, "derived", "YCA.L close (pence) divided by 100, against the announced NAV", "close / nav_per_share_gbp", "quarterly",
-                 "last close on or before the quarter end (within 7 days)", "percent", "price in GBP vs NAV in GBP; negative = discount", "H3", yraw + " and data/raw/yahoo/YCA.L.csv", NUM))
+    # 20 Nov 2026 (answers): the ratio column "Yellow Cake premium/discount to NAV, quarter-end" (v6 Quarterly P) is removed (Ronaldo's answer 2; D-029, D-058).
+    # Its inputs stay: YCA.L close (Daily, Monthly, Prices OHLCV) and Yellow Cake NAV per share (Quarterly). Code kept in reference/sput_ratio_columns_v5_NOT_USED.py, section 3.
     for k, hdr in [("spot_usd_lb", "Uranium spot"), ("longterm_usd_lb", "Uranium long-term")]:
         d = {day(r["date"]): camv(r, k) for r in cam if day(r["date"]).month in (3, 6, 9, 12)}
         Q.append(col(f"{hdr}, quarter-end (Cameco) [USD/lb]", d, "derived", "Cameco", k, "quarterly", "month-end value of Mar, Jun, Sep, Dec", "USD per lb", "from the Monthly sheet source" + ("; Dec 2017 corrected as on the Monthly sheet (cell comment)" if cam_fix else ""), "context", cam_raw, NUM))
@@ -782,12 +782,13 @@ OVERRIDE.update({
     "V054": ("In workbook", "Monthly: Copper (IMF), monthly avg; World Bank monthly: Copper (both period averages, tagged V054). The copper month-end is Monthly: Copper futures (HG=F), month-end, tagged V059", "Period averages as published. Futures dates repaired 15 Nov 2026 (data/raw/markets_dated)"),
     "V058": ("In workbook", "Daily: Gold futures (GC=F) close and Copper futures (HG=F) close, tagged V059; there is no gold or copper spot column", "Yahoo continuous front-month futures (scripts/fetch_markets.py); the gold spot ticker XAUUSD=X is listed in the fetch script but no file for it is in data/raw/markets. Futures dates repaired 15 Nov 2026 (data/raw/markets_dated)"),
     "V073": ("Partly in workbook", "Daily and Monthly: Corporate option-adjusted spread (ICE BofA), from 7 Nov 2023 (Monthly 2023-11 to 2026-10, 36 months)", "From scripts/fetch_fred.py; FRED now serves only about 3 years of this ICE BofA series, so the earlier history is not in the workbook"),
-    "V030": (DERIVED, "Inputs: Weekly and Monthly: SPUT holdings (V029); Monthly: SPUT units outstanding (V021). SPUT statements: Pounds per unit at reporting dates is a ratio built in this workbook (not in the raw file)", "Weekly holdings and units outstanding are not on the same date, so no continuous series. Whether the ratio column on SPUT statements stays is for Ronaldo (D-029)."),
-    "V032": (DERIVED, "Inputs: SPUT purchases (V027) and UxC volumes (V101). Quarterly: SPUT purchases as % of UxC spot volume is a ratio built in this workbook (15 quarters)", "Denominator is the UxC spot volume quoted in Yellow Cake updates (quarterly, from 2021 Q3); it is not continuous and may include SPUT itself. Whether the ratio column stays is for Ronaldo (D-029)."),
-    "V043": (DERIVED, "Quarterly: Yellow Cake premium/discount to NAV, quarter-end (a ratio built in this workbook from the YCA.L close and the announced NAV, 33 quarter-ends)", "quarter-end price vs quarter-end NAV. The column is built in this workbook although the variable is a derived one; whether it stays is for Ronaldo (D-029)."),
+    "V030": (DERIVED, "Inputs: Weekly and Monthly: SPUT holdings (V029); Monthly: SPUT units outstanding (V021); SPUT statements: pounds held and units outstanding at reporting dates", "Weekly holdings and units outstanding are not on the same date, so no continuous series. The ratio column was removed in v6 (20 Nov 2026, Ronaldo; D-029)."),
+    "V032": (DERIVED, "Inputs: SPUT purchases (V027) and UxC volumes (V101)", "Denominator is the UxC spot volume quoted in Yellow Cake updates (quarterly, from 2021 Q3); it is not continuous and may include SPUT itself. The ratio column was removed in v6 (20 Nov 2026, Ronaldo; D-029)."),
+    # 20 Nov 2026 (answers): the Quarterly ratio column is removed (Ronaldo's answer 2); the register row points to its inputs.
+    "V043": (DERIVED, "Inputs: Daily and Monthly: YCA.L adj. close (pence); Prices OHLCV: YCA.L close; Quarterly: Yellow Cake NAV per share (GBP)", "quarter-end price vs quarter-end NAV. The ratio column built in v5 and v6 (Quarterly, Yellow Cake premium/discount to NAV) was removed on 20 Nov 2026 (Ronaldo; D-029, D-058); its inputs stay."),
     "V108": (DERIVED, "", "needs production data (V093). Derived variable: not built in this workbook."),
     "V109": (DERIVED, "", "needs inventory and requirements data (V097, V098). Derived variable: not built in this workbook."),
-    "D27": ("Not retrieved", "", "dates only; sanctions date not listed. Event dates have to be compiled from documents; they cannot be derived from workbook data."),
+    "D27": ("Partly in workbook", "Events: dated event timeline 2005 to 2026 (Market Expert, 20 Nov 2026), category 'policy and sanctions' among others", "Dates compiled from documents (grades A to C in the sheet). Which events enter any study is not decided (D-051)."),
     "V026": ("Partly in workbook", "SPUT statements: cash; Monthly: SPUT cash, reported", "dated anchors only (Jun 2022, Jun 2023, Dec 2023, Jun 2024, Dec 2024, Jun 2025, Dec 2025, Jun 2026); daily cash is not published"),
     "V089": ("In workbook", "Monthly and Daily: geopolitical risk index, overall", "Daily file covers calendar days; the Daily sheet shows weekend values from 1990 (its date list has weekend rows from then); earlier weekend values are only in the raw file."),
     "V090": ("In workbook", "Monthly and Daily: geopolitical risk, threats and acts", "Daily files cover calendar days; the Daily sheet shows weekend values from 1990 (its date list has weekend rows from then); earlier weekend values are only in the raw file."),
@@ -833,6 +834,18 @@ def main():
     S = load()
     pk = pink()
     D, W, M, Q = S["daily"], S["weekly"], S["monthly"], S["quarterly"]
+    # 20 Nov 2026 (v6): new columns, then the cut-off at 31 Oct 2026 on every dated series (first prints are cut by publication date inside v6_additions)
+    v6_info = {"alfred": v6.add_alfred(M, Q, col), "term_q": v6.add_term_quarterly(Q, col)}
+    orange_m, comments_m, v6_info["sput_2026"] = v6.sput_issuance_2026(M)
+    # 20 Nov 2026 (answers): Monthly units issued, Nov 2021 to Feb 2022 = official dated issuances + monthly sums of the unofficial tracker (whole cell light orange)
+    orange_21, comments_21, v6_info["sput_2021_22"] = v6.sput_issuance_2021_22(M, S["issuances"], S["statements"])
+    orange_m += orange_21
+    comments_m.update(comments_21)
+    v6_info["cut_values"] = {name: v6.cut_columns(cs) for name, cs in (("Daily", D), ("Weekly", W), ("Monthly", M), ("Quarterly", Q), ("World Bank monthly", pk))}
+    S["events"] = [e for e in S["events"] if e[0] <= v6.CUTOFF]
+    # 20 Nov 2026 (answers): stop-checks for the answers (quarterly purchases = sum of the Monthly column; the Yellow Cake ratio column is gone)
+    v6_info["quarterly_purchases"] = v6.check_quarterly_purchases(M, Q)
+    v6.check_removed_columns(Q)
 
     spot = next(c for c in M if c["header"].startswith("Uranium spot, month-end"))["values"]
     months = list(months_between(min(spot), max(spot)))
@@ -896,6 +909,16 @@ def main():
     cpi_ = cell_at(wsm, dt.date(2025, 10, 1), "Consumer price index (CPI-U, seasonally adjusted)")
     if cpi_.value is not None:
         raise SystemExit("CPI 2025-10 is no longer empty: check the comment text")
+    # 20 Nov 2026: light orange on the 2026 SPUT issuance cells that come from the unofficial tracker; comments on every new 2026 cell
+    for (hd_, k_), txt_ in comments_m.items():
+        c_ = cell_at(wsm, dt.date(k_[0], k_[1], 1), hd_)
+        c_.comment = Comment(txt_, "Dataset", width=380, height=150)
+        if (hd_, k_) in orange_m:
+            c_.fill = PatternFill("solid", fgColor=v6.ORANGE)
+    cpif_ = cell_at(wsm, dt.date(2025, 10, 1), "Consumer price index (CPI-U, seasonally adjusted), first print (ALFRED)")
+    if cpif_.value is not None:
+        raise SystemExit("CPI first print 2025-10 is no longer empty")
+    cpif_.comment = Comment("Never published: ALFRED gives '.' for Oct 2025 (BLS collected no CPI data in Oct 2025, federal government shutdown). Left empty (D-005).", "Dataset", width=340, height=90)
     cpi_.comment = Comment("Empty at the source: the US BLS did not collect CPI data from 1 Oct to 12 Nov 2025 because of the 2025 federal government shutdown, and FRED CPIAUCSL has no value for 2025-10 (raw file blank). "
                            "Left empty, never filled (D-005). BLS page https://www.bls.gov/cpi/additional-resources/2025-federal-government-shutdown-impact-cpi.htm (read 19 Nov 2026)", "Dataset", width=380, height=130)
     freq("Weekly", "Weekly series", "One row per Friday.", wkeys, W, "Date (Friday)", "yyyy-mm-dd", lambda k: k, "SPUT holdings from the Sprott fund page.", "Weekly", width=18)
@@ -903,6 +926,7 @@ def main():
          dates, D, "Date", "yyyy-mm-dd", lambda k: k, "Market, rate, risk and fund series at their daily frequency.", "Daily", width=16)
 
     ann = annual_eia()
+    _tc, v6_info["term_a"] = v6.term_annual_cols(col)  # 20 Nov 2026: Cameco long-term contracting first prints (added after the PRIS columns below)
     pf = RAW / "iaea_pris" / "iaea_pris_world_annual_1970_2025.csv"
     if pf.exists():
         pr = read_csv(pf)
@@ -938,6 +962,8 @@ def main():
                                  ("reactors_in_operation_units", "World nuclear reactors in operation, year-end, IAEA RDS-2 [units]", "units")]:
             ann.append(col(hdr, {int(r["year"]): num(r[field]) for r in ec}, "native", "IAEA RDS-2 (2026 edition)", field, "annual", "calendar year, as published", unit, ev_note, "",
                            "data/raw/iaea_pris/iaea_rds2_2026_world_reactor_events_1954_2025.csv", INT))
+    ann.extend(_tc)
+    v6_info["annual_published"] = v6.check_annual_publication(ann)  # 20 Nov 2026: Annual is cut by publication date (all published before 31 Oct 2026)
     if ann:
         ayears = list(range(min(min(c["values"]) for c in ann), max(max(c["values"]) for c in ann) + 1))
         freq("Annual", "Annual series", "One row per year. Realised values come first; 2026-2035 columns are the reactor owners' own forward-looking figures from the EIA survey, as of the date in the column name.",
@@ -966,8 +992,7 @@ def main():
               fmts=["yyyy-mm-dd", "0.0000", INT, INT, None, INT, None, None])
         heads = ["Period end", "Period type", "Units outstanding", "Total NAV [USD thousand]", "NAV per unit [USD]", "TSX closing price, U.U [USD]", "Cash [USD thousand]",
                  "Uranium oxide at fair value [USD thousand]", "Pounds U3O8 held", "Units issued in the period", "Proceeds from issuance [USD thousand]", "Issue costs, cash flow [USD thousand]",
-                 "Purchases of uranium oxide [USD thousand]", "Source", "Note", "Net proceeds, proceeds minus costs [USD thousand]", "Average issue price [USD]", "Pounds per unit [lb]",
-                 "Uranium oxide fair value per lb [USD]", "Cash as % of NAV"]
+                 "Purchases of uranium oxide [USD thousand]", "Source", "Note"]  # 20 Nov 2026: the five ratio columns after Note are removed (D-029; reference/sput_ratio_columns_v5_NOT_USED.py)
         fields = ["period_end", "period_type", "units_outstanding", "nav_usd_thousand", "nav_per_unit_usd", "tsx_close_usd", "cash_usd_thousand", "uranium_oxide_fv_usd_thousand",
                   "pounds_u3o8_held", "units_issued_in_period", "proceeds_from_issuance_usd_thousand", "issue_costs_cashflow_usd_thousand", "purchases_of_uranium_usd_thousand"]
         rows = []
@@ -985,12 +1010,12 @@ def main():
         cf = RAW / "sprott" / "sput_statements_cash_correction_2026-11-15.csv"
         for x in (read_csv(cf) if cf.exists() else []):
             cfix.setdefault(x["period_end"], {})[x["field"]] = x
-        for r in S["statements"]:
+        for r in [x for x in S["statements"] if day(x["period_end"]) <= v6.CUTOFF]:  # 20 Nov 2026: cut-off
             v = [num(r[f]) if f not in ("period_end", "period_type") else r[f] for f in fields]
             v[0] = day(v[0])
             units_, nav_, cash_, fv_, lb_, iss_, pr_, co_ = v[2], v[3], v[6], v[7], v[8], v[9], v[10], v[11]
             uflag_ = unit_flags.get(r["period_end"])
-            note_ = r["note"] + ((" | FLAG (grade B): " + f"units {uflag_['value_in_original_file']} as printed in the base prospectus (p36); the supplement prints {uflag_['corrected_value']} for 22 Jan 2026 and the 22 issuance rows of 2 to 19 Jan 2026 add up to exactly that figure, so this value is probably a transposed digit. Left unchanged (2026 is parked). Source: data/raw/sprott/sput_unit_count_note_2026-01.csv") if uflag_ else "")
+            note_ = r["note"] + ((" | FLAG (grade B): " + f"units {uflag_['value_in_original_file']} as printed in the base prospectus (p36); the supplement prints {uflag_['corrected_value']} for 22 Jan 2026 and the 22 issuance rows of 2 to 19 Jan 2026 add up to exactly that figure, so this value is probably 318,448,764 (digits swapped), see Curator 2026-11-20_sput_2026.md. Left as printed: no correction file is approved. Source: data/raw/sprott/sput_unit_count_note_2026-01.csv") if uflag_ else "")
             fx_ = cfix.get(r["period_end"], {})
             cells_, pages_ = [], []
             for f_, _h, _fm in CORR:
@@ -1008,14 +1033,24 @@ def main():
                           + "; ".join(f"{x['field']} {x['page']}" for x in fx_.values()) + ". The original cells stay as they were. Source: data/raw/sprott/sput_statements_cash_correction_2026-11-15.csv")
                 if r["period_end"] == "2021-12-31":
                     note_ += ". Units: 163,471,400 in total = 75,210,456 issued on acquiring UPC + 88,260,944 sold for cash (only these earned the proceeds); the cash-flow statement covers 23 Apr to 31 Dec 2021"
-            rows.append(v + [r["source"], note_, pr_ - co_ if pr_ is not None and co_ is not None else None, pr_ * 1000 / iss_ if pr_ is not None and iss_ else None,
-                             lb_ / units_ if lb_ and units_ else None, fv_ * 1000 / lb_ if fv_ and lb_ else None, cash_ / nav_ * 100 if cash_ is not None and nav_ else None] + cells_)
+            rows.append(v + [r["source"], note_] + cells_)  # 20 Nov 2026: no ratio columns
         table("SPUT statements", "SPUT statements at reporting dates",
-              "V019 (total NAV), V021 (units), V024 (proceeds), V026 (cash), V027 (purchases) and V029 (pounds held). Annual and interim reports and the prospectus; the five columns after Note are ratios of the others. The seven last columns show values that the kept annual reports print for 31 Dec 2021, 31 Dec 2022 and 31 Dec 2023 where the original cells are blank (15 Nov 2026); the original cells are not overwritten. Cash at 20 Jan and 31 Mar 2026 stays blank (2026 is parked).",
-              heads + [h_ for _f, h_, _m in CORR], rows, [13, 14, 16, 16, 14, 16, 14, 18, 16, 16, 18, 18, 18, 36, 46, 18, 14, 14, 16, 12] + [16] * 7,
+              "V019 (total NAV), V021 (units), V024 (proceeds), V026 (cash), V027 (purchases) and V029 (pounds held). Annual and interim reports and the prospectus. The seven last columns show values that the kept annual reports print for 31 Dec 2021, 31 Dec 2022 and 31 Dec 2023 where the original cells are blank (15 Nov 2026); the original cells are not overwritten. Cash at 20 Jan and 31 Mar 2026 stays blank (no document states it). The five ratio columns of v5 (net proceeds, average issue price, pounds per unit, fair value per lb, cash as % of NAV) were removed on 20 Nov 2026 (calculations are Ronaldo's, D-029); their source figures are all here.",
+              heads + [h_ for _f, h_, _m in CORR], rows, [13, 14, 16, 16, 14, 16, 14, 18, 16, 16, 18, 18, 18, 36, 46] + [16] * 7,
               "SPUT balance sheet and cash flow at each annual, interim and prospectus date.", "Reporting dates", f"{rows[0][0]:%Y-%m-%d} to {rows[-1][0]:%Y-%m-%d}",
-              fmts=["yyyy-mm-dd", None, INT, INT, "0.0000", NUM, INT, INT, INT, INT, INT, INT, INT, None, None, INT, NUM, "0.0000", NUM, NUM] + [m_ for _f, _h, m_ in CORR], wrap=(14, 15))
+              fmts=["yyyy-mm-dd", None, INT, INT, "0.0000", NUM, INT, INT, INT, INT, INT, INT, INT, None, None] + [m_ for _f, _h, m_ in CORR], wrap=(14, 15))
+    # 20 Nov 2026: daily SPUT units (unofficial tracker rows in light orange, a source column on every row)
+    su_ = v6.sput_units_daily_rows()
+    table("SPUT units daily", "SPUT units outstanding and issued, by day, where Sprott publishes no dated issuance",
+          "V021 (units outstanding) and V022 (units issued). 19 Nov 2021 to 15 Feb 2022 and 31 Dec 2025 to 31 Oct 2026. LIGHT ORANGE rows come from the unofficial 'SPUT Tracker' Google Sheet, which copies the Sprott fund page daily (grade C); "
+          "white rows are Sprott's own documents (grade A). The tracker matched Sprott on every overlapping day and total checked by the Data Curator (50 days in 2021-22, 12 days in Jan 2026, the FY2021, H1 2022 and H1 2026 totals), "
+          "except the 20 Jan 2026 unit count printed in the base shelf prospectus (flagged, kept as printed). Issue prices are known only for the dated official rows: none are published for 19 Nov 2021 to 15 Feb 2022 or 26 Jan to 12 May 2026. "
+          "Some dates have two rows (an official row and a tracker row). The 30 Jun 2026 official row gives the half-year total in Units issued.",
+          v6.SPUT_UNITS_HEADS, su_, [12, 16, 14, 14, 24, 10, 44, 36, 60, 40], "Daily SPUT units outstanding and issued in the undated windows (unofficial tracker in light orange).", "Daily (irregular)",
+          f"{min(r[0] for r in su_):%Y-%m-%d} to {max(r[0] for r in su_):%Y-%m-%d}", fmts=["yyyy-mm-dd", INT, INT, "0.0000", None, None, None, None, None, None], wrap=(9,))
+    v6_info["sput_units_daily"] = dict(rows=len(su_), tracker=v6.fill_rows(wb["SPUT units daily"], 5, lambda vals: vals[4] == "unofficial tracker, grade C"))
     if "uxc_rows" in S:
+        S["uxc_rows"] = [r for r in S["uxc_rows"] if day(r["period_end"]) <= v6.CUTOFF]  # 20 Nov 2026: cut-off (none removed in practice)
         ur = sorted(S["uxc_rows"], key=lambda r: (r["period_start"], r["period_end"], r["announcement_date"]))
         rows = [[day(r["announcement_date"]), day(r["document_quarter_end"]), r["period_label"], r["period_type"], day(r["period_start"]), day(r["period_end"]), float(r["volume_mlb"]),
                  r["material"], r["provider_in_sentence"], r["source_footnote"], r["flag"]] for r in ur]
@@ -1042,7 +1077,7 @@ def main():
             if k in ("source_url", "note", "verified_from_pdf"):
                 return v
             return num(v)
-        rows_ = sorted([[cell(k, x[k]) for k in keys_] for x in r_], key=lambda z: (z[0] is None, z[0]), reverse=True)
+        rows_ = sorted([[cell(k, x[k]) for k in keys_] for x in r_ if day(x["period_end"]) <= v6.CUTOFF], key=lambda z: (z[0] is None, z[0]), reverse=True)  # 20 Nov 2026: cut-off
         # 15 Nov 2026 corrections and flags. The raw files are not changed; the Note column says what was done.
         def row_of(ann, per):
             hit = [z for z in rows_ if z[0] == day(ann) and z[1] == day(per)]
@@ -1139,7 +1174,17 @@ def main():
               ["Release date", "As of", "NAV [CAD thousand]", "NAV per share [CAD]", "Shares outstanding", "U3O8 held [lb]", "UF6 held", "Uranium price used [USD/lb]", "Source", "Note"], rows_, [13, 12, 16, 14, 14, 14, 18, 16, 50, 70],
               "Monthly NAV, NAV per share and uranium holdings of UPC.", "Monthly", f"{min(z[1] for z in rows_):%Y-%m-%d} to {max(z[1] for z in rows_):%Y-%m-%d}",
               fmts=["yyyy-mm-dd", "yyyy-mm-dd", INT, NUM, INT, INT, None, NUM, None, None], wrap=(10,))
+        # 20 Nov 2026: the 28 releases whose holdings changed, with a type label and the first public date (Data Curator, 20 Nov 2026)
+        uc_ = v6.upc_changes_rows()
+        table("UPC holdings changes", "Uranium Participation Corporation: the 28 monthly releases with a change in holdings",
+              "D44. All 125 kept monthly releases (Dec 2010 to May 2021) and the May 2018 MD&A were read one by one by the Data Curator (20 Nov 2026); the 28 releases where the pounds of U3O8 or the KgU of UF6 changed are listed here. "
+              "Type: purchase (pounds bought for cash), conversion exchange (UF6 swapped for U3O8 plus cash, no uranium bought), sale, mixed (more than one of these), unexplained. "
+              "Only 15 rows contain pounds bought for cash (12 purchase rows and 3 of the mixed ones). The first public date is often earlier than the release that shows the change. "
+              "Loans (1,300,000 lb in Mar 2015, 500,000 lb in May 2020) do not change the printed holdings and are not rows. The change columns are the difference between the two printed figures, as in the raw file.",
+              v6.UPC_CHG_HEADS, uc_, [9, 12, 12, 12, 14, 14, 14, 14, 14, 14, 18, 30, 50, 14, 50, 40, 50, 50, 10, 10], "The 28 UPC releases with a change in holdings: type and first public date.", "Irregular",
+              f"{min(r[1] for r in uc_):%Y-%m-%d} to {max(r[1] for r in uc_):%Y-%m-%d}", fmts=[None, "yyyy-mm-dd", "yyyy-mm-dd", "yyyy-mm-dd", INT, INT, INT, INT, INT, INT, None, None, None, "yyyy-mm-dd", None, None, None, None, None, None], wrap=(13, 15))
     ph = sorted((RAW / "physical").glob("*.csv")) if (RAW / "physical").exists() else []
+    ph = [p for p in ph if p.name not in v6.PHYSICAL_NOT_IN_LONG_TABLE]  # 20 Nov 2026: the two Market Expert files have other columns; term contracting goes to Annual/Quarterly, the spot-volume quotes stay raw only
     if ph:
         rows_ = []
         for p in ph:
@@ -1155,6 +1200,13 @@ def main():
               "US and world production, requirements, trade, inventories and IAEA reactor statistics from EIA, IAEA, NEA, WNA and Euratom.", "Annual (irregular coverage)",
               "1993 to 2024 (varies by series)", fmts=[None, None, None, "#,##0.###", None, None, None], wrap=(6,), plain=True)
 
+    # 20 Nov 2026: the dated event timeline (its official home from v6; Market Expert, 20 Nov 2026)
+    evr_ = v6.events_rows()
+    table("Events", "Dated uranium market events, 2005 to 2026", "D27 and V107. One row per event, from the Market Expert's file of 20 Nov 2026. Where the announcement and the effective date differ there are two rows (column 'Announcement or effective'), so counting rows counts some events twice. "
+          "Grades: A primary document, B reputable secondary or a dated citation, C unverified. Which events enter any study is not decided (D-051).",
+          v6.EVENTS_HEADS, evr_, [9, 12, 12, 14, 70, 22, 14, 44, 50, 24, 12, 8, 60], "Dated supply, policy, market-structure and vehicle events.", "Irregular",
+          f"{min(str(r[1]) for r in evr_)[:10]} to {max(str(r[1]) for r in evr_)[:10]}", fmts=[None, "yyyy-mm-dd", None, None, None, None, None, None, None, None, "yyyy-mm-dd", None, None], wrap=(5, 13))
+
     # ---- source files kept whole
     meta = [(t, fe.TICKERS[t], g, cur) for t, cur, g in EQUITIES]
     rows_by = {**S["equities_raw"], **S["markets_raw"]}
@@ -1162,6 +1214,8 @@ def main():
     rows = []
     for t, desc, g, cur in meta:
         for r in rows_by[t]:
+            if day(r["date"]) > v6.CUTOFF:  # 20 Nov 2026: cut-off
+                continue
             rows.append([day(r["date"]), t, desc, g, cur] + [num(r[k]) for k in ("open", "high", "low", "close", "adj_close", "volume")])
     ws_ = wb_layout.write_table_sheet(wb, "Prices OHLCV", "Daily prices and volume, all Yahoo Finance tickers (V011-V014, V033-V034, V059, V119)",
                                       "Long table: one row per ticker and day, with open, high, low, close, adjusted close and volume, exactly as Yahoo returns them (the seven futures series come from the date-repaired files of 15 Nov 2026, data/raw/markets_dated). Rows with volume 0 are days without trading (Yahoo repeats the previous price); the Daily sheet leaves those days blank and holds the adjusted close only.",
@@ -1180,19 +1234,31 @@ def main():
     order_st = ["In workbook", "Partly in workbook", "Script written, not run", "Not retrieved", "Paid or unavailable", DERIVED]
     status_counts = [(k, cnt[k]) for k in order_st if k in cnt]
     wb_layout.load_spot_link(ROOT / "data" / "spot_link.csv")  # 19 Nov 2026: Spot link column on Variables (labels from the Market Expert screen)
-    wb_layout.write_variables_sheet(wb, by, extras)
+    v6.update_register(by, extras)  # 20 Nov 2026: where the new v6 columns are
+    wsv = wb_layout.write_variables_sheet(wb, by, extras)
+    lab_rows_, v6_info["labels"] = v6.label_rows(wb)  # 20 Nov 2026: the Data Curator's column labels, below the register
+    v6.check_labels(lab_rows_, v6_info["labels"])  # 20 Nov 2026 (answers): exactly one label row per data column; none for a removed column
+    v6.write_labels(wsv, lab_rows_, wb_layout.font, wb_layout.fill, wb_layout.FOREST, wb_layout.SAGE)
     sheets.insert(0, ("Guide", "Variables", "Start here: every variable of the handoff table with its role in the thesis, why it matters and where it is in this workbook.", "-", "V001 to V119", 119 + len(extras), 13))
-    wb_layout.write_table_sheet(wb, "Gaps", "Gaps and limits of the data", "What is missing, weak or open, by area.", ["Area", "Gap or limitation", "Effect", "Status / action"],
-                                [[clean(c) for c in g] for g in GAPS], [18, 90, 50, 60], wrap=(2, 3, 4), tab="guide")
-    sheets.insert(1, ("Guide", "Gaps", "Missing, weak or open items, by area.", "-", "-", len(GAPS), 4))
-    wb_layout.write_contents(wb, sheets, status_counts, "19 November 2026", by, extras)
+    # 20 Nov 2026: Gaps rewritten (what is missing, why, routes tried, status); the v5 list stays in gaps.py as GAPS
+    wb_layout.write_table_sheet(wb, "Gaps", "Gaps and limits of the data (cut-off 31 Oct 2026)", "Every gap: what is missing, why, the routes tried and its status (closed today = closed on 20 Nov 2026; can be closed = a route exists; permanent limit = no free route). Gaps closed before 20 Nov 2026 are in DATA_LOG.md and in the Gaps sheet of v5.",
+                                ["Area", "What is missing", "Why", "Routes tried", "Status", "Detail"], [list(g) for g in GAPS_V6], [16, 60, 44, 50, 14, 60], wrap=(2, 3, 4, 6), tab="guide")
+    sheets.insert(1, ("Guide", "Gaps", "Every gap: what is missing, why, routes tried, status.", "-", "-", len(GAPS_V6), 6))
+    sheets.insert(0, ("Guide", "Read me", "Start here: what the workbook holds, the cut-off, how to read the labels and colours.", "-", "-", sum(len(p) for _t, p in v6.README), 1))
+    wb_layout.write_contents(wb, sheets, status_counts, "20 November 2026", by, extras)
+    v6.write_readme(wb, "20 November 2026", wb_layout.font, wb_layout.fill, wb_layout.FOREST, wb_layout.GREY, wb_layout.CHAR)
 
-    names = ["Contents", "Variables", "Gaps", "Monthly", "Quarterly", "Annual", "Weekly", "Daily", "SPUT purchases", "SPUT issuance", "SPUT statements", "UxC volumes", "Yellow Cake reports", "UPC monthly NAV", "Physical sources", "Prices OHLCV", "World Bank monthly"]
+    names = ["Read me", "Contents", "Variables", "Gaps", "Monthly", "Quarterly", "Annual", "Weekly", "Daily", "SPUT purchases", "SPUT issuance", "SPUT statements", "SPUT units daily", "UxC volumes",
+             "Yellow Cake reports", "UPC monthly NAV", "UPC holdings changes", "Events", "Physical sources", "Prices OHLCV", "World Bank monthly"]  # 20 Nov 2026: v6 sheets
+    if sorted(names) != sorted(wb.sheetnames):
+        raise SystemExit(f"sheet list differs: {sorted(set(wb.sheetnames) ^ set(names))}")
     wb._sheets = [wb[n] for n in names if n in wb.sheetnames]
     wb.active = 0
     OUT.parent.mkdir(parents=True, exist_ok=True)
     wb.save(OUT)
     print(status_counts)
+    import json as _json
+    print("V6 INFO", _json.dumps(v6_info, default=str))
     print(f"Saved {OUT}")
     for n in wb.sheetnames:
         print(f"  {n}: {wb[n].max_row} rows x {wb[n].max_column} columns")

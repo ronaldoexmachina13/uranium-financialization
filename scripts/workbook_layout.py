@@ -48,7 +48,7 @@ _PREFIX = [
     ("SPUT purchases as %", "V032"), ("SPUT purchases in quarter", "V027"),
     ("U-UN.TO", "V011"), ("UPC adj. close", "D44"), ("U-U.TO", "V012"), ("YCA.L", "V033"),
     ("Yellow Cake NAV", "V042"), ("Yellow Cake uranium held", "V040"), ("Yellow Cake lb basis", "V040"), ("Yellow Cake quarter-end spot", "V042"),
-    ("Yellow Cake announcement", "V042"), ("Yellow Cake premium", "V043"),
+    ("Yellow Cake announcement", "V042"),  # 20 Nov 2026 (text fix): dead rule ("Yellow Cake premium", "V043") moved to reference/sput_ratio_columns_v5_NOT_USED.py
     ("UxC spot volume", "V101"), ("World nuclear electricity produced", "V103"), ("World nuclear operated capacity", "V104"), ("World nuclear energy availability factor", "V105"), ("World nuclear load factor", "V105"), ("World nuclear construction starts", "V106"), ("World nuclear grid connections", "V106"), ("World nuclear permanent shutdowns", "V106"), ("World nuclear reactors in operation", "V106"), ("World nuclear unit capability factor", "V105"), ("World nuclear forced loss rate", "V105"),
     ("Real GDP, US", "V083"), ("Real GDP growth, US", "V083"), ("Industrial production, OECD", "V082"), ("Industrial production, G7", "V082"), ("OECD industrial production growth", "V082"),
     ("Categorical EPU", "V088"), ("Geopolitical risk index, overall", "V089"), ("Geopolitical risk index, daily overall", "V089"), ("Geopolitical risk index, threats", "V090"),
@@ -69,6 +69,7 @@ _PREFIX = [
 ]
 # 19 Nov 2026: tag four series that already sit in the register (Data Curator, 19 Nov 2026), so their columns stop saying "Not in the handoff table".
 _PREFIX += [("Monetary-policy surprise", "V075"), ("Newcastle coal futures", "V060"), ("S&P 500", "D17"), ("Google Trends search interest", "D21")]
+_PREFIX += [("Long-term contracting volume", "V102")]  # 20 Nov 2026: Cameco long-term contracting first prints (v6)
 _EQUITY_V119 = ("URA", "URNM", "NLR", "CCJ", "KAP.IL", "UEC", "DNN", "NXE", "PDN.AX", "BOE.AX", "DYL.AX", "SLX.AX", "BWXT", "1164.HK")
 _PINK = [("Crude oil, average", "V050"), ("Crude oil, Brent", "V048"), ("Crude oil, WTI", "V049"), ("Coal, Australian", "V045"), ("Coal, South African", "V046"),
          ("Natural gas, US", "V051"), ("Natural gas, Europe", "V052"), ("Liquefied natural gas, Japan", "V053"), ("Gold", "V047"), ("Copper", "V054"),
@@ -151,6 +152,15 @@ _FUT_D = "Yahoo continuous front-month close, dated in the exchange time zone; r
 
 # (sheets, header prefix, code, note). First match wins; headers are the Series row (no unit).
 _TIMING_RULES = [
+    # 20 Nov 2026 (v6): first prints and their publication dates; these rules come first so the general rules below do not catch them
+    (("Monthly", "Quarterly", "Annual"), ": date first published", "INFO", "Date the value in the column to its left was first published (ALFRED realtime_start). A dating field, not a predictor.", "contains"),
+    (("Monthly", "Quarterly", "Annual"), ": document release date", "INFO", "Filing date of the Cameco report that first printed the value to its left. A dating field, not a predictor.", "contains"),
+    (("Quarterly",), "Real GDP growth, US, annualised, first print", "IDX", "Annualised growth over the quarter as first published (advance estimate), not revised."),
+    (("Quarterly",), "Real GDP, US, first print", "FLOW", "Output over the quarter (SAAR) as first published (advance estimate), not revised; chained dollars of its own vintage."),
+    (("Monthly",), "first print (ALFRED)", "IDX", "Index or rate for the month as first published (ALFRED initial release), not revised; published on the date in the next column.", "contains"),
+    (("Monthly",), "earliest ALFRED vintage", "IDX", "Earliest ALFRED vintage (2024 for months before Apr 2024), not true first prints: do not use.", "contains"),
+    (("Annual",), "Long-term contracting volume", "FLOW", "Long-term contracting over the calendar year, as first printed by Cameco."),
+    (("Quarterly",), "Long-term contracting volume, year to date", "FLOW", "Cumulative from 1 January to the quarter end (year to date), as first printed; not single quarters."),
     # Monthly
     (("Monthly",), "Uranium spot, month-end", "ME-ASSESSED", _CAM),
     (("Monthly",), "Uranium long-term, month-end", "ME-ASSESSED", _CAM),
@@ -224,7 +234,7 @@ _TIMING_RULES = [
     (("Quarterly",), "Yellow Cake NAV per share", "QE", "Estimated NAV at quarter-end; announced 3 to 39 days later (announcement date column; data/release_dates.csv)."),
     (("Quarterly",), "Yellow Cake quarter-end spot used", "QE-ASSESSED", "Spot price Yellow Cake used for the quarter-end NAV, as given or derived for the announcement."),
     (("Quarterly",), "Yellow Cake announcement date", "INFO", "Date the quarter's Yellow Cake figures were announced: a release date."),
-    (("Quarterly",), "Yellow Cake premium", "CONST", "Built here from the YCA.L price and the quarter-end NAV per share (column note)."),
+    # 20 Nov 2026 (text fix): dead timing rule for "Yellow Cake premium" moved to reference/sput_ratio_columns_v5_NOT_USED.py (the column was removed)
     (("Quarterly",), "Real GDP growth", "IDX", "Annualised growth over the quarter, as published; revised (latest vintage)."),
     (("Quarterly",), "Real GDP, US", "FLOW", "Output over the quarter at a seasonally adjusted annual rate; revised (latest vintage)."),
     (("Quarterly",), "UxC spot volume, quarter, first reported", "FLOW", "UxC spot volume for the quarter, first print (data/release_dates.csv)."),
@@ -312,6 +322,11 @@ def load_release(path):
 
 
 def release_of(sheet, header):
+    # 20 Nov 2026 (v6): first-print columns carry their own publication date in the column beside them
+    if header.endswith(": date first published") or header.endswith(": document release date"):
+        return ("This column is the release date", None)
+    if "first print" in header or "earliest ALFRED vintage" in header:
+        return ("Dated: release date in the column beside", None)
     if header in RELEASE:
         return RELEASE[header]
     if sheet == "World Bank monthly" and "World Bank monthly (all columns)" in RELEASE:

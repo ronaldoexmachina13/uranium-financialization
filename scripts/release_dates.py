@@ -4,7 +4,8 @@
 (UPC monthly NAV, Yellow Cake reports, UxC volumes, SPUT issuance, SPUT statements, the Quarterly announcement-date column) and data/source_manifest.csv.
 No date is estimated: where no date is stored, release_date is blank and the note says "not verified". No data value is read into or written to the workbook.
 
-Usage: python3 scripts/release_dates.py [workbook]   (default data/processed/thesis_dataset_v5.xlsx)
+Usage: python3 scripts/release_dates.py [workbook]   (default data/processed/thesis_dataset_v5.xlsx; pass the v6 file to rebuild from v6)
+20 Nov 2026: 49 rows (38 Cameco MD&A filing dates, 11 SPUT report dates) were appended from the Consultant's tables of 20 Nov 2026; they are kept on a rebuild (marker ADDED).
 """
 import csv
 import datetime as dt
@@ -15,6 +16,7 @@ import openpyxl
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "data" / "release_dates.csv"
+ADDED = "[row added 20 Nov 2026 from the Consultant's table]"  # 20 Nov 2026: see main()
 FIELDS = ["series", "variable_id", "reference_period_end", "release_date", "release_date_source", "grade", "note"]
 
 
@@ -241,6 +243,13 @@ def main():
     for s, v, lag, g in LAGS:
         add(s, v, None, None, CUR + f" (grade {g})", "", f"typical lag {lag}; not verified")
 
+    # 20 Nov 2026: rows added by hand from the Consultant's tables (Cameco MD&A and SPUT report release dates) are kept when the register is rebuilt.
+    # They carry the marker ADDED in their note; this script cannot rebuild them from the workbook.
+    if OUT.exists():
+        have = {(r["series"], r["reference_period_end"]) for r in out}
+        for r in csv.DictReader(open(OUT, encoding="utf-8")):
+            if ADDED in r["note"] and (r["series"], r["reference_period_end"]) not in have:
+                out.append(r)
     with open(OUT, "w", newline="", encoding="utf-8") as f:
         w = csv.DictWriter(f, fieldnames=FIELDS)
         w.writeheader()
