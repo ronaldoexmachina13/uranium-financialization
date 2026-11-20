@@ -1,0 +1,4 @@
+# Store every file byte for byte, exactly as it is on disk.
+# Git must never change line endings, so the SHA-256 values in
+# data/raw_manifest.csv stay valid after any clone or download.
+* -text

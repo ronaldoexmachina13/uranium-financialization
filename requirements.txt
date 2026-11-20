@@ -1,0 +1,6 @@
+# Python packages needed to run scripts/ and rebuild data/processed/thesis_dataset.xlsx
+pandas>=3.0
+openpyxl>=3.1
+pypdf>=6.0
+tzdata          # time-zone data for Windows
+truststore      # optional: uses the Windows certificate store for downloads

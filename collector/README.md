@@ -2,7 +2,7 @@
 
 *When Nuclear Fuel Becomes a Financial Asset: Financialization and Price Discovery in the Uranium Market* (Master's thesis, ISCAP).
 
-This repository covers **data engineering only**: acquiring, preserving, cleaning and documenting data. The econometric analysis happens separately in R.
+This repository covers **data engineering only**: acquiring, preserving, cleaning and documenting data. The analysis is done in Python (scripts/ and, later, notebooks/ in the main repo).
 
 ## Setup
 
@@ -37,7 +37,7 @@ Run these from the project root:
 
 ## CME UX forward collection
 
-CME publishes only the *current* Daily Bulletin for free; historical bulletins are sold through CME DataMine. A Windows scheduled task, `UraniumThesis_CME_UX_Bulletin`, runs the collector daily at 14:00 and 23:30, and catches up if the PC was off at those times. Any day on which the PC stays off throughout is lost permanently.
+CME publishes only the *current* Daily Bulletin for free; historical bulletins are sold through CME DataMine. The collector was stopped on 14 November 2026, because forward collection only builds a short series: the Windows scheduled task `UraniumThesis_CME_UX_Bulletin` is disabled, and the bulletins collected to 12 November 2026 stay in this folder. While it ran, the task ran the collector daily at 14:00 and 23:30, and catches up if the PC was off at those times. Any day on which the PC stays off throughout is lost permanently.
 
 The collector uses two bulletin sections:
 
@@ -46,7 +46,7 @@ The collector uses two bulletin sections:
 
 The parser reads each word's position from the PDF text layer with `pdfplumber` (no OCR). It checks the page layout against the column headers and cross-checks the sum of contract open interest against both the TOTAL line and Section 02B.
 
-CME's terms of use grant a personal, non-transferable licence. **Do not redistribute the raw PDFs.**
+CME's terms of use grant a personal, non-transferable licence. **Do not redistribute the raw PDFs.** They are kept in this private repository, shared with the thesis supervisors only.
 
 Manage the task with:
 

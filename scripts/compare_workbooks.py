@@ -1,7 +1,7 @@
 """Compare two versions of the thesis workbook and list every difference (equality checks only, no calculation on the data).
 
 20 Nov 2026: new script, written for the v5 -> v6 check. Usage, from the repo root:
-    python3 scripts/compare_workbooks.py data/processed/thesis_dataset_v5.xlsx data/processed/thesis_dataset_v6.xlsx data/processed/v5_to_v6_changes.csv
+    python3 scripts/compare_workbooks.py data/processed/archive/thesis_dataset_v5.xlsx data/processed/thesis_dataset.xlsx data/processed/archive/v5_to_v6_changes.csv
 
 How it compares
   - Data sheets (one column per series): series are matched by their name (row 'Series'), rows by their date, so a column that

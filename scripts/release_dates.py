@@ -4,7 +4,7 @@
 (UPC monthly NAV, Yellow Cake reports, UxC volumes, SPUT issuance, SPUT statements, the Quarterly announcement-date column) and data/source_manifest.csv.
 No date is estimated: where no date is stored, release_date is blank and the note says "not verified". No data value is read into or written to the workbook.
 
-Usage: python3 scripts/release_dates.py [workbook]   (default data/processed/thesis_dataset_v5.xlsx; pass the v6 file to rebuild from v6)
+Usage: python3 scripts/release_dates.py [workbook]   (default data/processed/thesis_dataset.xlsx, the working file; older versions are in data/processed/archive/)
 20 Nov 2026: 49 rows (38 Cameco MD&A filing dates, 11 SPUT report dates) were appended from the Consultant's tables of 20 Nov 2026; they are kept on a rebuild (marker ADDED).
 """
 import csv
@@ -116,7 +116,7 @@ LAGS += [(s, "", "no typical lag stated in the Curator report", "C") for s in ("
 
 
 def main():
-    src = Path(sys.argv[1]) if len(sys.argv) > 1 else ROOT / "data" / "processed" / "thesis_dataset_v5.xlsx"
+    src = Path(sys.argv[1]) if len(sys.argv) > 1 else ROOT / "data" / "processed" / "thesis_dataset.xlsx"
     wb = openpyxl.load_workbook(src, read_only=True)
     man = manifest_dates()
     out = []

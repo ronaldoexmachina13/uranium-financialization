@@ -5,7 +5,7 @@ Run from the repo root after the fetch scripts:  python scripts/build_dataset.py
 Layout: one sheet per native frequency, nothing aggregated away.
   Daily, Weekly, Monthly, Quarterly, Events_SPUT (irregular), Daily_OHLCV (long table), Monthly_Pink (World Bank averages),
   plus README, Catalogue (every column described), Analysis_Map and Gaps.
-20 Nov 2026 (workbook v6, Ronaldo's decisions of 20 Nov 2026): the default output is data/processed/thesis_dataset_v6.xlsx (v2 to v5 are never written
+20 Nov 2026 (workbook v6, Ronaldo's decisions of 20 Nov 2026): the default output was data/processed/thesis_dataset_v6.xlsx (v2 to v5 are never written
   unless THESIS_OUT names them). Every series is cut at 31 Oct 2026 (first prints and forward-looking columns by publication date); the six ratio
   columns built by Claude are removed (their code is in reference/sput_ratio_columns_v5_NOT_USED.py); new sheets and columns come from
   scripts/v6_additions.py. Each v6 change is marked "20 Nov 2026".
@@ -42,7 +42,7 @@ ROOT = Path(__file__).resolve().parents[1]
 RAW = ROOT / "data" / "raw"
 DATED = RAW / "markets_dated"   # futures with repaired dates (15 Nov 2026); the older files in data/raw/markets stay as evidence
 DATED_DAY = "20261115"
-OUT = Path(os.environ["THESIS_OUT"]) if os.environ.get("THESIS_OUT") else ROOT / "data" / "processed" / "thesis_dataset_v6.xlsx"  # 20 Nov 2026: v6 is the working file
+OUT = Path(os.environ["THESIS_OUT"]) if os.environ.get("THESIS_OUT") else ROOT / "data" / "processed" / "thesis_dataset.xlsx"  # 20 Nov 2026: the working file has one stable name; old versions are in data/processed/archive/
 
 NUM, NUM4, INT, PCT = "#,##0.00", "#,##0.00##", "#,##0", "0.00"
 FILL = {"constructed": "E4DFEC", "native": "D9E2D5", "derived": "DDEBF7", "average": "EDEDED", "gap-fill": "FFF2CC", "reconstructed": "FCE4D6"}
