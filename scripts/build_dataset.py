@@ -335,6 +335,25 @@ def macro_cols(S):
         ("dallasfed_IGREA_kilian.csv", "Kilian global real economic activity index", "percent deviation from trend", "IGREA", "Dallas Fed (Kilian)", "last 19 rows were stored with the wrong date in the source file and were set to the first of the month; values untouched"),
         ("googletrends_uranium_ETF.csv", "Google Trends search interest, 'uranium ETF'", "0-100, peak = 100", "uranium ETF", "Google Trends", "worldwide web search; one request for the whole period so no stitching; Nov 2026 incomplete; early years mostly 0")]:
         M.append(col(f"{hdr} [{unit}]", mon(f), "native", src, sid, "monthly", "monthly value as published", unit, note, "", raw(f), NUM))
+    # 19 Nov 2026: the two global energy-uncertainty series, read from the dated file with corrected months (the original files store the month in the day field and stay unchanged).
+    ef = d / "epu_energy_EUI_global_dates_corrected_2026-11-19.csv"
+    if ef.exists():
+        er = read_csv(ef)
+        for s_, orig, lab in [("GDP_weighted", "epu_energy_EUI_global_EUI_GDP_weighted.csv", "GDP-weighted"), ("equally_weighted", "epu_energy_EUI_global_EUI_equally_weighted.csv", "equally weighted")]:
+            rows_, ov, vals = [r for r in er if r["series"] == s_], series(orig), {}
+            for r in rows_:
+                if num(r["value"]) != ov.get(day(r["stored_date"])):
+                    raise SystemExit(f"Energy uncertainty {s_}: value at stored date {r['stored_date']} differs from {orig}")
+                k = ym(day(r["corrected_month"]))
+                if k in vals:
+                    raise SystemExit(f"Energy uncertainty {s_}: corrected month {k} appears twice")
+                vals[k] = num(r["value"])
+            if len(rows_) != len(ov) or sorted(vals) != list(months_between(min(vals), max(vals))):
+                raise SystemExit(f"Energy uncertainty {s_}: corrected months are not one complete monthly run matching {orig}")
+            M.append(col(f"Energy uncertainty index, global, {lab} (EUI) [index]", vals, "native", "Dang et al. (2023) via policyuncertainty.com", "EUI " + s_, "monthly", "monthly index value as published", "index",
+                         "Energy-related uncertainty index of Dang, Nguyen, Lee, Nguyen and Le (2023, Energy Economics 124:106817), as named in data/raw/macro/macro_index.csv. The source file stores the month in the day field (YYYY-01-MM); "
+                         f"the months here are corrected_month of the dated file (stored date beside it; every value equals {orig}, which is unchanged, D-005). The country-level file is not used: its dates cannot be read without the source.",
+                         "", raw(ef.name), NUM))
     # daily (published on weekdays, or on every calendar day for the GPR)
     for f, hdr, unit, sid, src, note, me in [
         ("fred_TEDRATE.csv", "TED spread (discontinued)", "percent", "TEDRATE", "FRED", "3-month LIBOR minus 3-month T-bill; discontinued by FRED, ends 2022-01-21", True),
@@ -342,9 +361,9 @@ def macro_cols(S):
         ("fred_DCPN3M.csv", "Commercial paper, 90-day AA nonfinancial", "percent", "DCPN3M", "FRED (Federal Reserve)", "alternative to the financial commercial paper column", True),
         ("fred_DTB3.csv", "T-bill, 3-month, secondary market, discount basis", "percent", "DTB3", "FRED (Federal Reserve)", "discount basis; the 3-month Treasury yield used elsewhere (DGS3MO) is constant-maturity", True),
         ("fred_SOFR.csv", "SOFR, secured overnight financing rate", "percent", "SOFR", "FRED (NY Fed)", "starts 2018-04-03", True),
-        ("gpr_GPRD_daily.csv", "Geopolitical risk index, daily overall (GPRD)", "index 1985-2019=100", "GPRD", "Caldara and Iacoviello", "calendar days including weekends; weekend values are not shown on this sheet (the date list is trading days only): full file in data/raw/macro", False),
-        ("gpr_GPRD_THREAT_daily.csv", "Geopolitical risk index, daily threats (GPRD_THREAT)", "index 1985-2019=100", "GPRD_THREAT", "Caldara and Iacoviello", "calendar days; weekend values not shown on this sheet", False),
-        ("gpr_GPRD_ACT_daily.csv", "Geopolitical risk index, daily acts (GPRD_ACT)", "index 1985-2019=100", "GPRD_ACT", "Caldara and Iacoviello", "calendar days; weekend values not shown on this sheet", False)]:
+        ("gpr_GPRD_daily.csv", "Geopolitical risk index, daily overall (GPRD)", "index 1985-2019=100", "GPRD", "Caldara and Iacoviello", "calendar days including weekends; the Daily date list has weekend rows from 1990 (the daily US EPU is published on every calendar day), so weekend values show from 1990 only; earlier weekend values are in the full file in data/raw/macro", False),
+        ("gpr_GPRD_THREAT_daily.csv", "Geopolitical risk index, daily threats (GPRD_THREAT)", "index 1985-2019=100", "GPRD_THREAT", "Caldara and Iacoviello", "calendar days including weekends; the Daily date list has weekend rows from 1990 (the daily US EPU is published on every calendar day), so weekend values show from 1990 only; earlier weekend values are in the full file in data/raw/macro", False),
+        ("gpr_GPRD_ACT_daily.csv", "Geopolitical risk index, daily acts (GPRD_ACT)", "index 1985-2019=100", "GPRD_ACT", "Caldara and Iacoviello", "calendar days including weekends; the Daily date list has weekend rows from 1990 (the daily US EPU is published on every calendar day), so weekend values show from 1990 only; earlier weekend values are in the full file in data/raw/macro", False)]:
         v = series(f)
         D.append(col(f"{hdr} [{unit}]", v, "native", src, sid, "daily", "daily value", unit, note, "", raw(f), NUM))
         if me:
@@ -369,14 +388,26 @@ def load():
     S = {}
     S["daily"], S["weekly"], S["monthly"], S["quarterly"] = [], [], [], []
     cam = read_csv(RAW / "cameco" / "uranium_price_monthly.csv")
-    spot = {ym(day(r["date"])): num(r["spot_usd_lb"]) for r in cam}
-    lt = {ym(day(r["date"])): num(r["longterm_usd_lb"]) for r in cam}
+    # 19 Nov 2026: the raw file holds Cameco's Q4 2017 average in the Dec 2017 slot; the month-end printed in Cameco's 6-K exhibits is shown instead (raw file unchanged, D-005).
+    cam_fix = {}
+    cfx = RAW / "cameco" / "uranium_price_monthly_correction_2017-12.csv"
+    if cfx.exists():
+        camd = {r["date"]: r for r in cam}
+        for r in read_csv(cfx):
+            if r["date"] not in camd or num(camd[r["date"]][r["field"]]) != num(r["raw_value"]):
+                raise SystemExit(f"Cameco correction {r['date']} {r['field']}: the raw file no longer holds {r['raw_value']}")
+            cam_fix[(r["date"], r["field"])] = r
+    S["cam_fix"] = cam_fix
+    camv = lambda r, k: num(cam_fix[(r["date"], k)]["corrected_value"]) if (r["date"], k) in cam_fix else num(r[k])
+    spot = {ym(day(r["date"])): camv(r, "spot_usd_lb") for r in cam}
+    lt = {ym(day(r["date"])): camv(r, "longterm_usd_lb") for r in cam}
     M = S["monthly"]
     cam_raw = "data/raw/cameco/uranium_price_monthly.csv"
+    cam_fix_note = (" Dec 2017: the raw file holds Cameco's Q4 2017 average in the December slot; this column shows the month-end printed in Cameco's 6-K exhibits (cell comment). Raw file unchanged; correction file data/raw/cameco/uranium_price_monthly_correction_2017-12.csv." if cam_fix else "")
     M.append(col("Uranium spot, month-end [USD/lb]", spot, "native", "Cameco (industry average of UxC and TradeTech month-end prices)", "spot_usd_lb", "monthly",
-                 "month-end", "USD per lb", "MAIN PRICE. Dec 2017 differs from Cameco's own quarterly table (23.75 here, 22.32 there)", "H1-H4 (dependent variable)", cam_raw, NUM))
+                 "month-end", "USD per lb", "MAIN PRICE." + cam_fix_note, "H1-H4 (dependent variable)", cam_raw, NUM))
     M.append(col("Uranium long-term, month-end [USD/lb]", lt, "native", "Cameco (industry average of UxC and TradeTech month-end prices)", "longterm_usd_lb", "monthly",
-                 "month-end", "USD per lb", "", "context", cam_raw, NUM))
+                 "month-end", "USD per lb", cam_fix_note.strip(), "context", cam_raw, NUM))
     for hdr, sid, unit, note in FRED_MONTHLY:
         d = {ym(day(r["observation_date"])): num(r[sid]) for r in read_csv(RAW / "fred" / f"{sid}.csv")}
         M.append(col(f"{hdr}, monthly avg [{unit}]", d, "average", "FRED (IMF)", sid, "monthly", "period average", unit, note, "cross-check", f"data/raw/fred/{sid}.csv", NUM))
@@ -560,11 +591,33 @@ def load():
             held_fix[day(r["quarter_end"])] = int(re.match(r"\d+", r["corrected_value"]).group())
     held_flag = ("FLAG 31 Mar 2021: the value 12.96 is a pro forma figure (after the sale to Uranium Royalty Corp. and the Kazatomprom delivery), not the pounds held; it is left as published. "
                  "Actually held: 9,856,385 lb (grade A), shown in the next column. Do not use 12.96 as held units. Source: data/raw/yellowcake/yellowcake_holdings_correction_2021-03-31.csv.")
-    Q.append(col("Yellow Cake uranium held [million lb U3O8]", {day(r["quarter_end"]): num(r["uranium_held_million_lb"]) for r in yc}, "native", ysrc, "uranium_held_million_lb", "quarterly", "quarter-end", "million lb U3O8", "see lb_basis. " + held_flag, "H3", yraw, NUM))
+    # 19 Nov 2026: 13 quarters marked "derived" in nav_quarterly.csv have their pounds stated in the kept updates; basis "stated (document)" and the exact lb in its own column (raw file unchanged).
+    yc_st = {}
+    sfx = RAW / "yellowcake" / "yellowcake_holdings_stated_2026-11-19.csv"
+    if sfx.exists():
+        ycq = {r["quarter_end"]: r for r in yc}
+        for r in read_csv(sfx):
+            q_ = ycq.get(r["quarter_end"])
+            if not q_ or q_["lb_basis"] != "derived":
+                raise SystemExit(f"Yellow Cake stated holdings: {r['quarter_end']} is not a 'derived' row of nav_quarterly.csv")
+            mlb = num(q_["uranium_held_million_lb"])
+            # 0.0051 allows two-decimal rounding (24.374996 is printed as 24.38)
+            if abs(mlb - int(r["exact_lb"]) / 1e6) > 0.0051 or abs(mlb - float(r["stated_value"].split()[0])) > 0.005:
+                raise SystemExit(f"Yellow Cake stated holdings: {r['quarter_end']} {mlb} million lb differs from the stated {r['stated_value']} / {r['exact_lb']} lb by more than 0.005 million lb")
+            yc_st[day(r["quarter_end"])] = r
+    S["yc_stated"] = yc_st
+    st_note = ("13 quarters from 30 Jun 2023 that nav_quarterly.csv marks 'derived' have the pounds stated in the kept updates (lb basis 'stated (document)'; exact lb in the column 'exact as stated'); no quarter is left derived. " if yc_st else "")
+    Q.append(col("Yellow Cake uranium held [million lb U3O8]", {day(r["quarter_end"]): num(r["uranium_held_million_lb"]) for r in yc}, "native", ysrc, "uranium_held_million_lb", "quarterly", "quarter-end", "million lb U3O8", "see lb_basis. " + st_note + held_flag, "H3", yraw, NUM))
     if held_fix:
         Q.append(col("Yellow Cake uranium held, corrected [lb U3O8]", held_fix, "native", "Yellow Cake update of 20 Apr 2021 (page references in the correction file), read by the Data Curator on 15 Nov 2026", "holdings_correction", "quarterly", "quarter-end", "lb U3O8",
                      "Only the quarters where the published holdings are not what was held. 31 Mar 2021: 9,856,385 lb held; the published 12.96 million lb is pro forma.", "H3", "data/raw/yellowcake/yellowcake_holdings_correction_2021-03-31.csv", INT))
-    Q.append(col("Yellow Cake lb basis", {day(r["quarter_end"]): r["lb_basis"] for r in yc}, "native", ysrc, "lb_basis", "quarterly", "quarter-end", "text", "stated = in the announcement; derived = holdings value divided by quarter-end spot; carried = previous quarter", "H3", yraw, "@"))
+    if yc_st:
+        Q.append(col("Yellow Cake uranium held, exact as stated [lb U3O8]", {k: int(r["exact_lb"]) for k, r in yc_st.items()}, "native", "Yellow Cake quarterly operating updates (kept PDFs; document and page in each cell comment), read 19 Nov 2026", "exact_lb", "quarterly", "quarter-end", "lb U3O8",
+                     "Only the 13 quarters (30 Jun 2023 to 30 Sep 2026, except 31 Mar 2024) where nav_quarterly.csv says lb_basis = derived. Where an update prints only million lb, the exact figure follows the note in the source file (e.g. carried from the previous exact figure with no delivery in between); the note is repeated in the cell comment. Other quarters were not read for an exact figure.",
+                     "H3", "data/raw/yellowcake/yellowcake_holdings_stated_2026-11-19.csv", INT))
+    Q.append(col("Yellow Cake lb basis", {day(r["quarter_end"]): ("stated (document)" if day(r["quarter_end"]) in yc_st else r["lb_basis"]) for r in yc}, "native", ysrc, "lb_basis", "quarterly", "quarter-end", "text",
+                 "stated = in the announcement; derived = holdings value divided by quarter-end spot; carried = previous quarter"
+                 + ("; stated (document) = 'derived' in nav_quarterly.csv, but the pounds are stated in the kept update (19 Nov 2026; document and page in the cell comment; data/raw/yellowcake/yellowcake_holdings_stated_2026-11-19.csv). No quarter is left derived" if yc_st else ""), "H3", yraw, "@"))
     Q.append(col("Yellow Cake quarter-end spot used [USD/lb]", {day(r["quarter_end"]): num(r["spot_usd_lb"]) for r in yc}, "native", ysrc, "spot_usd_lb", "quarterly", "quarter-end", "USD per lb", "as given or derived for the announcement; compare with the Cameco quarter-end column", "H3", yraw, NUM))
     Q.append(col("Yellow Cake announcement date", {day(r["quarter_end"]): day(r["announcement_date"]) for r in yc if r["announcement_date"]}, "native", ysrc, "announcement_date", "quarterly", "date of announcement", "date", "", "H3", yraw, "yyyy-mm-dd"))
     conv = read_csv(RAW / "cameco" / "conversion_prices_quarterly.csv")
@@ -584,8 +637,8 @@ def load():
     Q.append(col("Yellow Cake premium/discount to NAV, quarter-end [percent]", prem, "derived", "YCA.L close (pence) divided by 100, against the announced NAV", "close / nav_per_share_gbp", "quarterly",
                  "last close on or before the quarter end (within 7 days)", "percent", "price in GBP vs NAV in GBP; negative = discount", "H3", yraw + " and data/raw/yahoo/YCA.L.csv", NUM))
     for k, hdr in [("spot_usd_lb", "Uranium spot"), ("longterm_usd_lb", "Uranium long-term")]:
-        d = {day(r["date"]): num(r[k]) for r in cam if day(r["date"]).month in (3, 6, 9, 12)}
-        Q.append(col(f"{hdr}, quarter-end (Cameco) [USD/lb]", d, "derived", "Cameco", k, "quarterly", "month-end value of Mar, Jun, Sep, Dec", "USD per lb", "from the Monthly sheet source", "context", cam_raw, NUM))
+        d = {day(r["date"]): camv(r, k) for r in cam if day(r["date"]).month in (3, 6, 9, 12)}
+        Q.append(col(f"{hdr}, quarter-end (Cameco) [USD/lb]", d, "derived", "Cameco", k, "quarterly", "month-end value of Mar, Jun, Sep, Dec", "USD per lb", "from the Monthly sheet source" + ("; Dec 2017 corrected as on the Monthly sheet (cell comment)" if cam_fix else ""), "context", cam_raw, NUM))
     uxc_volume(S, M, Q)
     macro_cols(S)
     S["markets_found"] = list(markets)
@@ -697,7 +750,7 @@ OVERRIDE = {  # id -> (status, where, note); the workbook holds the inputs of de
     "V089": ("In workbook", "Monthly and Daily: geopolitical risk index, overall", "Daily file covers calendar days; weekends are not shown on the Daily sheet."),
     "V090": ("In workbook", "Monthly and Daily: geopolitical risk, threats and acts", "Same note as V089."),
     "D21": ("In workbook", "Monthly: Google Trends 'uranium ETF'", "Relative interest, peak = 100; carries measurement error."),
-    "D44": ("Partly in workbook", "UPC monthly NAV, Dec 2010 to May 2021 (126 months; May 2018 from the quarterly filings) and nine 2009 months (Jan to Apr, Aug to Dec); Daily and Monthly: UPC adj. close, 2006 to Jul 2021", "May to Jul 2009, Jan to Nov 2010 and June 2021 not retrieved; shares outstanding not printed in the releases."),
+    "D44": ("Partly in workbook", "UPC monthly NAV, Dec 2010 to May 2021 (126 months; May 2018 from the quarterly filings) nine 2009 months (Jan to Apr, Aug to Dec) and Jan and Feb 2010; Daily and Monthly: UPC adj. close, 2006 to Jul 2021", "May to Jul 2009, Mar to Nov 2010 and June 2021 not retrieved; shares outstanding not printed in the releases."),
     "V103": ("In workbook", "Annual: world nuclear electricity produced, IAEA PRIS, 1970-2025", "World total only; country detail sits in the PRIS Data Browser (read on screen, no export). Values match RDS-2 for the six years checked."),
     "V106": ("In workbook", "Annual: world nuclear construction starts, grid connections, permanent shutdowns and reactors in operation, IAEA RDS-2 (2026 edition), 1954-2025", "World totals per year; the reactor-level shutdown list (220 reactors) is in the raw CSV. Operating status is the year-end count of reactors in operation."),
     "V105": ("In workbook", "Annual: world nuclear energy availability, load, unit capability factors and forced loss rate, IAEA PRIS, 1970-2025", "World totals only; PRIS reports the energy availability factor (EAF) as its headline and the load factor (LF) as the realised measure. Six more indicators sit in the raw CSV."),
@@ -719,6 +772,25 @@ OVERRIDE.update({
     "V075": ("Partly in workbook", "Monthly: Monetary-policy surprise, raw and orthogonalized, sum over FOMC events in month", "San Francisco Fed series, Jan 2012 to Dec 2023 only (chart file); 2024 onward not retrieved."),
     "V118": ("Partly in workbook", "Daily: UX volume and open interest, CME bulletin (20 Mar to 9 Nov 2026); Monthly: UX volume and open interest, CME monthly report (volume 42 months from Jun 2014, open interest 30 months from Aug 2014 to May 2024)",
              "CME publishes no free history. The workbook holds only what archived CME files show: 124 trading days in 2026 (open interest 250 to 350 contracts, volume above zero on 6 days) and scattered months from 2014. Every other period is blank. The Stooq volume and open interest columns are not used. Full daily history is only in the paid CME DataMine product."),
+})
+
+
+# 19 Nov 2026: register fixes from the Data Curator's ML-readiness check (report of 19 Nov 2026, section 3), checked against workbook v4.
+OVERRIDE.update({
+    "V047": ("In workbook", "World Bank monthly: Gold (Pink Sheet monthly average, the column tagged V047). The gold month-end is Monthly: Gold futures (GC=F), month-end, tagged V059; there is no gold spot column", "Monthly average as published. Futures dates repaired 15 Nov 2026 (data/raw/markets_dated)"),
+    "V051": ("In workbook", "Monthly: Natural gas, Henry Hub (IMF), monthly avg; World Bank monthly: Natural gas, US (both period averages, tagged V051). The Henry Hub spot month-end on Monthly is tagged V057", "Period averages as published. The spot month-end comes from FRED DHHNGSP (scripts/fetch_fred.py), see V057"),
+    "V054": ("In workbook", "Monthly: Copper (IMF), monthly avg; World Bank monthly: Copper (both period averages, tagged V054). The copper month-end is Monthly: Copper futures (HG=F), month-end, tagged V059", "Period averages as published. Futures dates repaired 15 Nov 2026 (data/raw/markets_dated)"),
+    "V058": ("In workbook", "Daily: Gold futures (GC=F) close and Copper futures (HG=F) close, tagged V059; there is no gold or copper spot column", "Yahoo continuous front-month futures (scripts/fetch_markets.py); the gold spot ticker XAUUSD=X is listed in the fetch script but no file for it is in data/raw/markets. Futures dates repaired 15 Nov 2026 (data/raw/markets_dated)"),
+    "V073": ("Partly in workbook", "Daily and Monthly: Corporate option-adjusted spread (ICE BofA), from 7 Nov 2023 (Monthly 2023-11 to 2026-10, 36 months)", "From scripts/fetch_fred.py; FRED now serves only about 3 years of this ICE BofA series, so the earlier history is not in the workbook"),
+    "V030": (DERIVED, "Inputs: Weekly and Monthly: SPUT holdings (V029); Monthly: SPUT units outstanding (V021). SPUT statements: Pounds per unit at reporting dates is a ratio built in this workbook (not in the raw file)", "Weekly holdings and units outstanding are not on the same date, so no continuous series. Whether the ratio column on SPUT statements stays is for Ronaldo (D-029)."),
+    "V032": (DERIVED, "Inputs: SPUT purchases (V027) and UxC volumes (V101). Quarterly: SPUT purchases as % of UxC spot volume is a ratio built in this workbook (15 quarters)", "Denominator is the UxC spot volume quoted in Yellow Cake updates (quarterly, from 2021 Q3); it is not continuous and may include SPUT itself. Whether the ratio column stays is for Ronaldo (D-029)."),
+    "V043": (DERIVED, "Quarterly: Yellow Cake premium/discount to NAV, quarter-end (a ratio built in this workbook from the YCA.L close and the announced NAV, 33 quarter-ends)", "quarter-end price vs quarter-end NAV. The column is built in this workbook although the variable is a derived one; whether it stays is for Ronaldo (D-029)."),
+    "V108": (DERIVED, "", "needs production data (V093). Derived variable: not built in this workbook."),
+    "V109": (DERIVED, "", "needs inventory and requirements data (V097, V098). Derived variable: not built in this workbook."),
+    "D27": ("Not retrieved", "", "dates only; sanctions date not listed. Event dates have to be compiled from documents; they cannot be derived from workbook data."),
+    "V026": ("Partly in workbook", "SPUT statements: cash; Monthly: SPUT cash, reported", "dated anchors only (Jun 2022, Jun 2023, Dec 2023, Jun 2024, Dec 2024, Jun 2025, Dec 2025, Jun 2026); daily cash is not published"),
+    "V089": ("In workbook", "Monthly and Daily: geopolitical risk index, overall", "Daily file covers calendar days; the Daily sheet shows weekend values from 1990 (its date list has weekend rows from then); earlier weekend values are only in the raw file."),
+    "V090": ("In workbook", "Monthly and Daily: geopolitical risk, threats and acts", "Daily files cover calendar days; the Daily sheet shows weekend values from 1990 (its date list has weekend rows from then); earlier weekend values are only in the raw file."),
 })
 
 
@@ -786,19 +858,46 @@ def main():
         return ws
 
     mk = lambda k: dt.date(k[0], k[1], 1)
-    freq("Monthly", "Monthly series", "One row per calendar month. Prices and indicators are month-end values; period averages appear only where no daily source exists (type colour: grey).",
-         months, M, "Month", "yyyy-mm", mk, "Uranium prices and the month-end value of every daily series, plus monthly-published series.", "Monthly", width=17)
+    # 19 Nov 2026: timing codes and release-date labels (rows Timing and Release, data from row 13); the Monthly date header says the 1st is shown (Curator 7.11).
+    wb_layout.load_release(ROOT / "data" / "release_dates.csv")
+    wsm = freq("Monthly", "Monthly series", "One row per calendar month. Prices and indicators are month-end values; period averages appear only where no daily source exists (type colour: grey).",
+         months, M, "Month (date shown is the 1st; values at month-end or for the month)", "yyyy-mm", mk, "Uranium prices and the month-end value of every daily series, plus monthly-published series.", "Monthly", width=17)
     wsq = freq("Quarterly", "Quarterly series", "One row per quarter-end. Series published once a quarter, plus the quarter-end value of monthly series.",
          quarters, Q, "Quarter end", "yyyy-mm-dd", lambda k: k, "Conversion prices, Yellow Cake NAV and holdings, UxC spot volume and SPUT purchases per quarter.", "Quarterly", width=18)
     # visible flag on the pro forma holdings cell (31 Mar 2021)
     from openpyxl.comments import Comment
-    jh = [j for j in range(2, wsq.max_column + 1) if "uranium held" in str(wsq.cell(7, j).value or "").lower() and "corrected" not in str(wsq.cell(7, j).value or "").lower()]
-    rh = [r for r in range(11, wsq.max_row + 1) if (wsq.cell(r, 1).value.date() if hasattr(wsq.cell(r, 1).value, "date") else wsq.cell(r, 1).value) == dt.date(2021, 3, 31)]
+    jh = [j for j in range(2, wsq.max_column + 1) if "uranium held" in str(wsq.cell(7, j).value or "").lower() and "corrected" not in str(wsq.cell(7, j).value or "").lower() and "exact" not in str(wsq.cell(7, j).value or "").lower()]  # 19 Nov 2026: skip the new exact-lb column
+    rh = [r for r in range(wb_layout.DATA_ROW, wsq.max_row + 1) if (wsq.cell(r, 1).value.date() if hasattr(wsq.cell(r, 1).value, "date") else wsq.cell(r, 1).value) == dt.date(2021, 3, 31)]  # 19 Nov 2026: data start below the new Timing and Release rows
     if len(jh) != 1 or len(rh) != 1:
         raise SystemExit(f"cannot find the Yellow Cake holdings cell for 31 Mar 2021 on the Quarterly sheet: columns {jh}, rows {rh}")
     cell_ = wsq.cell(rh[0], jh[0])
     cell_.fill = PatternFill("solid", fgColor=FILL["gap-fill"])
     cell_.comment = Comment("PRO FORMA, not pounds held. Actually held at 31 Mar 2021: 9,856,385 lb (grade A; see the next column). Left as published. Source: data/raw/yellowcake/yellowcake_holdings_correction_2021-03-31.csv", "Dataset", width=340, height=110)
+    # 19 Nov 2026: cell comments on the Dec 2017 Cameco cells, the Yellow Cake stated-holdings cells and the empty Oct 2025 CPI cell, so a reader sees why a cell differs from the raw file or is empty.
+    def cell_at(ws_, key, start):
+        jj = [j for j in range(2, ws_.max_column + 1) if str(ws_.cell(7, j).value or "") == start]
+        rr = [r for r in range(wb_layout.DATA_ROW, ws_.max_row + 1) if (ws_.cell(r, 1).value.date() if hasattr(ws_.cell(r, 1).value, "date") else ws_.cell(r, 1).value) == key]  # 19 Nov 2026: data start below the new header rows
+        if len(jj) != 1 or len(rr) != 1:
+            raise SystemExit(f"cannot find the cell {start} / {key} on {ws_.title}: columns {jj}, rows {rr}")
+        return ws_.cell(rr[0], jj[0])
+    for (d_, k_), r_ in S["cam_fix"].items():
+        txt_ = (f"CORRECTED (19 Nov 2026, grade A). Raw file value: {r_['raw_value']} (Cameco's Q4 2017 average in the December slot). Shown here: {r_['corrected_value']}, the month-end printed in "
+                f"{r_['source_document']} ({r_['page_or_table']}): \"{r_['quote']}\". {r_['note']} Correction file: data/raw/cameco/uranium_price_monthly_correction_2017-12.csv")
+        nm_ = "Uranium spot" if k_ == "spot_usd_lb" else "Uranium long-term"
+        for ws_, key_, hd_ in [(wsm, day(d_).replace(day=1), f"{nm_}, month-end"), (wsq, day(d_), f"{nm_}, quarter-end (Cameco)")]:
+            c_ = cell_at(ws_, key_, hd_)
+            if c_.value != num(r_["corrected_value"]):
+                raise SystemExit(f"{ws_.title} {hd_} {key_} holds {c_.value}, not the corrected {r_['corrected_value']}")
+            c_.comment = Comment(txt_, "Dataset", width=380, height=170)
+    for q_, r_ in S["yc_stated"].items():
+        src_ = f"{r_['source_document']}, p{r_['page']}: \"{r_['quote']}\" (grade {r_['grade']}, read {r_['read_on']})" + (f". {r_['note']}" if r_["note"] else "")
+        cell_at(wsq, q_, "Yellow Cake lb basis").comment = Comment("Stated in the kept update (nav_quarterly.csv says 'derived'; raw file unchanged). " + src_, "Dataset", width=380, height=150)
+        cell_at(wsq, q_, "Yellow Cake uranium held, exact as stated").comment = Comment(src_, "Dataset", width=380, height=150)
+    cpi_ = cell_at(wsm, dt.date(2025, 10, 1), "Consumer price index (CPI-U, seasonally adjusted)")
+    if cpi_.value is not None:
+        raise SystemExit("CPI 2025-10 is no longer empty: check the comment text")
+    cpi_.comment = Comment("Empty at the source: the US BLS did not collect CPI data from 1 Oct to 12 Nov 2025 because of the 2025 federal government shutdown, and FRED CPIAUCSL has no value for 2025-10 (raw file blank). "
+                           "Left empty, never filled (D-005). BLS page https://www.bls.gov/cpi/additional-resources/2025-federal-government-shutdown-impact-cpi.htm (read 19 Nov 2026)", "Dataset", width=380, height=130)
     freq("Weekly", "Weekly series", "One row per Friday.", wkeys, W, "Date (Friday)", "yyyy-mm-dd", lambda k: k, "SPUT holdings from the Sprott fund page.", "Weekly", width=18)
     freq("Daily", "Daily series", "One row per trading day. Blank cell = market closed or no observation; nothing is carried forward.",
          dates, D, "Date", "yyyy-mm-dd", lambda k: k, "Market, rate, risk and fund series at their daily frequency.", "Daily", width=16)
@@ -993,6 +1092,17 @@ def main():
                 r_.insert(pos, x)
             if [y["as_of_date"] for y in r_] != sorted(y["as_of_date"] for y in r_):
                 raise SystemExit("UPC monthly NAV is not in date order after adding May 2018")
+        # 19 Nov 2026: Jan 2010 (monthly release reproduced in the kept SEC filing 10015870.pdf, p109) and Feb 2010 (year-end annual report in the same PDF, pp 2 and 8).
+        s10 = RAW / "upc" / "upc_monthly_nav_2010_supplement_2026-11-19.csv"
+        if s10.exists():
+            for x in read_csv(s10):
+                if any(y["as_of_date"] == x["as_of_date"] for y in r_):
+                    raise SystemExit(f"UPC 2010 supplement: {x['as_of_date']} already in upc_monthly_nav.csv")
+                x["source_url"] = "Kept PDF in 03_data/source_documents/upc: 10015870.pdf (sec.gov Archives/edgar/vprr/1001/10015870.pdf), " + ("page 109" if x["as_of_date"] == "2010-01-31" else "pages 2 and 8 (annual report, not a monthly release)")
+                pos = next((i for i, y in enumerate(r_) if y["as_of_date"] > x["as_of_date"]), len(r_))
+                r_.insert(pos, x)
+            if [y["as_of_date"] for y in r_] != sorted(y["as_of_date"] for y in r_):
+                raise SystemExit("UPC monthly NAV is not in date order after adding Jan and Feb 2010")
         # 2009 months (SEC filings, kept PDFs): the raw file is read as it is; the dated correction file supplies the page of each kept PDF,
         # the Dec 2009 NAV per share and two note corrections. A row without a page reference is not added.
         s09 = RAW / "upc" / "upc_monthly_nav_2009_2010.csv"
@@ -1025,7 +1135,7 @@ def main():
                 raise SystemExit("UPC monthly NAV is not in date order after adding the 2009 months")
         rows_ = [[day(x["release_date"]), day(x["as_of_date"]), num(x["nav_cad_thousand"]), num(x["nav_per_share_cad"]), num(x["shares_outstanding"]), num(x["u3o8_lb"]), x["uf6_kgu_or_lb_and_unit"],
                   num(x["uranium_price_used_usd"]), x["source_url"], x["note"]] for x in r_]
-        table("UPC monthly NAV", "Uranium Participation Corporation: monthly net asset value", "D44. The fund that SPUT replaced (Sprott took it over in July 2021). Monthly releases, December 2010 to May 2021 (May 2018 has no release: it comes from the quarterly MD&A and financial statements, see its Source column), plus nine 2009 months from SEC filings (Jan to Apr and Aug to Dec 2009; May to Jul 2009 and Jan to Nov 2010 are not in the sheet: releases not found); figures in CAD except the uranium price (USD per lb). Units as printed; shares outstanding are not printed in the releases.",
+        table("UPC monthly NAV", "Uranium Participation Corporation: monthly net asset value", "D44. The fund that SPUT replaced (Sprott took it over in July 2021). Monthly releases, December 2010 to May 2021 (May 2018 has no release: it comes from the quarterly MD&A and financial statements, see its Source column), plus nine 2009 months from SEC filings (Jan to Apr and Aug to Dec 2009; Jan and Feb 2010 from the kept SEC filing 10015870.pdf; May to Jul 2009 and Mar to Nov 2010 are not in the sheet: releases not found); figures in CAD except the uranium price (USD per lb). Units as printed; shares outstanding are not printed in the releases.",
               ["Release date", "As of", "NAV [CAD thousand]", "NAV per share [CAD]", "Shares outstanding", "U3O8 held [lb]", "UF6 held", "Uranium price used [USD/lb]", "Source", "Note"], rows_, [13, 12, 16, 14, 14, 14, 18, 16, 50, 70],
               "Monthly NAV, NAV per share and uranium holdings of UPC.", "Monthly", f"{min(z[1] for z in rows_):%Y-%m-%d} to {max(z[1] for z in rows_):%Y-%m-%d}",
               fmts=["yyyy-mm-dd", "yyyy-mm-dd", INT, NUM, INT, INT, None, NUM, None, None], wrap=(10,))
@@ -1069,12 +1179,13 @@ def main():
         cnt[st] = cnt.get(st, 0) + 1
     order_st = ["In workbook", "Partly in workbook", "Script written, not run", "Not retrieved", "Paid or unavailable", DERIVED]
     status_counts = [(k, cnt[k]) for k in order_st if k in cnt]
+    wb_layout.load_spot_link(ROOT / "data" / "spot_link.csv")  # 19 Nov 2026: Spot link column on Variables (labels from the Market Expert screen)
     wb_layout.write_variables_sheet(wb, by, extras)
     sheets.insert(0, ("Guide", "Variables", "Start here: every variable of the handoff table with its role in the thesis, why it matters and where it is in this workbook.", "-", "V001 to V119", 119 + len(extras), 13))
     wb_layout.write_table_sheet(wb, "Gaps", "Gaps and limits of the data", "What is missing, weak or open, by area.", ["Area", "Gap or limitation", "Effect", "Status / action"],
                                 [[clean(c) for c in g] for g in GAPS], [18, 90, 50, 60], wrap=(2, 3, 4), tab="guide")
     sheets.insert(1, ("Guide", "Gaps", "Missing, weak or open items, by area.", "-", "-", len(GAPS), 4))
-    wb_layout.write_contents(wb, sheets, status_counts, "15 November 2026", by, extras)
+    wb_layout.write_contents(wb, sheets, status_counts, "19 November 2026", by, extras)
 
     names = ["Contents", "Variables", "Gaps", "Monthly", "Quarterly", "Annual", "Weekly", "Daily", "SPUT purchases", "SPUT issuance", "SPUT statements", "UxC volumes", "Yellow Cake reports", "UPC monthly NAV", "Physical sources", "Prices OHLCV", "World Bank monthly"]
     wb._sheets = [wb[n] for n in names if n in wb.sheetnames]
