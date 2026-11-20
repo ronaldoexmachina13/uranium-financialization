@@ -24,34 +24,33 @@ Open **`data/processed/thesis_dataset.xlsx`** and read its first sheet, *Read me
 
 ```
 uranium_thesis/
-├── README.md                this page
-├── requirements.txt         Python packages needed to rebuild the data set
-├── DATA_LOG.md              log of every download and every change to the data set
-├── .gitattributes           tells Git to store every file byte for byte
+├── README.md              this page
+├── requirements.txt       Python packages for the build
+├── DATA_LOG.md            log of every download and change
+├── .gitattributes         keeps every file byte for byte
 │
 ├── data/
 │   ├── processed/
-│   │   ├── thesis_dataset.xlsx      the working data set
-│   │   └── archive/                 earlier versions (v1 to v5) and the lists of changes between them
-│   │
-│   ├── raw/                         original downloads, never edited
-│   │   ├── sprott/ upc/ yellowcake/           the physical uranium funds
-│   │   ├── cameco/ uxc/ stooq/ cme/ investing/   uranium prices and futures
-│   │   ├── markets_dated/                     commodity futures (Yahoo), correct trading dates
-│   │   ├── markets/                           the same futures as first downloaded (kept as a record), and the S&P 500
-│   │   ├── yahoo/ worldbank/ baltic/          equities and funds, commodity prices, freight
-│   │   ├── fred/ alfred/ macro/               macro and financial series, first-published values
-│   │   ├── physical/ eia/ iaea_pris/          production, reactors, contracting, inventories
-│   │   └── events/ labels/                    dated market events, column labels
-│   │
-│   ├── raw_manifest.csv     every raw file with its SHA-256 fingerprint and source
-│   ├── source_manifest.csv  the source document behind each data item
-│   ├── release_dates.csv    the date each figure became public
-│   └── spot_link.csv        which series contain the uranium spot price by construction
+│   │   ├── thesis_dataset.xlsx     the working data set
+│   │   └── archive/                v1 to v5 and change lists
+│   ├── raw/                        original downloads, never edited
+│   │   ├── sprott/ upc/ yellowcake/     uranium funds
+│   │   ├── cameco/ uxc/ stooq/ cme/     uranium prices, futures
+│   │   ├── investing/                   UX gap-fill, coal
+│   │   ├── markets_dated/               futures, correct dates
+│   │   ├── markets/                     first downloads, S&P 500
+│   │   ├── yahoo/ worldbank/ baltic/    equities, commodities
+│   │   ├── fred/ alfred/ macro/         macro, first prints
+│   │   ├── physical/ eia/ iaea_pris/    mines, reactors, contracts
+│   │   └── events/ labels/              events, column labels
+│   ├── raw_manifest.csv        fingerprint of every raw file
+│   ├── source_manifest.csv     proof document for each item
+│   ├── release_dates.csv       when each figure became public
+│   └── spot_link.csv           series that contain the spot
 │
-├── scripts/                 Python that downloads the data and builds the data set
-├── collector/               CME uranium futures bulletin collector (stopped in November 2026, kept as a record)
-└── reference/               code removed from the build, kept to document what was removed and why
+├── scripts/               Python: downloads and the build
+├── collector/             CME collector (stopped), kept
+└── reference/             removed code, kept as a record
 ```
 
 Two notes on the raw folders. The futures files in `markets/` carry dates one day early in US summer-time months, so the build uses the corrected copies in `markets_dated/`; the originals are kept because raw files are never changed. The S&P 500 file in `markets/` is still used. The `collector/` folder holds the CME Daily Bulletin pages for uranium futures from March to 12 November 2026 (the earlier ones recovered from the Internet Archive), monthly CME volume and open-interest reports, 116 saved Stooq pages of UX futures prices, the collector's own September 2026 downloads of commodity, macro and SPUT series, and three screenshots of the bulletin and monthly-report columns used by the parser (`collector/data/raw/cme/*.png`).

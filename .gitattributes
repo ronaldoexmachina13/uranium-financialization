@@ -2,3 +2,6 @@
 # Git must never change line endings, so the SHA-256 values in
 # data/raw_manifest.csv stay valid after any clone or download.
 * -text
+
+# Saved Stooq web pages are evidence, not code: leave them out of GitHub's language count.
+collector/data/raw/uranium/stooq_ux_pages/** linguist-vendored
